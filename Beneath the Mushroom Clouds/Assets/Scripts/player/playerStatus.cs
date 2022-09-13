@@ -11,7 +11,7 @@ using UnityEngine;
 /// <summary>
 /// This script holds all the variables that affect the status of the player character such as health, stamina, whether the character is crouching and so on.
 /// </summary>
-public class playerStatusScr : MonoBehaviour
+public class playerStatus : MonoBehaviour
 {
     public float playerHealth = 0.0f;
     public float playerStamina = 0.0f;
@@ -19,6 +19,7 @@ public class playerStatusScr : MonoBehaviour
     public float playerThirst = 0.0f;
     public float playerTemp = 0.0f;
     public float playerTired = 0.0f;
+    public float playerSpeed = 20.0f;
     public bool playerCrouched = false;
     public bool playerSprint = false;
     public bool playerAiming = false;
