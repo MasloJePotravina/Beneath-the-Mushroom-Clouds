@@ -6,24 +6,39 @@ public class mainCam : MonoBehaviour
 {
 
     public GameObject player;
-    public InputProvider playerInput;
+    public GameInputActions inputActions;
     public float distanceFromPlayer = -1;
     public float smoothness = 0.2f;
+
+    private void Awake()
+    {
+        inputActions = new GameInputActions();
+    }
+
+    private void OnEnable()
+    {
+        inputActions.Player.Enable();
+    }
+
+    private void OnDisable()
+    {
+        inputActions.Player.Disable();
+    }
+
 
     // Start is called before the first frame update
     void Start()
     {
-        playerInput = new InputProvider();
-        playerInput.Enable();
+        
     }
 
     // Update is called once per frame, after all else is updated
     void FixedUpdate()
     {
-        if (playerInput.AimingInput())
+        if (inputActions.Player.Aiming.ReadValue<float>() > 0.1f)
         {
             //Get the world coordinates of the mouse
-            Vector2 mouseWorldPos = Camera.main.ScreenToWorldPoint(playerInput.MousePosition());
+            Vector2 mouseWorldPos = Camera.main.ScreenToWorldPoint(inputActions.Player.MousePosition.ReadValue<Vector2>());
             //Get the player position (automatically cuts off the Z coordinate)
             Vector2 playerWorldPos = player.transform.position;
 

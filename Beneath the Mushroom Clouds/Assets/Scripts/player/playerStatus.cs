@@ -19,7 +19,7 @@ public class playerStatus : MonoBehaviour
     public float playerThirst = 0.0f;
     public float playerTemp = 0.0f;
     public float playerTired = 0.0f;
-    public float playerSpeed = 20.0f;
+    public float playerSpeed = 50.0f;
     public bool playerCrouched = false;
     public bool playerSprint = false;
     public bool playerAiming = false;
@@ -43,6 +43,7 @@ public class playerStatus : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+
         loadPlayerStatusBars(ref playerHealth, ref playerStamina, ref playerHunger, ref playerThirst, ref playerTemp, ref playerTired);
     }
 
