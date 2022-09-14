@@ -7,8 +7,8 @@ public class mainCam : MonoBehaviour
 
     public GameObject player;
     public GameInputActions inputActions;
-    public float distanceFromPlayer = -1;
-    public float smoothness = 0.2f;
+    public float distanceFromPlayer;
+    public float smoothness;
 
     private void Awake()
     {

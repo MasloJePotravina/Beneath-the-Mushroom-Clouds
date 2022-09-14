@@ -93,14 +93,12 @@ public class playerControls : MonoBehaviour
     {
         if (!status.playerSprint)
         {
-            Debug.Log("Pressed");
             status.playerCrouched = false;
             status.playerSprint = true;
             status.playerSpeed = sprintSpeed;
         }
         else
         {
-            Debug.Log("Released");
             status.playerSprint = false;
             
             if(status.playerCrouched)
