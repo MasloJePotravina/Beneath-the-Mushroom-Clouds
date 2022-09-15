@@ -24,6 +24,8 @@ public class playerStatus : MonoBehaviour
     public bool playerSprint = false;
     public bool playerAiming = false;
 
+    public float shooterAbility;
+
     /// <summary>
     /// Loads player status bars from a save file
     /// For now only sets all values to full TODO
