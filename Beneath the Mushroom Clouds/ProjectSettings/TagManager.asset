@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Full Wall
   - Weapon
+  - Half Wall
   layers:
   - Default
   - TransparentFX

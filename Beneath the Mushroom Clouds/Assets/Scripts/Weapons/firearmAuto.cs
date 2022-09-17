@@ -50,7 +50,7 @@ public class firearmAuto : MonoBehaviour
         inputActions.Player.Fire.canceled += PressTrigger;
         playerStatus = player.GetComponent<playerStatus>();
         shooterAbility = playerStatus.shooterAbility;
-        resetAimCone();
+        ResetAimCone();
 
     }
 
@@ -79,7 +79,7 @@ public class firearmAuto : MonoBehaviour
         {
             shooting = false;
             consecShots = 0;
-            resetAimCone();
+            ResetAimCone();
         }
         
     }
@@ -97,15 +97,27 @@ public class firearmAuto : MonoBehaviour
         float tmpXCoord = aimAngle.x;
         aimAngle.x = -aimAngle.y;
         aimAngle.y = tmpXCoord;
-        aimAngle = applyAimErrorToRaycast(aimAngle, calcAimCone());
+        aimAngle = ApplyAimErrorToRaycast(aimAngle, CalcAimCone());
 
         hits = Physics2D.RaycastAll(muzzle.transform.position, aimAngle);
         foreach (RaycastHit2D hit in hits)
         {
             if (hit.transform.tag != "Player" && hit.transform.tag != "Weapon")
             {
+                if(hit.transform.tag == "Half Wall")
+                {
+                    if (!HalfWallPassed(hit.distance)) //If bullet hit the wall draw bullet line
+                    {
+                        BulletLine(hit);
+                        break;
+                    }
+                    else //If not proceed with next collider
+                    {
+                        continue;
+                    }
+                }
                 //This is where a chance to miss intersected object (such as half wall) will be implemented later
-                bulletLine(hit);
+                BulletLine(hit);
                 //After something is hit the bullet does not travel further
                 break;
             }
@@ -114,7 +126,7 @@ public class firearmAuto : MonoBehaviour
 
     }
 
-    private void bulletLine(RaycastHit2D hit)
+    private void BulletLine(RaycastHit2D hit)
     {
         GameObject bullet = Instantiate(bulletPrefab);
         LineRenderer lineRenderer = bullet.GetComponent<LineRenderer>();
@@ -125,7 +137,7 @@ public class firearmAuto : MonoBehaviour
     //Calculate aiming error of player based on the characters shooting ability
     //Better shooting ability -> smaller aim cone
     //shooter abulity modifier between 0 and 1
-    private float calcAimCone()
+    private float CalcAimCone()
     {
 
         //Summary: The weapon is less accurate with more consecutive shots, this stops after 10 rounds
@@ -153,7 +165,7 @@ public class firearmAuto : MonoBehaviour
     //Applies the random error within the confines of the cone to the bullet
     //Degrees represent half the angle of the cone (15 degree -> 30degree cone)
     //Source for vector rotation: https://answers.unity.com/questions/661383/whats-the-most-efficient-way-to-rotate-a-vector2-o.html
-    private Vector2 applyAimErrorToRaycast(Vector2 aimAngle, float degrees)
+    private Vector2 ApplyAimErrorToRaycast(Vector2 aimAngle, float degrees)
     {
         //True if the bullet will deviate to the right, false if to the left
         //Random.value returns numbers between 0 and 1
@@ -183,9 +195,27 @@ public class firearmAuto : MonoBehaviour
         return aimAngle;
     }
 
-    private void resetAimCone()
+    private void ResetAimCone()
     {
         coneLineL.transform.rotation = transform.rotation * Quaternion.Euler(0, 0, shooterAbility * 2.5f);
         coneLineR.transform.rotation = transform.rotation * Quaternion.Euler(0, 0, -(shooterAbility * 2.5f));
+    }
+
+    //distance - distance between the shooter and the wall
+    private bool HalfWallPassed(float distance)
+    {
+        Debug.Log(distance);
+        if(distance < 50.0f)
+        {
+            return true; //bullet passes 100% of the time if shooter is less than 5 metres from HW
+        }
+        else if (distance > 150.0f)
+        {
+            return (Random.value > 0.5); //bullet passes 50% of the time if shooter is further than 15 metres from HW
+        }
+        else
+        {
+            return (Random.value > (distance - 50.0f) * 0.005);//linear dropoff between 5 metres and 15 metres (from 100% to 50%)
+        }
     }
 }
