@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class firearmAuto : MonoBehaviour
+public class firearmBoltAction : MonoBehaviour
 {
     private GameInputActions inputActions;
 
@@ -21,17 +21,14 @@ public class firearmAuto : MonoBehaviour
 
     private playerStatus playerStatus;
 
-
-
-    private float fireRate = 10.0f; //Rounds per second
-    private float lastShot;
     private int consecShots = 0;
-    private bool shooting = false;
 
     private float cooldownStart = 0.5f;//After how long after the first shot the recoil starts cooling down
     private float cooldownStartTimer = 0.0f;
     private float cooldownRate = 0.1f; //How quickly the firearm recoil cools down
     private float cooldownTimer = 0.0f;
+
+    private float fireRateTimer = 0.0f;
 
     private void Awake()
     {
@@ -48,50 +45,38 @@ public class firearmAuto : MonoBehaviour
     {
         inputActions.Player.Disable();
         inputActions.Player.Fire.started -= PressTrigger;
-        inputActions.Player.Fire.canceled -= PressTrigger;
     }
 
     // Start is called before the first frame update
     void Start()
     {
         inputActions.Player.Fire.started += PressTrigger;
-        inputActions.Player.Fire.canceled += PressTrigger;
         playerStatus = player.GetComponent<playerStatus>();
         shooterAbility = playerStatus.shooterAbility;
-        updateConeLines(shooterAbility * (initialDeviation/2));
+        updateConeLines(shooterAbility * (initialDeviation / 2));
 
     }
 
     // Update is called once per frame
     void Update()
     {
-        //Source: https://answers.unity.com/questions/761026/automatic-shooting-script.html
-        if (shooting)
+        if (fireRateTimer > 0)
         {
-            if(Time.time - lastShot > 1 / fireRate)
-            {
-                Shoot();
-                lastShot = Time.time;
-                if(consecShots < 10)
-                    consecShots += 1;
-                cooldownStartTimer = 0.0f;
-                updateConeLines(CalcAimCone());
-            }
+            fireRateTimer -= Time.deltaTime;
         }
-        else
+
+
+        if (consecShots > 0)
         {
-            if(consecShots > 0)
+            cooldownStartTimer += Time.deltaTime;
+            if (cooldownStartTimer > cooldownStart)
             {
-                cooldownStartTimer += Time.deltaTime;
-                if(cooldownStartTimer > cooldownStart)
+                cooldownTimer += Time.deltaTime;
+                if (cooldownTimer > cooldownRate)
                 {
-                    cooldownTimer += Time.deltaTime;
-                    if (cooldownTimer > cooldownRate)
-                    {
-                        consecShots -= 1;
-                        cooldownTimer = 0;
-                        updateConeLines(CalcAimCone());
-                    }
+                    consecShots -= 1;
+                    cooldownTimer = 0;
+                    updateConeLines(CalcAimCone());
                 }
             }
         }
@@ -99,21 +84,21 @@ public class firearmAuto : MonoBehaviour
 
     private void PressTrigger(InputAction.CallbackContext context)
     {
-        if (!shooting)
+        if (fireRateTimer <= 0)
         {
-            shooting = true;
+            Shoot();
+            if (consecShots < 5)
+                consecShots += 1;
+            cooldownStartTimer = 0.0f;
+            fireRateTimer = 0.2f;
+            updateConeLines(CalcAimCone());
         }
-        else
-        {
-            shooting = false;
-        }
-        
     }
 
     private void Shoot()
     {
         RaycastHit2D[] hits;
-        
+
         //This whole aimAngle thing is used to fire a raycast in the direction the player is facing
         //instead of the direction towards the mouse. You might wonder why since the player always faces the mouse anyways.
         //It's because when the player decides to place the mouse between humself and the muzzle of the weapon the ray
@@ -130,7 +115,7 @@ public class firearmAuto : MonoBehaviour
         {
             if (hit.transform.tag != "Player" && hit.transform.tag != "Weapon")
             {
-                if(hit.transform.tag == "Half Wall")
+                if (hit.transform.tag == "Half Wall")
                 {
                     if (!HalfWallPassed(hit.distance)) //If bullet hit the wall draw bullet line
                     {
@@ -148,7 +133,7 @@ public class firearmAuto : MonoBehaviour
                 break;
             }
         }
-            
+
 
     }
 
@@ -168,7 +153,7 @@ public class firearmAuto : MonoBehaviour
 
         //Summary: The weapon is less accurate with more consecutive shots, this stops after 10 rounds
         // The best shooter is twice as good at controling recoil than the worst shooter (5 degree versus 10 degree variation after 10 shots)
-        float consecShotsModifier = (bulletDevIncrement - 0.5f*(1 - shooterAbility)) * consecShots;
+        float consecShotsModifier = (bulletDevIncrement - 1 * (1 - shooterAbility)) * consecShots;
 
         //Scenarios for better understansing: 
         //  Best shooter, first shot -> no deviation
@@ -179,7 +164,6 @@ public class firearmAuto : MonoBehaviour
 
         //Degrees are halved here before returining (half the degrees to each side)
         degrees = degrees / 2;
-
 
         return degrees;
     }
@@ -194,7 +178,7 @@ public class firearmAuto : MonoBehaviour
 
         bool clockwiseDeviation = (Random.value <= 0.5f);
         degrees = Random.Range(0, degrees);
-        
+
 
         float tempX = aimAngle.x;
         float tempY = aimAngle.y;
@@ -213,7 +197,7 @@ public class firearmAuto : MonoBehaviour
             aimAngle.x = (cos * tempX) - (sin * tempY);
             aimAngle.y = (sin * tempX) + (cos * tempY);
         }
-        
+
         return aimAngle;
     }
 
@@ -222,7 +206,7 @@ public class firearmAuto : MonoBehaviour
     private bool HalfWallPassed(float distance)
     {
         Debug.Log(distance);
-        if(distance < 50.0f)
+        if (distance < 50.0f)
         {
             return true; //bullet passes 100% of the time if shooter is less than 5 metres from HW
         }

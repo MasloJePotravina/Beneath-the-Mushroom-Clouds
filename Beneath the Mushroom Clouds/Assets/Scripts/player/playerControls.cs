@@ -14,7 +14,7 @@ using UnityEngine.InputSystem;
 
 public class playerControls : MonoBehaviour
 {
-    
+
     private Rigidbody2D playerRigidbody;
     public playerStatus status;
     private GameInputActions inputActions;
@@ -22,6 +22,8 @@ public class playerControls : MonoBehaviour
     private float crouchSpeed = 20.0f;
     private float walkSpeed = 50.0f;
     private float sprintSpeed = 100.0f;
+
+    private Vector2 movementInput;
 
     private void Awake()
     {
@@ -44,7 +46,7 @@ public class playerControls : MonoBehaviour
 
 
     // Start is called before the first frame update
-    void Start() 
+    void Start()
     {
         //Subscribe to the corouch event and call the crouch toggle function
         inputActions.Player.Crouch.performed += CrouchToggle;
@@ -54,18 +56,25 @@ public class playerControls : MonoBehaviour
         playerRigidbody = GetComponent<Rigidbody2D>();
     }
 
-    // Update is called once per frame
     void Update()
+    {
+        movementInput = inputActions.Player.Move.ReadValue<Vector2>();
+    }
+
+    // Update is called once per frame
+    void FixedUpdate()
     {
         //Get the world coordinates of the mouse
         Vector2 mouseWorldPos = Camera.main.ScreenToWorldPoint(inputActions.Player.MousePosition.ReadValue<Vector2>());
         //Calculate the new direction the player should face
         Vector2 direction = (mouseWorldPos - (Vector2)transform.position).normalized;
-        transform.up = direction;
+        float angle = Vector2.SignedAngle(new Vector2(0, 1), direction);
+        Debug.Log(angle);
+        playerRigidbody.MoveRotation(angle);
         //Change the velocity of the player according to movement
-        playerRigidbody.velocity = inputActions.Player.Move.ReadValue<Vector2>() * status.playerSpeed;
+        playerRigidbody.MovePosition(playerRigidbody.position + movementInput * status.playerSpeed * Time.deltaTime);
 
-        
+
 
 
     }
@@ -100,12 +109,13 @@ public class playerControls : MonoBehaviour
         else
         {
             status.playerSprint = false;
-            
-            if(status.playerCrouched)
+
+            if (status.playerCrouched)
                 status.playerSpeed = crouchSpeed;
             else
                 status.playerSpeed = walkSpeed;
         }
-        
+
     }
+
 }
