@@ -25,6 +25,11 @@ public class firearmAuto : MonoBehaviour
     private int consecShots = 0;
     private bool shooting = false;
 
+    private float cooldownStart = 0.5f;//After how long after the first shot the recoil starts cooling down
+    private float cooldownStartTimer = 0.0f;
+    private float cooldownRate = 0.1f; //How quickly the firearm recoil cools down
+    private float cooldownTimer = 0.0f;
+
     private void Awake()
     {
         inputActions = new GameInputActions();
@@ -50,7 +55,7 @@ public class firearmAuto : MonoBehaviour
         inputActions.Player.Fire.canceled += PressTrigger;
         playerStatus = player.GetComponent<playerStatus>();
         shooterAbility = playerStatus.shooterAbility;
-        ResetAimCone();
+        updateConeLines(shooterAbility * 2.5f);//2.5f because we need half of the worst shooter initial deviation (5 degrees)
 
     }
 
@@ -64,7 +69,26 @@ public class firearmAuto : MonoBehaviour
             {
                 Shoot();
                 lastShot = Time.time;
-                consecShots += 1;
+                if(consecShots < 10)
+                    consecShots += 1;
+                cooldownStartTimer = 0.0f;
+            }
+        }
+        else
+        {
+            if(consecShots > 0)
+            {
+                cooldownStartTimer += Time.deltaTime;
+                if(cooldownStartTimer > cooldownStart)
+                {
+                    cooldownTimer += Time.deltaTime;
+                    if (cooldownTimer > cooldownRate)
+                    {
+                        consecShots -= 1;
+                        cooldownTimer = 0;
+                        updateConeLines(CalcAimCone());
+                    }
+                }
             }
         }
     }
@@ -78,8 +102,6 @@ public class firearmAuto : MonoBehaviour
         else
         {
             shooting = false;
-            consecShots = 0;
-            ResetAimCone();
         }
         
     }
@@ -142,7 +164,7 @@ public class firearmAuto : MonoBehaviour
 
         //Summary: The weapon is less accurate with more consecutive shots, this stops after 10 rounds
         // The best shooter is twice as good at controling recoil than the worst shooter (5 degree versus 10 degree variation after 10 shots)
-        float consecShotsModifier = (1.0f - 0.5f*(1 - shooterAbility)) * Mathf.Min(consecShots, 10);
+        float consecShotsModifier = (1.0f - 0.5f*(1 - shooterAbility)) * consecShots;
 
         //Scenarios for better understansing: 
         //  Best shooter, first shot -> no deviation
@@ -154,8 +176,7 @@ public class firearmAuto : MonoBehaviour
         //Degrees are halved here before returining (half the degrees to each side)
         degrees = degrees / 2;
 
-        coneLineL.transform.rotation = transform.rotation * Quaternion.Euler(0, 0, degrees);
-        coneLineR.transform.rotation = transform.rotation * Quaternion.Euler(0, 0, -degrees);
+        updateConeLines(degrees);
 
 
 
@@ -195,11 +216,6 @@ public class firearmAuto : MonoBehaviour
         return aimAngle;
     }
 
-    private void ResetAimCone()
-    {
-        coneLineL.transform.rotation = transform.rotation * Quaternion.Euler(0, 0, shooterAbility * 2.5f);
-        coneLineR.transform.rotation = transform.rotation * Quaternion.Euler(0, 0, -(shooterAbility * 2.5f));
-    }
 
     //distance - distance between the shooter and the wall
     private bool HalfWallPassed(float distance)
@@ -217,5 +233,12 @@ public class firearmAuto : MonoBehaviour
         {
             return (Random.value > (distance - 50.0f) * 0.005);//linear dropoff between 5 metres and 15 metres (from 100% to 50%)
         }
+    }
+
+
+    private void updateConeLines(float degrees)
+    {
+        coneLineL.transform.rotation = transform.rotation * Quaternion.Euler(0, 0, degrees);
+        coneLineR.transform.rotation = transform.rotation * Quaternion.Euler(0, 0, -degrees);
     }
 }
