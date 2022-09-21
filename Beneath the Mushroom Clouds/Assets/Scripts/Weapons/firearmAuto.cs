@@ -7,11 +7,13 @@ public class firearmAuto : MonoBehaviour
 {
     private GameInputActions inputActions;
 
-    public GameObject bulletPrefab;
     public GameObject muzzle;
     public GameObject player;
     public GameObject coneLineL;
     public GameObject coneLineR;
+
+    public GameObject gameManager;
+
 
     public float initialDeviation; //Worst case initial bullet deviaiton (degrees)
     public float bulletDevIncrement; //How many degrees does another fired bullet add at most
@@ -20,6 +22,7 @@ public class firearmAuto : MonoBehaviour
 
 
     private playerStatus playerStatus;
+    private firearmFunctions fireFunc;
 
 
 
@@ -28,10 +31,11 @@ public class firearmAuto : MonoBehaviour
     private int consecShots = 0;
     private bool shooting = false;
 
-    private float cooldownStart = 0.5f;//After how long after the first shot the recoil starts cooling down
+    private float cooldownStart = 0.2f;//After how long after the first shot the recoil starts cooling down
     private float cooldownStartTimer = 0.0f;
     private float cooldownRate = 0.1f; //How quickly the firearm recoil cools down
     private float cooldownTimer = 0.0f;
+
 
     private void Awake()
     {
@@ -59,6 +63,7 @@ public class firearmAuto : MonoBehaviour
         playerStatus = player.GetComponent<playerStatus>();
         shooterAbility = playerStatus.shooterAbility;
         updateConeLines(shooterAbility * (initialDeviation/2));
+        fireFunc = gameManager.GetComponent<firearmFunctions>();
 
     }
 
@@ -123,27 +128,46 @@ public class firearmAuto : MonoBehaviour
         float tmpXCoord = aimAngle.x;
         aimAngle.x = -aimAngle.y;
         aimAngle.y = tmpXCoord;
-        aimAngle = ApplyAimErrorToRaycast(aimAngle, CalcAimCone());
+
+        aimAngle = fireFunc.ApplyAimErrorToRaycast(aimAngle, CalcAimCone());
 
         hits = Physics2D.RaycastAll(muzzle.transform.position, aimAngle);
+        float halfWallDistance = -1.0f;//If the bullet passes a half wall we need to store
+                                       //the distance from the wall for future calculations
         foreach (RaycastHit2D hit in hits)
         {
             if (hit.transform.tag != "Player" && hit.transform.tag != "Weapon")
             {
+                 
                 if(hit.transform.tag == "Half Wall")
                 {
-                    if (!HalfWallPassed(hit.distance)) //If bullet hit the wall draw bullet line
+                    if (!fireFunc.HalfWallPassed(hit.distance)) //If bullet hit the wall draw bullet line
                     {
-                        BulletLine(hit);
+                        fireFunc.BulletLine(hit, muzzle.transform.position);
                         break;
                     }
                     else //If not proceed with next collider
+                    {
+                        halfWallDistance = hit.distance;
+                        continue;
+                    }
+                }
+                //TODO:This whole implementation will be moved somewhere else
+                if (hit.transform.tag == "NPC")
+                {
+                    if(fireFunc.NPCHit(halfWallDistance, hit))
+                    {
+                        fireFunc.BulletLine(hit, muzzle.transform.position);
+                        //Destroy(hit.transform.gameObject);
+                        break;
+                    }
+                    else
                     {
                         continue;
                     }
                 }
                 //This is where a chance to miss intersected object (such as half wall) will be implemented later
-                BulletLine(hit);
+                fireFunc.BulletLine(hit, muzzle.transform.position);
                 //After something is hit the bullet does not travel further
                 break;
             }
@@ -152,94 +176,33 @@ public class firearmAuto : MonoBehaviour
 
     }
 
-    private void BulletLine(RaycastHit2D hit)
-    {
-        GameObject bullet = Instantiate(bulletPrefab);
-        LineRenderer lineRenderer = bullet.GetComponent<LineRenderer>();
-        Vector3[] trajectory = { muzzle.transform.position, hit.point };
-        lineRenderer.SetPositions(trajectory);
-    }
+    
 
     //Calculate aiming error of player based on the characters shooting ability
     //Better shooting ability -> smaller aim cone
-    //shooter abulity modifier between 0 and 1
+    //shooter ability modifier between 0 and 1
     private float CalcAimCone()
     {
 
         //Summary: The weapon is less accurate with more consecutive shots, this stops after 10 rounds
-        // The best shooter is twice as good at controling recoil than the worst shooter (5 degree versus 10 degree variation after 10 shots)
+        // The best shooter is twice as good at controling recoil than the worst shooter
         float consecShotsModifier = (bulletDevIncrement - 0.5f*(1 - shooterAbility)) * consecShots;
 
-        //Scenarios for better understansing: 
-        //  Best shooter, first shot -> no deviation
-        //  Best shooter, after 10 shots -> 5 degree deviation
-        //  Worst shooter, first shot -> 5 degree deviation
-        //  Worst shooter, after 10 shots -> 15 degree deviation
         float degrees = initialDeviation * shooterAbility + consecShotsModifier;
 
         //Degrees are halved here before returining (half the degrees to each side)
         degrees = degrees / 2;
 
-
         return degrees;
-    }
-
-    //Applies the random error within the confines of the cone to the bullet
-    //Degrees represent half the angle of the cone (15 degree -> 30degree cone)
-    //Source for vector rotation: https://answers.unity.com/questions/661383/whats-the-most-efficient-way-to-rotate-a-vector2-o.html
-    private Vector2 ApplyAimErrorToRaycast(Vector2 aimAngle, float degrees)
-    {
-        //True if the bullet will deviate to the right, false if to the left
-        //Random.value returns numbers between 0 and 1
-
-        bool clockwiseDeviation = (Random.value <= 0.5f);
-        degrees = Random.Range(0, degrees);
-        
-
-        float tempX = aimAngle.x;
-        float tempY = aimAngle.y;
-
-        if (clockwiseDeviation)
-        {
-            float sin = Mathf.Sin(-degrees * Mathf.Deg2Rad);
-            float cos = Mathf.Cos(-degrees * Mathf.Deg2Rad);
-            aimAngle.x = (cos * tempX) - (sin * tempY);
-            aimAngle.y = (sin * tempX) + (cos * tempY);
-        }
-        else
-        {
-            float sin = Mathf.Sin(degrees * Mathf.Deg2Rad);
-            float cos = Mathf.Cos(degrees * Mathf.Deg2Rad);
-            aimAngle.x = (cos * tempX) - (sin * tempY);
-            aimAngle.y = (sin * tempX) + (cos * tempY);
-        }
-        
-        return aimAngle;
-    }
-
-
-    //distance - distance between the shooter and the wall
-    private bool HalfWallPassed(float distance)
-    {
-        Debug.Log(distance);
-        if(distance < 50.0f)
-        {
-            return true; //bullet passes 100% of the time if shooter is less than 5 metres from HW
-        }
-        else if (distance > 150.0f)
-        {
-            return (Random.value > 0.5); //bullet passes 50% of the time if shooter is further than 15 metres from HW
-        }
-        else
-        {
-            return (Random.value > (distance - 50.0f) * 0.005);//linear dropoff between 5 metres and 15 metres (from 100% to 50%)
-        }
     }
 
 
     private void updateConeLines(float degrees)
-    {
+    { 
+
         coneLineL.transform.rotation = transform.rotation * Quaternion.Euler(0, 0, degrees);
         coneLineR.transform.rotation = transform.rotation * Quaternion.Euler(0, 0, -degrees);
+
     }
+
 }

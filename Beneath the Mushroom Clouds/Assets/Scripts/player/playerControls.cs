@@ -69,7 +69,6 @@ public class playerControls : MonoBehaviour
         //Calculate the new direction the player should face
         Vector2 direction = (mouseWorldPos - (Vector2)transform.position).normalized;
         float angle = Vector2.SignedAngle(new Vector2(0, 1), direction);
-        Debug.Log(angle);
         playerRigidbody.MoveRotation(angle);
         //Change the velocity of the player according to movement
         playerRigidbody.MovePosition(playerRigidbody.position + movementInput * status.playerSpeed * Time.deltaTime);
