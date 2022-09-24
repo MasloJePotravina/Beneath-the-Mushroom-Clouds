@@ -119,15 +119,7 @@ public class firearmAuto : MonoBehaviour
     {
         RaycastHit2D[] hits;
         
-        //This whole aimAngle thing is used to fire a raycast in the direction the player is facing
-        //instead of the direction towards the mouse. You might wonder why since the player always faces the mouse anyways.
-        //It's because when the player decides to place the mouse between humself and the muzzle of the weapon the ray
-        //would be cast towards the player, not out of the gun.
-        //How it works: Directional vector to the right of the player is rotated 90 degrees cc using the (x,y) -> (-y,x) trick
-        Vector2 aimAngle = transform.parent.transform.right;
-        float tmpXCoord = aimAngle.x;
-        aimAngle.x = -aimAngle.y;
-        aimAngle.y = tmpXCoord;
+        Vector2 aimAngle = transform.parent.transform.up;
 
         aimAngle = fireFunc.ApplyAimErrorToRaycast(aimAngle, CalcAimCone());
 
