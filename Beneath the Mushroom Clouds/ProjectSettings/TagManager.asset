@@ -5,9 +5,10 @@ TagManager:
   serializedVersion: 2
   tags:
   - Full Wall
-  - Weapon
   - Half Wall
+  - Weapon
   - NPC
+  - FOV
   layers:
   - Default
   - TransparentFX
@@ -15,10 +16,10 @@ TagManager:
   - 
   - Water
   - UI
-  - Ground
-  - Living
-  - FullObstacle
-  - 
+  - FOWMain
+  - FOWSecondary
+  - Enemy
+  - Obstacle
   - 
   - 
   - 
@@ -44,4 +45,7 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: FogOfWar
+    uniqueID: 1984359901
     locked: 0
