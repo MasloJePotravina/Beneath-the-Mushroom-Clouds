@@ -133,6 +133,7 @@ GameObject:
   m_Component:
   - component: {fileID: 233222113}
   - component: {fileID: 233222112}
+  - component: {fileID: 233222114}
   m_Layer: 0
   m_Name: FOWMainCam
   m_TagString: Untagged
@@ -150,7 +151,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 4
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -198,6 +199,19 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &233222114
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 233222111}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce3c1f0c24ff3d246af3f1c1fa0a2fc6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  postShader: {fileID: 4800000, guid: 201debcab1dfcff45a93ce1a9155f64e, type: 3}
 --- !u!1 &288716915
 GameObject:
   m_ObjectHideFlags: 0
@@ -287,10 +301,10 @@ MonoBehaviour:
     m_Bits: 512
   player: {fileID: 1461886849}
   FOVTrail: {fileID: 1412333030}
-  fov: 90
+  fov: 40
   fovRayCount: 50
   angle: 0
-  fovDistance: 100
+  fovDistance: 200
   fopRayCount: 50
   fopDistance: 10
 --- !u!4 &288716919
@@ -724,6 +738,7 @@ GameObject:
   - component: {fileID: 519420031}
   - component: {fileID: 519420029}
   - component: {fileID: 519420033}
+  - component: {fileID: 519420034}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -748,7 +763,7 @@ Camera:
   m_GameObject: {fileID: 519420028}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 2
+  m_ClearFlags: 1
   m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
@@ -770,7 +785,7 @@ Camera:
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 3895
+    m_Bits: 1847
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -812,6 +827,19 @@ MonoBehaviour:
   player: {fileID: 1461886849}
   distanceFromPlayer: -100
   smoothness: 0.1
+--- !u!114 &519420034
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 519420028}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce3c1f0c24ff3d246af3f1c1fa0a2fc6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  postShader: {fileID: 4800000, guid: 201debcab1dfcff45a93ce1a9155f64e, type: 3}
 --- !u!1 &735885517
 GameObject:
   m_ObjectHideFlags: 0
@@ -996,6 +1024,7 @@ GameObject:
   m_Component:
   - component: {fileID: 829301447}
   - component: {fileID: 829301446}
+  - component: {fileID: 829301448}
   m_Layer: 0
   m_Name: FOWSecondaryCam
   m_TagString: Untagged
@@ -1061,6 +1090,19 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &829301448
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 829301445}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce3c1f0c24ff3d246af3f1c1fa0a2fc6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  postShader: {fileID: 4800000, guid: 201debcab1dfcff45a93ce1a9155f64e, type: 3}
 --- !u!1 &1011943102
 GameObject:
   m_ObjectHideFlags: 0
@@ -1073,7 +1115,7 @@ GameObject:
   - component: {fileID: 1011943105}
   - component: {fileID: 1011943104}
   - component: {fileID: 1011943103}
-  m_Layer: 5
+  m_Layer: 10
   m_Name: FOWCanvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1284,7 +1326,7 @@ GameObject:
   - component: {fileID: 1112461425}
   - component: {fileID: 1112461427}
   - component: {fileID: 1112461426}
-  m_Layer: 5
+  m_Layer: 10
   m_Name: FOW
   m_TagString: Untagged
   m_Icon: {fileID: 0}
