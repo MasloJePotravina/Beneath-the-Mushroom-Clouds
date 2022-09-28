@@ -293,12 +293,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: abb3a563482a677408f8afa0a3096e5c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  layerMask:
+  layerMaskStandard:
     serializedVersion: 2
     m_Bits: 768
-  layerMaskAfterNPC:
+  layerMaskCrouched:
     serializedVersion: 2
-    m_Bits: 512
+    m_Bits: 1792
   player: {fileID: 1461886849}
   fovTrail: {fileID: 1412333030}
   fovAngleStandard: 90
@@ -1923,7 +1923,7 @@ GameObject:
   - component: {fileID: 1733855255}
   - component: {fileID: 1733855254}
   - component: {fileID: 1733855253}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Half Wall(test)
   m_TagString: Half Wall
   m_Icon: {fileID: 0}

@@ -4,18 +4,18 @@ using UnityEngine;
 public class FieldOfView : MonoBehaviour
 {
     //Which layers do raycasts collide with
-    public LayerMask layerMask;
+    public LayerMask layerMaskStandard;
+    public LayerMask layerMaskCrouched;
+    private LayerMask layerMask;
     //Which layers do raycasts collide with after colliding with an NPC
     //This solves a problem in which the player could see thgrough walls if they looked "through" an NPC
-    public LayerMask layerMaskAfterNPC;
     public GameObject player;
+    private PlayerStatus playerStatus;
 
     //This is an identical game object of a different color used in creating the "discovered" texture in Fog of War
     public GameObject fovTrail;
     //The script of the FOV Trail
     private FOVTrail fovTrailScript;
-
-    private GameInputActions inputActions;
 
     //Mesh of the FOV object
     private Mesh mesh;
@@ -38,20 +38,7 @@ public class FieldOfView : MonoBehaviour
     public int fopRayCount = 50;
     public float fopDistance = 10f;
 
-    private void Awake()
-    {
-        inputActions = new GameInputActions();
-    }
 
-    private void OnEnable()
-    {
-        inputActions.Player.Enable();
-    }
-
-    private void OnDisable()
-    {
-        inputActions.Player.Disable();
-    }
 
     // Start is called before the first frame update
     void Start()
@@ -60,14 +47,16 @@ public class FieldOfView : MonoBehaviour
         mesh = new Mesh();
         GetComponent<MeshFilter>().mesh = mesh;
         fovTrailScript = fovTrail.GetComponent<FOVTrail>();
+        playerStatus = player.GetComponent<PlayerStatus>();
         fovAngle = fovAngleStandard;
         fovDistance = fovDistanceStandard;
+        layerMask = layerMaskStandard;
 
     }
 
     private void Update()
     {
-        if (inputActions.Player.Aiming.ReadValue<float>() > 0.1f)
+        if (playerStatus.playerAiming)
         {
             fovAngle = fovAngleAiming;
             fovDistance = fovDistanceAiming;
@@ -77,6 +66,13 @@ public class FieldOfView : MonoBehaviour
             fovAngle = fovAngleStandard;
             fovDistance = fovDistanceStandard;
         }
+
+        if (playerStatus.playerCrouched)
+            layerMask = layerMaskCrouched;
+        else
+            layerMask = layerMaskStandard;
+
+
         Vector3 origin = player.transform.position;
 
         Vector2 aimAngle = player.transform.up;
@@ -130,7 +126,8 @@ public class FieldOfView : MonoBehaviour
             rayCount = fopRayCount;
             distance = fopDistance;
         }
-            
+
+                
         for (int i = 0; i <= rayCount; i++)
         {
             Vector3 vertex = new(0,0,0);

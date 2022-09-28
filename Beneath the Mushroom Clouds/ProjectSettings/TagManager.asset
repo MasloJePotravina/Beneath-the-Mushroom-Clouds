@@ -19,8 +19,8 @@ TagManager:
   - FOWMain
   - FOWSecondary
   - Enemy
-  - Obstacle
-  - 
+  - FullObstacle
+  - HalfObstacle
   - 
   - 
   - 
