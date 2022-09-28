@@ -2,11 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class mainCam : MonoBehaviour
+public class MainCam : MonoBehaviour
 {
 
     public GameObject player;
-    public GameInputActions inputActions;
+    private GameInputActions inputActions;
+    private PlayerStatus status;
     public float distanceFromPlayer;
     public float smoothness;
 
@@ -29,13 +30,13 @@ public class mainCam : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        status = player.GetComponent<PlayerStatus>();
     }
 
     // Update is called once per frame, after all else is updated
     void FixedUpdate()
     {
-        if (inputActions.Player.Aiming.ReadValue<float>() > 0.1f)
+        if (status.playerAiming)
         {
             //Get the world coordinates of the mouse
             Vector2 mouseWorldPos = Camera.main.ScreenToWorldPoint(inputActions.Player.MousePosition.ReadValue<Vector2>());
@@ -52,7 +53,7 @@ public class mainCam : MonoBehaviour
         else
         {
             //Smooth player follow and smooth snap back to player after aiming
-            Vector3 onPlayer3D = new Vector3(player.transform.position.x, player.transform.position.y, distanceFromPlayer);
+            Vector3 onPlayer3D = new(player.transform.position.x, player.transform.position.y, distanceFromPlayer);
             transform.position = Vector3.Lerp(transform.position, onPlayer3D, smoothness);
         }
     }

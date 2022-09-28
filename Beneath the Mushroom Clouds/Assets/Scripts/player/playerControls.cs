@@ -12,11 +12,11 @@ using UnityEngine.InputSystem;
 
 
 
-public class playerControls : MonoBehaviour
+public class PlayerControls : MonoBehaviour
 {
 
     private Rigidbody2D playerRigidbody;
-    public playerStatus status;
+    public PlayerStatus status;
     private GameInputActions inputActions;
 
     private float crouchSpeed = 20.0f;
@@ -71,7 +71,16 @@ public class playerControls : MonoBehaviour
         float angle = Vector2.SignedAngle(new Vector2(0, 1), direction);
         playerRigidbody.MoveRotation(angle);
         //Change the velocity of the player according to movement
-        playerRigidbody.MovePosition(playerRigidbody.position + movementInput * status.playerSpeed * Time.deltaTime);
+        playerRigidbody.MovePosition(playerRigidbody.position + status.playerSpeed * Time.deltaTime * movementInput);
+
+        if (inputActions.Player.Aiming.ReadValue<float>() > 0.1f)
+        {
+            status.playerAiming = true;
+        }
+        else
+        {
+            status.playerAiming = false;
+        }
 
 
 

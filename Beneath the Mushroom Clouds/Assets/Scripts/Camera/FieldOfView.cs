@@ -1,27 +1,57 @@
-using System.Collections;
-using System.Collections.Generic;
+//Based on: https://www.youtube.com/watch?v=CSeUMTaNFYk
 using UnityEngine;
 
 public class FieldOfView : MonoBehaviour
 {
-
+    //Which layers do raycasts collide with
     public LayerMask layerMask;
+    //Which layers do raycasts collide with after colliding with an NPC
+    //This solves a problem in which the player could see thgrough walls if they looked "through" an NPC
     public LayerMask layerMaskAfterNPC;
     public GameObject player;
 
-    public GameObject FOVTrail;
+    //This is an identical game object of a different color used in creating the "discovered" texture in Fog of War
+    public GameObject fovTrail;
+    //The script of the FOV Trail
     private FOVTrail fovTrailScript;
 
+    private GameInputActions inputActions;
+
+    //Mesh of the FOV object
     private Mesh mesh;
-    public float fov = 90f;
+
+    public float fovAngleStandard;
+    public float fovAngleAiming;
+    private float fovAngle;
+
+    public float fovDistanceStandard;
+    public float fovDistanceAiming;
+    private float fovDistance;
+
+
     public int fovRayCount = 50;
-    public float angle = 0f;
+    private float angle = 0f;
     private float angleIncrease;
-    public float fovDistance = 50f;
+    
 
     private float fop;
     public int fopRayCount = 50;
     public float fopDistance = 10f;
+
+    private void Awake()
+    {
+        inputActions = new GameInputActions();
+    }
+
+    private void OnEnable()
+    {
+        inputActions.Player.Enable();
+    }
+
+    private void OnDisable()
+    {
+        inputActions.Player.Disable();
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -29,13 +59,24 @@ public class FieldOfView : MonoBehaviour
 
         mesh = new Mesh();
         GetComponent<MeshFilter>().mesh = mesh;
-        fovTrailScript = FOVTrail.GetComponent<FOVTrail>();
-        
-        
+        fovTrailScript = fovTrail.GetComponent<FOVTrail>();
+        fovAngle = fovAngleStandard;
+        fovDistance = fovDistanceStandard;
+
     }
 
     private void Update()
     {
+        if (inputActions.Player.Aiming.ReadValue<float>() > 0.1f)
+        {
+            fovAngle = fovAngleAiming;
+            fovDistance = fovDistanceAiming;
+        }
+        else
+        {
+            fovAngle = fovAngleStandard;
+            fovDistance = fovDistanceStandard;
+        }
         Vector3 origin = player.transform.position;
 
         Vector2 aimAngle = player.transform.up;
@@ -43,7 +84,7 @@ public class FieldOfView : MonoBehaviour
         aimAngle.x = -aimAngle.y;
         aimAngle.y = tmpXCoord;
 
-        angle = Vector3.SignedAngle(Vector2.up, aimAngle, Vector3.forward) + fov/2;
+        angle = Vector3.SignedAngle(Vector2.up, aimAngle, Vector3.forward) + fovAngle / 2;
 
         Vector3[] vertices = new Vector3[fovRayCount + 2 + fopRayCount + 1]; //FOV Rays + origin point + the "zero" ray (FOV) + FOP Rays + the "zero" ray(FOP)
         Vector2[] uv = new Vector2[vertices.Length];
@@ -53,10 +94,10 @@ public class FieldOfView : MonoBehaviour
 
         int vertexIndex = 1;
         int triangleIndex = 0;
-        angleIncrease = fov / fovRayCount;
+        angleIncrease = fovAngle / fovRayCount;
         CalculateMesh(true, ref origin, ref vertices, ref triangles, ref vertexIndex, ref triangleIndex);
 
-        fop = 360.0f - fov;
+        fop = 360.0f - fovAngle;
         angleIncrease = fop / fopRayCount;
         CalculateMesh(false, ref origin, ref vertices, ref triangles, ref vertexIndex, ref triangleIndex);
 
@@ -92,33 +133,30 @@ public class FieldOfView : MonoBehaviour
             
         for (int i = 0; i <= rayCount; i++)
         {
-            Vector3 vertex;
-            RaycastHit2D hit = Physics2D.Raycast(origin, new Vector3(Mathf.Cos(Mathf.Deg2Rad * angle), Mathf.Sin(Mathf.Deg2Rad * angle)), distance, layerMask);
+            Vector3 vertex = new(0,0,0);
+            RaycastHit2D[] hits = Physics2D.RaycastAll(origin, new Vector3(Mathf.Cos(Mathf.Deg2Rad * angle), Mathf.Sin(Mathf.Deg2Rad * angle)), distance, layerMask);
 
-
-            if (hit.collider == null)
+            if (hits.Length == 0)
             {
                 vertex = origin + new Vector3(Mathf.Cos(Mathf.Deg2Rad * angle), Mathf.Sin(Mathf.Deg2Rad * angle)) * distance;
             }
             else
             {
-                vertex = hit.point;
-                if (hit.transform.tag == "NPC")
+                foreach (RaycastHit2D hit in hits)
                 {
-
-                    hit.transform.GetComponent<NPCStatus>().HitByFov();
-                    hit = Physics2D.Raycast(origin, new Vector3(Mathf.Cos(Mathf.Deg2Rad * angle), Mathf.Sin(Mathf.Deg2Rad * angle)), distance, layerMaskAfterNPC);
-                    if (hit.collider == null)
+                    if (hit.transform.CompareTag("NPC"))
                     {
-                        vertex = origin + new Vector3(Mathf.Cos(Mathf.Deg2Rad * angle), Mathf.Sin(Mathf.Deg2Rad * angle)) * distance;
+                        hit.transform.GetComponent<NPCStatus>().HitByFov();
+                        continue;
                     }
                     else
                     {
                         vertex = hit.point;
-                    }
+                        break;
+                    }     
                 }
             }
-
+            
 
             vertices[vertexIndex] = vertex;
 

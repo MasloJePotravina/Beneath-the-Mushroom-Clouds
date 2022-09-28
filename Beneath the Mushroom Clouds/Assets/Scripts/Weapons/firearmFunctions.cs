@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class firearmFunctions : MonoBehaviour
+public class FirearmFunctions : MonoBehaviour
 {
 
     public GameObject bulletPrefab;

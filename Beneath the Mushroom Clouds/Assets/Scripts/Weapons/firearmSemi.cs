@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class firearmSemi : MonoBehaviour
+public class FirearmSemi : MonoBehaviour
 {
     private GameInputActions inputActions;
 
@@ -19,8 +19,8 @@ public class firearmSemi : MonoBehaviour
     private float shooterAbility;
 
 
-    private playerStatus playerStatus;
-    private firearmFunctions fireFunc;
+    private PlayerStatus playerStatus;
+    private FirearmFunctions fireFunc;
 
     private int consecShots = 0;
 
@@ -52,10 +52,10 @@ public class firearmSemi : MonoBehaviour
     void Start()
     {
         inputActions.Player.Fire.started += PressTrigger;
-        playerStatus = player.GetComponent<playerStatus>();
-        fireFunc = gameManager.GetComponent<firearmFunctions>();
+        playerStatus = player.GetComponent<PlayerStatus>();
+        fireFunc = gameManager.GetComponent<FirearmFunctions>();
         shooterAbility = playerStatus.shooterAbility;
-        updateConeLines(shooterAbility * (initialDeviation/2));
+        UpdateConeLines(shooterAbility * (initialDeviation/2));
 
     }
 
@@ -78,7 +78,7 @@ public class firearmSemi : MonoBehaviour
                 {
                     consecShots -= 1;
                     cooldownTimer = 0;
-                    updateConeLines(CalcAimCone());
+                    UpdateConeLines(CalcAimCone());
                 }
             }
         }
@@ -93,7 +93,7 @@ public class firearmSemi : MonoBehaviour
                 consecShots += 1;
             cooldownStartTimer = 0.0f;
             fireRateTimer = 0.15f;
-            updateConeLines(CalcAimCone());
+            UpdateConeLines(CalcAimCone());
         }
     }
 
@@ -110,41 +110,36 @@ public class firearmSemi : MonoBehaviour
                                        //the distance from the wall for future calculations
         foreach (RaycastHit2D hit in hits)
         {
-            if (hit.transform.tag != "Player" && hit.transform.tag != "Weapon")
+            if (hit.transform.CompareTag("HalfWall"))
             {
-
-                if (hit.transform.tag == "Half Wall")
+                if (!fireFunc.HalfWallPassed(hit.distance)) //If bullet hit the wall draw bullet line
                 {
-                    if (!fireFunc.HalfWallPassed(hit.distance)) //If bullet hit the wall draw bullet line
-                    {
-                        fireFunc.BulletLine(hit, muzzle.transform.position);
-                        break;
-                    }
-                    else //If not proceed with next collider
-                    {
-                        halfWallDistance = hit.distance;
-                        continue;
-                    }
+                    fireFunc.BulletLine(hit, muzzle.transform.position);
+                    break;
                 }
-                //TODO:This whole implementation will be moved somewhere else
-                if (hit.transform.tag == "NPC")
+                else //If not proceed with next collider
                 {
-                    if (fireFunc.NPCHit(halfWallDistance, hit))
-                    {
-                        fireFunc.BulletLine(hit, muzzle.transform.position);
-                        //Destroy(hit.transform.gameObject);
-                        break;
-                    }
-                    else
-                    {
-                        continue;
-                    }
+                    halfWallDistance = hit.distance;
+                    continue;
                 }
-                //This is where a chance to miss intersected object (such as half wall) will be implemented later
-                fireFunc.BulletLine(hit, muzzle.transform.position);
-                //After something is hit the bullet does not travel further
-                break;
             }
+            //TODO:This whole implementation will be moved somewhere else
+            if (hit.transform.CompareTag("NPC"))
+            {
+                if (fireFunc.NPCHit(halfWallDistance, hit))
+                {
+                    fireFunc.BulletLine(hit, muzzle.transform.position);
+                    //Destroy(hit.transform.gameObject);
+                    break;
+                }
+                else
+                {
+                    continue;
+                }
+            }
+            fireFunc.BulletLine(hit, muzzle.transform.position);
+            //After something is hit the bullet does not travel further
+            break;
         }
 
 
@@ -168,13 +163,13 @@ public class firearmSemi : MonoBehaviour
         float degrees = initialDeviation * shooterAbility + consecShotsModifier;
 
         //Degrees are halved here before returining (half the degrees to each side)
-        degrees = degrees / 2;
+        degrees *= 0.5f;
 
         return degrees;
     }
 
 
-    private void updateConeLines(float degrees)
+    private void UpdateConeLines(float degrees)
     {
         coneLineL.transform.rotation = transform.rotation * Quaternion.Euler(0, 0, degrees);
         coneLineR.transform.rotation = transform.rotation * Quaternion.Euler(0, 0, -degrees);

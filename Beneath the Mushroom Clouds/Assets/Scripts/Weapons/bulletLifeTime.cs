@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class bulletLifeTime : MonoBehaviour
+public class BulletLifeTime : MonoBehaviour
 
 {
 

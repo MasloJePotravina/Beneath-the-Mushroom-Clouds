@@ -11,7 +11,7 @@ using UnityEngine;
 /// <summary>
 /// This script holds all the variables that affect the status of the player character such as health, stamina, whether the character is crouching and so on.
 /// </summary>
-public class playerStatus : MonoBehaviour
+public class PlayerStatus : MonoBehaviour
 {
     public float playerHealth = 0.0f;
     public float playerStamina = 0.0f;
@@ -26,12 +26,28 @@ public class playerStatus : MonoBehaviour
 
     public float shooterAbility;
 
+    
+
+    // Start is called before the first frame update
+    void Start()
+    {
+
+        LoadPlayerStatusBars(ref playerHealth, ref playerStamina, ref playerHunger, ref playerThirst, ref playerTemp, ref playerTired);
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
+
     /// <summary>
     /// Loads player status bars from a save file
     /// For now only sets all values to full TODO
     /// </summary>
     /// <returns>0 when load is successful, 1 when unsuccessful</returns>
-    int loadPlayerStatusBars(ref float health, ref float stamina, ref float hunger, ref float thirst, ref float temp, ref float tired){
+    int LoadPlayerStatusBars(ref float health, ref float stamina, ref float hunger, ref float thirst, ref float temp, ref float tired)
+    {
         health = 100.0f;
         stamina = 100.0f;
         hunger = 100.0f;
@@ -40,18 +56,5 @@ public class playerStatus : MonoBehaviour
         tired = 100.0f;
 
         return 0;
-    }
-
-    // Start is called before the first frame update
-    void Start()
-    {
-
-        loadPlayerStatusBars(ref playerHealth, ref playerStamina, ref playerHunger, ref playerThirst, ref playerTemp, ref playerTired);
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 }
