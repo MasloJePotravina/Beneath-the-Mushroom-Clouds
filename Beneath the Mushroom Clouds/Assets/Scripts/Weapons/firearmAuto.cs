@@ -126,7 +126,7 @@ public class FirearmAuto : MonoBehaviour
                                        //the distance from the wall for future calculations
         foreach (RaycastHit2D hit in hits)
         {              
-            if(hit.transform.CompareTag("HalfWall"))
+            if(hit.transform.CompareTag("Half Wall"))
             {
                 if (!fireFunc.HalfWallPassed(hit.distance)) //If bullet hit the wall draw bullet line
                 {
