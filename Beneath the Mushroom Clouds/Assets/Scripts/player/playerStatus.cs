@@ -26,6 +26,23 @@ public class PlayerStatus : MonoBehaviour
 
     public float shooterAbility;
 
+    public GameObject playerTorso;
+
+    void adjustTorsoRotation(GameObject torso)
+    {
+        Debug.Log(Vector2.Angle(gameObject.transform.up, torso.transform.up));
+        if (Vector2.Angle(gameObject.transform.up, torso.transform.up) < 30.0f)
+        {
+            torso.transform.Rotate(Vector3.forward, gameObject.transform.rotation.z * -1.0f);
+
+        }
+        else
+        {
+            //torso.transform.Rotate(Vector3.forward, gameObject.transform.rotation.z);
+        }
+        
+    }
+
     
 
     // Start is called before the first frame update
@@ -38,7 +55,7 @@ public class PlayerStatus : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        adjustTorsoRotation(playerTorso);
     }
 
     /// <summary>
