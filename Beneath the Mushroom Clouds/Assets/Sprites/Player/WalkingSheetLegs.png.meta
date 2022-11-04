@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 6ecb46b27742d3646a09d1c26d087e9f
+guid: bab822bf61f337845ae6ea425139d90a
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -68,9 +68,9 @@ TextureImporter:
   - serializedVersion: 3
     buildTarget: DefaultTexturePlatform
     maxTextureSize: 2048
-    resizeAlgorithm: 1
+    resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 2
+    textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -105,7 +105,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: WalkSheetTorso_0
+      name: WalkingSheetLegs_0
       rect:
         serializedVersion: 2
         x: 0
@@ -119,14 +119,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 70443d3cf537bd14396163012f80d21f
-      internalID: 1353468809
+      spriteID: a11576854b2a61c469f645345f4c6ae1
+      internalID: 1003733549
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: WalkSheetTorso_1
+      name: WalkingSheetLegs_1
       rect:
         serializedVersion: 2
         x: 60
@@ -140,14 +140,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 34ebb80391185b6479250c05efd0b3d9
-      internalID: 1215805379
+      spriteID: 0f1c577ca776db54e8fa70278d82cb02
+      internalID: 1431621636
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: WalkSheetTorso_2
+      name: WalkingSheetLegs_2
       rect:
         serializedVersion: 2
         x: 120
@@ -161,14 +161,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 922be2196a18ab14baad5cdd8a7a0a2c
-      internalID: -988493020
+      spriteID: f63f17da2fe3fa54d9afe74aea66b05a
+      internalID: 908044078
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: WalkSheetTorso_3
+      name: WalkingSheetLegs_3
       rect:
         serializedVersion: 2
         x: 180
@@ -182,14 +182,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: aacc264364a5ec043baaa964c43b4218
-      internalID: -635499721
+      spriteID: 4944cbe4de369df468730ec82487ee9b
+      internalID: -1084735499
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: WalkSheetTorso_4
+      name: WalkingSheetLegs_4
       rect:
         serializedVersion: 2
         x: 240
@@ -203,8 +203,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 211017150124d094aa41942ef4e4ef78
-      internalID: -1760613257
+      spriteID: a753395b50e9a5641943e572d3a095d8
+      internalID: 72697135
       vertices: []
       indices: 
       edges: []
@@ -220,11 +220,11 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      WalkSheetTorso_3: -635499721
-      WalkSheetTorso_0: 1353468809
-      WalkSheetTorso_2: -988493020
-      WalkSheetTorso_4: -1760613257
-      WalkSheetTorso_1: 1215805379
+      WalkingSheetLegs_1: 1431621636
+      WalkingSheetLegs_4: 72697135
+      WalkingSheetLegs_3: -1084735499
+      WalkingSheetLegs_0: 1003733549
+      WalkingSheetLegs_2: 908044078
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0
