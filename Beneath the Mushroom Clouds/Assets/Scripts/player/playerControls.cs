@@ -19,11 +19,18 @@ public class PlayerControls : MonoBehaviour
     public PlayerStatus status;
     private GameInputActions inputActions;
 
+    public GameObject playerTorso;
+    public GameObject playerLegs;
+
     private float crouchSpeed = 20.0f;
     private float walkSpeed = 50.0f;
     private float sprintSpeed = 100.0f;
 
     private Vector2 movementInput;
+
+    private Animator torsoAnimator;
+    private Animator legsAnimator;
+    private Quaternion prevTorsoRotation;
 
     private void Awake()
     {
@@ -54,11 +61,17 @@ public class PlayerControls : MonoBehaviour
         inputActions.Player.Sprint.started += SprintToggle;
         inputActions.Player.Sprint.canceled += SprintToggle;
         playerRigidbody = GetComponent<Rigidbody2D>();
+
+        prevTorsoRotation = playerTorso.transform.rotation;
+        torsoAnimator = playerTorso.GetComponent<Animator>();
+        legsAnimator = playerLegs.GetComponent<Animator>();
     }
 
     void Update()
     {
         movementInput = inputActions.Player.Move.ReadValue<Vector2>();
+        animateTorso(playerTorso);
+        animateLegs(playerLegs);
     }
 
     // Update is called once per frame
@@ -82,6 +95,7 @@ public class PlayerControls : MonoBehaviour
             status.playerAiming = false;
         }
 
+        
 
 
 
@@ -124,6 +138,58 @@ public class PlayerControls : MonoBehaviour
                 status.playerSpeed = walkSpeed;
         }
 
+    }
+
+    void setAnimatorBools(Animator animator)
+    {
+        if (movementInput == Vector2.zero)
+        {
+            animator.SetBool("isWalking", false);
+        }
+        else
+        {
+            if (!status.playerSprint && movementInput != Vector2.zero)
+            {
+                animator.SetBool("isWalking", true);
+            }
+        }
+    }
+
+    //This function makes the head of the player have a leeway of 30 degrees before rotating the torso
+    //It's meant to simulate the way humans look around, as most people also will first turn their neck and
+    //only after a few degrees will start to rotate their torso
+    void animateTorso(GameObject torso)
+    {
+        float localZRotation = torso.transform.localRotation.eulerAngles.z;
+        //If the torso is less than 30 degrees misaligned either way, do not rotate it (keep postion from previous frame)
+        //If more then set the local position of the torso to either +30 or -30 (330) degrees
+        if (localZRotation <= 30.0f && localZRotation >= 0.0f || localZRotation >= 330.0f && localZRotation <= 360.0f)
+        {
+            torso.transform.rotation = prevTorsoRotation;
+        }
+        else
+        {
+            if (localZRotation >= 30.0f && localZRotation <= 180.0f)
+            {
+                torso.transform.localRotation = Quaternion.Euler(0, 0, 29.99f); //Sliglthly lower to ensure the head does not get stuck
+            }
+            else
+            {
+                torso.transform.localRotation = Quaternion.Euler(0, 0, 330.01f); //Same as above
+            }
+        }
+        //Save current torso rotation for the next frame
+        prevTorsoRotation = torso.transform.rotation;
+
+        setAnimatorBools(torsoAnimator);
+        
+    }
+
+    //TODO: If no other issues come up with this, remove function and just use the line of code in update
+    void animateLegs(GameObject legs)
+    {
+        legs.transform.up = movementInput;
+        setAnimatorBools(legsAnimator);
     }
 
 }

@@ -26,42 +26,17 @@ public class PlayerStatus : MonoBehaviour
 
     public float shooterAbility;
 
-    public GameObject playerTorso;
+    
 
-    private Quaternion prevTorsoRotation;
+    
 
-    //This function makes the head of the player have a leeway of 30 degrees before rotating the torso
-    //It's meant to simulate the way humans look around, as most people also will first turn their neck and
-    //only after a few degrees will start to rotate their torso
-    void adjustTorsoRotation(GameObject torso)
-    {
-        float localZRotation = torso.transform.localRotation.eulerAngles.z;
-        //If the torso is less than 30 degrees misaligned either way, do not rotate it (keep postion from previous frame)
-        //If more then set the local position of the torso to either +30 or -30 (330) degrees
-        if (localZRotation <= 30.0f && localZRotation >= 0.0f || localZRotation >= 330.0f && localZRotation <= 360.0f)
-        {
-            torso.transform.rotation = prevTorsoRotation;
-        }
-        else
-        {
-            if (localZRotation >= 30.0f && localZRotation <= 180.0f)
-            {
-                torso.transform.localRotation = Quaternion.Euler(0, 0, 29.99f); //Sliglthly lower to ensure the head does not get stuck
-            }
-            else
-            {
-                torso.transform.localRotation = Quaternion.Euler(0, 0, 330.01f); //Same as above
-            }
-        }
-        //Save current torso rotation for the next frame
-        prevTorsoRotation = torso.transform.rotation;
-    }
+    
 
 
     // Start is called before the first frame update
     void Start()
     {
-        prevTorsoRotation = playerTorso.transform.rotation;
+        
         LoadPlayerStatusBars(ref playerHealth, ref playerStamina, ref playerHunger, ref playerThirst, ref playerTemp, ref playerTired);
     }
 
@@ -69,7 +44,7 @@ public class PlayerStatus : MonoBehaviour
     void Update()
     {
 
-        adjustTorsoRotation(playerTorso);
+        
     }
 
     /// <summary>

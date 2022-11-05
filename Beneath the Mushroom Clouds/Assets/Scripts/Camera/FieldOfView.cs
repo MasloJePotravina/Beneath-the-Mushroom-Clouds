@@ -130,7 +130,7 @@ public class FieldOfView : MonoBehaviour
                 
         for (int i = 0; i <= rayCount; i++)
         {
-            Vector3 vertex = new(0,0,0);
+            Vector3 vertex = origin;
             RaycastHit2D[] hits = Physics2D.RaycastAll(origin, new Vector3(Mathf.Cos(Mathf.Deg2Rad * angle), Mathf.Sin(Mathf.Deg2Rad * angle)), distance, layerMask);
 
             if (hits.Length == 0)
@@ -139,6 +139,7 @@ public class FieldOfView : MonoBehaviour
             }
             else
             {
+                
                 foreach (RaycastHit2D hit in hits)
                 {
                     if (hit.transform.CompareTag("NPC"))
@@ -152,8 +153,15 @@ public class FieldOfView : MonoBehaviour
                         break;
                     }     
                 }
+                //If ray passed an NPC but did not hit anything else, we need to set it just as if it didn't hit anything
+                if (vertex == origin)
+                {
+                    vertex = origin + new Vector3(Mathf.Cos(Mathf.Deg2Rad * angle), Mathf.Sin(Mathf.Deg2Rad * angle)) * distance;
+                }
             }
-            
+
+            if(vertex == new Vector3(5,5,5))
+                Debug.Log(hits.Length);
 
             vertices[vertexIndex] = vertex;
 
