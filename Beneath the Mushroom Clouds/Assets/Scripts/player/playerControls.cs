@@ -148,10 +148,15 @@ public class PlayerControls : MonoBehaviour
         }
         else
         {
-            if (!status.playerSprint && movementInput != Vector2.zero)
+            if (status.playerSprint)
             {
-                animator.SetBool("isWalking", true);
+                animator.SetBool("isRunning", true);
             }
+            else
+            {
+                animator.SetBool("isRunning", false);
+            }
+            animator.SetBool("isWalking", true);
         }
     }
 
