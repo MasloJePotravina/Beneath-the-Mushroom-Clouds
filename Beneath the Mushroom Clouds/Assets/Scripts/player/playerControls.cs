@@ -21,9 +21,10 @@ public class PlayerControls : MonoBehaviour
 
     public GameObject playerTorso;
     public GameObject playerLegs;
+    public GameObject playerHeadPivot;
 
     private float crouchSpeed = 20.0f;
-    private float walkSpeed = 50.0f;
+    private float walkSpeed = 30.0f;
     private float sprintSpeed = 100.0f;
 
     private Vector2 movementInput;
@@ -83,6 +84,7 @@ public class PlayerControls : MonoBehaviour
         Vector2 direction = (mouseWorldPos - (Vector2)transform.position).normalized;
         float angle = Vector2.SignedAngle(new Vector2(0, 1), direction);
         playerRigidbody.MoveRotation(angle);
+        playerHeadPivot.transform.rotation = Quaternion.LookRotation(forward: Vector3.forward, upwards: direction);
         //Change the velocity of the player according to movement
         playerRigidbody.MovePosition(playerRigidbody.position + status.playerSpeed * Time.deltaTime * movementInput);
 
