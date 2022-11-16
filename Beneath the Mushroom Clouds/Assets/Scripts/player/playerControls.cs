@@ -24,7 +24,7 @@ public class PlayerControls : MonoBehaviour
     public GameObject playerHeadPivot;
 
     private float crouchSpeed = 20.0f;
-    private float walkSpeed = 30.0f;
+    private float walkSpeed = 50.0f;
     private float sprintSpeed = 100.0f;
 
     private Vector2 movementInput;
@@ -33,9 +33,12 @@ public class PlayerControls : MonoBehaviour
     private Animator legsAnimator;
     private Quaternion prevTorsoRotation;
 
+    public bool crouchEnabled;
+
     private void Awake()
     {
         inputActions = new GameInputActions();
+        crouchEnabled = true;
     }
 
     private void OnEnable()
@@ -106,14 +109,18 @@ public class PlayerControls : MonoBehaviour
     //Crouch when standing, stand up when crouching
     private void CrouchToggle(InputAction.CallbackContext context)
     {
-        if (!status.playerCrouched)
+        if (!status.playerCrouched && crouchEnabled)
         {
             status.playerCrouched = true;
             status.playerSpeed = crouchSpeed;
+            torsoAnimator.SetTrigger("crouchedDown");
+            legsAnimator.SetTrigger("crouchedDown");
         }
-        else
+        else if(crouchEnabled)
         {
             status.playerCrouched = false;
+            torsoAnimator.SetTrigger("stoodUp");
+            legsAnimator.SetTrigger("stoodUp");
 
             if (status.playerSprint)
                 status.playerSpeed = sprintSpeed;
@@ -126,24 +133,31 @@ public class PlayerControls : MonoBehaviour
     {
         if (!status.playerSprint)
         {
-            status.playerCrouched = false;
+            //status.playerCrouched = false;
             status.playerSprint = true;
-            status.playerSpeed = sprintSpeed;
+            if (!status.playerCrouched)
+            {
+                status.playerSpeed = sprintSpeed;
+            }
+           
         }
         else
         {
             status.playerSprint = false;
 
-            if (status.playerCrouched)
-                status.playerSpeed = crouchSpeed;
-            else
+            if (!status.playerCrouched)
+            {
                 status.playerSpeed = walkSpeed;
+            }
         }
 
     }
 
+
+
     void setAnimatorBools(Animator animator)
     {
+        //Player moving
         if (movementInput == Vector2.zero)
         {
             animator.SetBool("isWalking", false);
@@ -159,6 +173,15 @@ public class PlayerControls : MonoBehaviour
                 animator.SetBool("isRunning", false);
             }
             animator.SetBool("isWalking", true);
+        }
+        //PlayerCrouching
+        if (status.playerCrouched)
+        {
+            animator.SetBool("isCrouching", true);
+        }
+        else
+        {
+            animator.SetBool("isCrouching", false);
         }
     }
 

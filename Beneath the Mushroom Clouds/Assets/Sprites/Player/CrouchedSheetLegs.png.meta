@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: a97c9946dca196a4eb2c6ebb0a9d078b
+guid: f8730504a8a400b4998f199996227907
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -105,7 +105,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: CrouchedSheedTorso_0
+      name: CrouchedSheetLegs_0
       rect:
         serializedVersion: 2
         x: 0
@@ -119,14 +119,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 2d0c98383934e5e4285a03466ce2df78
-      internalID: 1335780349
+      spriteID: 2a9018c97d37cf74cb7ebd4fd0c9f1f6
+      internalID: -121367748
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: CrouchedSheedTorso_1
+      name: CrouchedSheetLegs_1
       rect:
         serializedVersion: 2
         x: 100
@@ -140,14 +140,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 82b3930e957566149b52f264c433bab2
-      internalID: -1064281448
+      spriteID: 38d2f262b45816c488763942c441e070
+      internalID: -106621656
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: CrouchedSheedTorso_2
+      name: CrouchedSheetLegs_2
       rect:
         serializedVersion: 2
         x: 200
@@ -161,14 +161,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: f58fc04016a02804786444695b0c3936
-      internalID: -1838882660
+      spriteID: ce93005e7e0d4544b8cd65fe124b352e
+      internalID: -1300586139
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: CrouchedSheedTorso_3
+      name: CrouchedSheetLegs_3
       rect:
         serializedVersion: 2
         x: 300
@@ -182,14 +182,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: b90b3036ca2bc8044a4c26660326c6c0
-      internalID: 809534055
+      spriteID: bf55f214c4636654a8071f5bac879953
+      internalID: 206088307
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: CrouchedSheedTorso_4
+      name: CrouchedSheetLegs_4
       rect:
         serializedVersion: 2
         x: 400
@@ -203,8 +203,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 6278d3f13e7b64e4fb533a898d0ff693
-      internalID: 1238554438
+      spriteID: 64229d2e16b74944ea477b16ce6bb195
+      internalID: -1334685243
       vertices: []
       indices: 
       edges: []
@@ -220,11 +220,11 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      CrouchedSheedTorso_4: 1238554438
-      CrouchedSheedTorso_1: -1064281448
-      CrouchedSheedTorso_3: 809534055
-      CrouchedSheedTorso_2: -1838882660
-      CrouchedSheedTorso_0: 1335780349
+      CrouchedSheetLegs_0: -121367748
+      CrouchedSheetLegs_3: 206088307
+      CrouchedSheetLegs_1: -106621656
+      CrouchedSheetLegs_4: -1334685243
+      CrouchedSheetLegs_2: -1300586139
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0
