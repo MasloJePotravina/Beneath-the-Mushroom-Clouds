@@ -17,63 +17,43 @@ public class PlayerControls : MonoBehaviour
 
     private Rigidbody2D playerRigidbody;
     public PlayerStatus status;
-    private GameInputActions inputActions;
 
     public GameObject playerTorso;
     public GameObject playerLegs;
     public GameObject playerHeadPivot;
+    public GameObject playerWeapon;
 
     private float crouchSpeed = 20.0f;
     private float walkSpeed = 50.0f;
     private float sprintSpeed = 100.0f;
 
     private Vector2 movementInput;
+    private Vector2 mousePosition;
 
     private Animator torsoAnimator;
     private Animator legsAnimator;
     private Quaternion prevTorsoRotation;
+    private FirearmScript firearmScript;
 
     public bool crouchEnabled;
-
-    private void Awake()
-    {
-        inputActions = new GameInputActions();
-        crouchEnabled = true;
-    }
-
-    private void OnEnable()
-    {
-        inputActions.Player.Enable();
-    }
-
-    private void OnDisable()
-    {
-        inputActions.Player.Disable();
-        inputActions.Player.Crouch.performed -= CrouchToggle;
-
-        inputActions.Player.Sprint.started -= SprintToggle;
-        inputActions.Player.Sprint.canceled -= SprintToggle;
-    }
-
 
     // Start is called before the first frame update
     void Start()
     {
-        //Subscribe to the corouch event and call the crouch toggle function
-        inputActions.Player.Crouch.performed += CrouchToggle;
-
-        inputActions.Player.Sprint.started += SprintToggle;
-        inputActions.Player.Sprint.canceled += SprintToggle;
+        crouchEnabled = true;
         playerRigidbody = GetComponent<Rigidbody2D>();
 
         prevTorsoRotation = playerTorso.transform.rotation;
         torsoAnimator = playerTorso.GetComponent<Animator>();
         legsAnimator = playerLegs.GetComponent<Animator>();
+        firearmScript = playerWeapon.GetComponent<FirearmScript>();
+        //TODO: Temporary before inventory system is implemented
+        firearmScript.SetFirearmMode(0);
+        firearmScript.SetFirearmActive(true);
     }
 
     void Update()
     {
-        movementInput = inputActions.Player.Move.ReadValue<Vector2>();
         animateTorso(playerTorso);
         animateLegs(playerLegs);
     }
@@ -82,16 +62,24 @@ public class PlayerControls : MonoBehaviour
     void FixedUpdate()
     {
         //Get the world coordinates of the mouse
-        Vector2 mouseWorldPos = Camera.main.ScreenToWorldPoint(inputActions.Player.MousePosition.ReadValue<Vector2>());
+        Vector2 mouseWorldPos = Camera.main.ScreenToWorldPoint(mousePosition);
         //Calculate the new direction the player should face
         Vector2 direction = (mouseWorldPos - (Vector2)transform.position).normalized;
         float angle = Vector2.SignedAngle(new Vector2(0, 1), direction);
         playerRigidbody.MoveRotation(angle);
-        playerHeadPivot.transform.rotation = Quaternion.LookRotation(forward: Vector3.forward, upwards: direction);
+        playerHeadPivot.transform.rotation = Quaternion.LookRotation(Vector3.forward, direction);
         //Change the velocity of the player according to movement
         playerRigidbody.MovePosition(playerRigidbody.position + status.playerSpeed * Time.deltaTime * movementInput);
+    }
 
-        if (inputActions.Player.Aiming.ReadValue<float>() > 0.1f)
+    private void OnMove(InputValue value)
+    {
+        movementInput = value.Get<Vector2>();
+    }
+
+    private void OnAiming(InputValue value)
+    {
+        if (value.Get<float>() > 0.1f)
         {
             status.playerAiming = true;
         }
@@ -99,15 +87,17 @@ public class PlayerControls : MonoBehaviour
         {
             status.playerAiming = false;
         }
-
-        
-
-
-
     }
 
+    private void OnMousePosition(InputValue value)
+    {
+        mousePosition = value.Get<Vector2>();
+    }
+
+
+
     //Crouch when standing, stand up when crouching
-    private void CrouchToggle(InputAction.CallbackContext context)
+    private void OnCrouch()
     {
         if (!status.playerCrouched && crouchEnabled)
         {
@@ -129,7 +119,7 @@ public class PlayerControls : MonoBehaviour
         }
     }
 
-    private void SprintToggle(InputAction.CallbackContext context)
+    private void OnSprint()
     {
         if (!status.playerSprint)
         {
@@ -153,7 +143,10 @@ public class PlayerControls : MonoBehaviour
 
     }
 
-
+    private void OnFire()
+    {
+        firearmScript.PressTrigger();
+    }
 
     void setAnimatorBools(Animator animator)
     {
@@ -218,7 +211,14 @@ public class PlayerControls : MonoBehaviour
     //TODO: If no other issues come up with this, remove function and just use the line of code in update
     void animateLegs(GameObject legs)
     {
-        legs.transform.up = movementInput;
+        if (movementInput == Vector2.zero)
+        {
+            legs.transform.rotation = transform.rotation;
+        }
+        else
+        {
+            legs.transform.up = movementInput;
+        }    
         setAnimatorBools(legsAnimator);
     }
 
