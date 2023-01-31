@@ -23,10 +23,6 @@ public class PlayerControls : MonoBehaviour
     public GameObject playerHeadPivot;
     public GameObject playerWeapon;
 
-    private float crouchSpeed = 20.0f;
-    private float walkSpeed = 50.0f;
-    private float sprintSpeed = 100.0f;
-
     private Vector2 movementInput;
     private Vector2 mousePosition;
 
@@ -48,7 +44,7 @@ public class PlayerControls : MonoBehaviour
         legsAnimator = playerLegs.GetComponent<Animator>();
         firearmScript = playerWeapon.GetComponent<FirearmScript>();
         //TODO: Temporary before inventory system is implemented
-        firearmScript.SetFirearmMode(0);
+        firearmScript.SetFirearmMode(2);
         firearmScript.SetFirearmActive(true);
     }
 
@@ -75,6 +71,7 @@ public class PlayerControls : MonoBehaviour
     private void OnMove(InputValue value)
     {
         movementInput = value.Get<Vector2>();
+        status.playerMoving = movementInput != Vector2.zero;
     }
 
     private void OnAiming(InputValue value)
@@ -102,7 +99,7 @@ public class PlayerControls : MonoBehaviour
         if (!status.playerCrouched && crouchEnabled)
         {
             status.playerCrouched = true;
-            status.playerSpeed = crouchSpeed;
+            status.playerSpeed = status.crouchSpeed;
             torsoAnimator.SetTrigger("crouchedDown");
             legsAnimator.SetTrigger("crouchedDown");
         }
@@ -113,32 +110,22 @@ public class PlayerControls : MonoBehaviour
             legsAnimator.SetTrigger("stoodUp");
 
             if (status.playerSprint)
-                status.playerSpeed = sprintSpeed;
+                status.playerSpeed = status.sprintSpeed;
             else
-                status.playerSpeed = walkSpeed;
+                status.playerSpeed = status.walkSpeed;
         }
     }
 
-    private void OnSprint()
+    
+    private void OnSprint(InputValue value)
     {
-        if (!status.playerSprint)
+        if (value.isPressed)
         {
-            //status.playerCrouched = false;
-            status.playerSprint = true;
-            if (!status.playerCrouched)
-            {
-                status.playerSpeed = sprintSpeed;
-            }
-           
+            status.ToggleSprintOn();
         }
         else
         {
-            status.playerSprint = false;
-
-            if (!status.playerCrouched)
-            {
-                status.playerSpeed = walkSpeed;
-            }
+            status.ToggleSprintOff();
         }
 
     }
@@ -213,7 +200,7 @@ public class PlayerControls : MonoBehaviour
     {
         if (movementInput == Vector2.zero)
         {
-            legs.transform.rotation = transform.rotation;
+            legs.transform.rotation = playerTorso.transform.rotation;
         }
         else
         {

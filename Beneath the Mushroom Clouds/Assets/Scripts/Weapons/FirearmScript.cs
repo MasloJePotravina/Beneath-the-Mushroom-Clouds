@@ -78,14 +78,14 @@ public class FirearmScript: MonoBehaviour
             return;
         
         //Trigger is pressed
-        Vector2 aimAngle = ApplyAimErrorToRaycast(transform.parent.transform.up, CalcAimCone());
+        Vector2 BulletDeviation = ApplyAimErrorToRaycast(transform.parent.transform.up, CalcAimCone());
         switch (firearmMode)
         {
             case 0://Assault Rifle Mode
                 //Source: https://answers.unity.com/questions/761026/automatic-shooting-script.html
                 if (Time.time - lastShot > 1 / fireRate)
                 {
-                    Shoot(aimAngle);
+                    Shoot(BulletDeviation);
                     lastShot = Time.time;
                     if (consecShots < 10)
                         consecShots += 1;
@@ -96,7 +96,7 @@ public class FirearmScript: MonoBehaviour
             case 1://Pistol Mode
                 if (fireRateTimer <= 0 && !semiBlock)
                 {
-                    Shoot(aimAngle);
+                    Shoot(BulletDeviation);
                     semiBlock = true;
                     if (consecShots < 5)
                         consecShots += 1;
@@ -110,8 +110,8 @@ public class FirearmScript: MonoBehaviour
                 {
                     for (int i = 0; i < 8; i++)
                     {
-                        Vector2 pelletAimAngle = ApplyAimErrorToRaycast(aimAngle, shotgunSpread / 2);
-                        Shoot(pelletAimAngle);
+                        Vector2 pelletBulletDeviation = ApplyAimErrorToRaycast(BulletDeviation, shotgunSpread / 2);
+                        Shoot(pelletBulletDeviation);
                     }
                     semiBlock = true;
                     fireRateTimer = 1.5f;
@@ -121,7 +121,7 @@ public class FirearmScript: MonoBehaviour
             case 3://Bolt-Action Mode
                 if (fireRateTimer <= 0 && !semiBlock)
                 {
-                    Shoot(aimAngle);
+                    Shoot(BulletDeviation);
                     semiBlock = true;
                     fireRateTimer = 1.5f;
                     UpdateConeLines(CalcAimCone());
@@ -162,14 +162,14 @@ public class FirearmScript: MonoBehaviour
         
     }
 
-    private void Shoot(Vector2 aimAngle)
+    private void Shoot(Vector2 BulletDeviation)
     { 
-        hits = Physics2D.RaycastAll(muzzle.transform.position, aimAngle);
+        hits = Physics2D.RaycastAll(muzzle.transform.position, BulletDeviation);
         float halfWallDistance = -1.0f;//If the bullet passes a half wall we need to store
                                        //the distance from the wall for future calculations
         foreach (RaycastHit2D hit in hits)
         {              
-            if(hit.transform.CompareTag("Half Wall"))
+            if(hit.transform.gameObject.layer == LayerMask.NameToLayer("HalfObstacle"))
             {
                 if (!HalfWallPassed(hit.distance)) //If bullet hit the wall draw bullet line
                 {
@@ -183,7 +183,7 @@ public class FirearmScript: MonoBehaviour
                 }
             }
             //TODO:This whole implementation will be moved somewhere else
-            if (hit.transform.CompareTag("NPC"))
+            if (hit.transform.gameObject.layer == LayerMask.NameToLayer("NPC"))
             {
                 if(NPCHit(halfWallDistance, hit))
                 {
@@ -283,7 +283,7 @@ public class FirearmScript: MonoBehaviour
             if (hit.distance <= 50.0f) //A crouched enemy will be hit 100% of the time from distance < 5m
             {
                 Debug.Log(hitChance);
-                if (Random.value < 1.0f * hitChance)
+                if (Random.value < hitChance)
                     return true;
                 else
                     return false;
@@ -329,16 +329,16 @@ public class FirearmScript: MonoBehaviour
     }
     //Applies the random error within the confines of the cone to the bullet
     //Degrees represent half the angle of the cone (15 degree -> 30degree cone)
-    public Vector2 ApplyAimErrorToRaycast(Vector2 aimAngle, float degrees)
+    public Vector2 ApplyAimErrorToRaycast(Vector2 BulletDeviation, float degrees)
     {
 
         degrees = Random.Range(0, degrees);
 
         //The bullet either deviates to the right or the left
         if (Random.value <= 0.5f)
-            return Quaternion.Euler(0, 0, -degrees) * aimAngle;
+            return Quaternion.Euler(0, 0, -degrees) * BulletDeviation;
         else
-            return Quaternion.Euler(0, 0, degrees) * aimAngle;
+            return Quaternion.Euler(0, 0, degrees) * BulletDeviation;
 
     }
 
