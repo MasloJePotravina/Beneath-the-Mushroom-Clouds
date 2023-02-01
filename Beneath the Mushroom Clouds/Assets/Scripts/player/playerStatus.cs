@@ -47,6 +47,7 @@ public class PlayerStatus : MonoBehaviour
     private GameObject healthBarFill, staminaBarFill, hungerBarFill, thirstBarFill, tirednessBarFill;
     private RectTransform healthBarFillRect, staminaBarFillRect, hungerBarFillRect, thirstBarFillRect, tirednessBarFillRect;
     private Image staminaBarFillImage;
+    private GameObject[] healthArrows, staminaArrows, hungerArrows, thirstArrows, tirednessArrows;
 
     
     
@@ -116,6 +117,21 @@ public class PlayerStatus : MonoBehaviour
 
         staminaBarFillImage = staminaBarFill.GetComponent<Image>();
 
+        healthArrows = new GameObject[6];
+        staminaArrows = new GameObject[6];
+        hungerArrows = new GameObject[6];
+        thirstArrows = new GameObject[6];
+        tirednessArrows = new GameObject[6];
+
+
+        for(int i = 0; i < 6; i++){
+            //healthArrows[i] = healthBarFill.transform.Find("Arrow" + (i+1)).gameObject;
+            staminaArrows[i] = staminaBarFill.transform.Find("Arrow" + (i+1)).gameObject;
+            //hungerArrows[i] = hungerBarFill.transform.Find("Arrow" + (i+1)).gameObject;
+            //thirstArrows[i] = thirstBarFill.transform.Find("Arrow" + (i+1)).gameObject;
+            //tirednessArrows[i] = tirednessBarFill.transform.Find("Arrow" + (i+1)).gameObject;
+        }
+
     }
 
     /// <summary>
@@ -182,7 +198,7 @@ public class PlayerStatus : MonoBehaviour
     }
 
     //TODO: Iplement weight debuff
-    public void UpdateStamina(bool running)
+    public float UpdateStamina(bool running)
     {
         float drain;
         if(running)
@@ -195,25 +211,80 @@ public class PlayerStatus : MonoBehaviour
             playerStamina = 0;
             ToggleSprintOff();
             staminaDepleted = true;
-            return;
+            return 0;
         }else if(drain < 0 && playerStamina >= 100)
         {
             playerStamina = 100;
-            return;
+            return 0;
         }
         playerStamina -= (drain * Time.deltaTime);
         if (playerStamina > 20)
         {
             staminaDepleted = false;
         }
+        return drain;
     }
 
-    private void UpdateUIBars(){
-        staminaBarFillRect.offsetMax = new Vector2(-3-(400-4*playerStamina), 7.5f);
+    public void ArrowEdges(){
+        if(playerStamina <= 6){
+            staminaArrows[2].SetActive(false);
+            staminaArrows[5].SetActive(false);
+        }
+        if(playerStamina <= 4){
+            staminaArrows[1].SetActive(false);
+            staminaArrows[4].SetActive(false);
+        }
+        if(playerStamina <= 2){
+            staminaArrows[0].SetActive(false);
+            staminaArrows[3].SetActive(false);
+        }
+    }
+
+    public void StaminaUIArrowsRegen(float drain){
+        staminaArrows[0].SetActive(false);
+        staminaArrows[1].SetActive(false);
+        staminaArrows[2].SetActive(false);
+        for(int i = 3; i < 6; i++){
+            if(drain < -((i-3)*baseStaminaRegen)){
+                staminaArrows[i].SetActive(true);
+            }else{
+                staminaArrows[i].SetActive(false);
+            }
+        }
+    }
+
+    public void StaminaUIArrowsDrain(float drain){
+        staminaArrows[3].SetActive(false);
+        staminaArrows[4].SetActive(false);
+        staminaArrows[5].SetActive(false);
+        for(int i = 0; i < 3; i++){
+            if(drain > i*baseStaminaDrain){
+                staminaArrows[i].SetActive(true);
+            }else{
+                staminaArrows[i].SetActive(false);
+            }
+        }
+    }
+
+    private void UpdateStaminaUI(float drain){
+        staminaBarFillRect.offsetMax = new Vector2(-2-(400-4*playerStamina), 7.5f);
         if(playerStamina <= 20)
             staminaBarFillImage.color = new Color32(255, 54, 54, 255);
         else
             staminaBarFillImage.color = new Color32(137, 255, 112, 255);
+
+        if(drain > 0){
+            StaminaUIArrowsDrain(drain);
+        }else{
+            StaminaUIArrowsRegen(drain);
+        }
+            
+
+    }
+
+    private void UpdateUIBars(float staminaDrain){
+        UpdateStaminaUI(staminaDrain);
+        ArrowEdges();
         
     }
 
@@ -223,7 +294,7 @@ public class PlayerStatus : MonoBehaviour
         UpdateHunger(playerHypothermia, running);
         UpdateThirst(playerHyperthermia, running);
         UpdateTiredness(running);
-        UpdateStamina(running);
-        UpdateUIBars();
+        float staminaDrain = UpdateStamina(running);
+        UpdateUIBars(staminaDrain);
     }
 }
