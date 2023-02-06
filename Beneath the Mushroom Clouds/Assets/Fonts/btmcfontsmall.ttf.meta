@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 411519500b5e68a498e4b44fe152cdea
+guid: 1f0471650f93687429c9afe3ee6b4a56
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
@@ -9,10 +9,10 @@ TrueTypeFontImporter:
   characterPadding: 1
   includeFontData: 1
   fontNames:
-  - BTMCFontFill
+  - BTMCFontSmall
   fallbackFontReferences: []
   customCharacters: 
-  fontRenderingMode: 0
+  fontRenderingMode: 2
   ascentCalculationMode: 1
   useLegacyBoundsCalculation: 0
   shouldRoundAdvanceValue: 1
