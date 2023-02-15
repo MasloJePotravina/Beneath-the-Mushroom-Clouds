@@ -18,6 +18,7 @@ public class PlayerControls : MonoBehaviour
     private Rigidbody2D playerRigidbody;
     public PlayerStatus status;
 
+
     public GameObject playerTorso;
     public GameObject playerLegs;
     public GameObject playerHeadPivot;
@@ -30,12 +31,17 @@ public class PlayerControls : MonoBehaviour
     private Animator legsAnimator;
     private Quaternion prevTorsoRotation;
     private FirearmScript firearmScript;
+    private PlayerInput playerInput;
+
+    [SerializeField] GameObject inventoryScreen;
 
     public bool crouchEnabled;
 
     // Start is called before the first frame update
     void Start()
     {
+        playerInput = GetComponent<PlayerInput>();
+
         crouchEnabled = true;
         playerRigidbody = GetComponent<Rigidbody2D>();
 
@@ -57,6 +63,12 @@ public class PlayerControls : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
+        //If the inventory screen is active, do not update the player's position and rotation
+        //Removing this causes a bug wherethe player will always look to lower left corner of the screen in inventory
+        //Also wastes resources for no reason
+        if(inventoryScreen.activeSelf)
+            return;
+        
         //Get the world coordinates of the mouse
         Vector2 mouseWorldPos = Camera.main.ScreenToWorldPoint(mousePosition);
         //Calculate the new direction the player should face
@@ -70,12 +82,16 @@ public class PlayerControls : MonoBehaviour
 
     private void OnMove(InputValue value)
     {
+        
+
         movementInput = value.Get<Vector2>();
         status.playerMoving = movementInput != Vector2.zero;
     }
 
     private void OnAiming(InputValue value)
     {
+        
+
         if (value.Get<float>() > 0.1f)
         {
             status.playerAiming = true;
@@ -96,6 +112,8 @@ public class PlayerControls : MonoBehaviour
     //Crouch when standing, stand up when crouching
     private void OnCrouch()
     {
+        
+
         if (!status.playerCrouched && crouchEnabled)
         {
             status.playerCrouched = true;
@@ -119,6 +137,8 @@ public class PlayerControls : MonoBehaviour
     
     private void OnSprint(InputValue value)
     {
+        
+
         if (value.isPressed)
         {
             status.ToggleSprintOn();
@@ -132,6 +152,8 @@ public class PlayerControls : MonoBehaviour
 
     private void OnFire()
     {
+        
+
         firearmScript.PressTrigger();
     }
 
@@ -207,6 +229,22 @@ public class PlayerControls : MonoBehaviour
             legs.transform.up = movementInput;
         }    
         setAnimatorBools(legsAnimator);
+    }
+
+    void OnOpenInventory()
+    {
+        
+        
+        playerInput.SwitchCurrentActionMap("UI");
+        inventoryScreen.SetActive(true);
+
+        
+    }
+
+    void OnCloseInventory()
+    {
+        playerInput.SwitchCurrentActionMap("Player");
+        inventoryScreen.SetActive(false);
     }
 
 }
