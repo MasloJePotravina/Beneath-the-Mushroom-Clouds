@@ -227,6 +227,24 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""LeftClick"",
+                    ""type"": ""Button"",
+                    ""id"": ""28dbc86e-86fc-4d2c-a7c2-eae8643c288d"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": ""Press(behavior=2)"",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""DebugSpawnItem"",
+                    ""type"": ""Button"",
+                    ""id"": ""b918b319-94e3-4301-a551-50aeb78b4314"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -238,6 +256,28 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""CloseInventory"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""088a3171-3385-428e-978e-b8f500368dc5"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""LeftClick"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""c1b6a322-d3e3-42d9-86a0-242710c12a1b"",
+                    ""path"": ""<Keyboard>/q"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""DebugSpawnItem"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -258,6 +298,8 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_CloseInventory = m_UI.FindAction("CloseInventory", throwIfNotFound: true);
+        m_UI_LeftClick = m_UI.FindAction("LeftClick", throwIfNotFound: true);
+        m_UI_DebugSpawnItem = m_UI.FindAction("DebugSpawnItem", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -399,11 +441,15 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
     private readonly InputActionMap m_UI;
     private IUIActions m_UIActionsCallbackInterface;
     private readonly InputAction m_UI_CloseInventory;
+    private readonly InputAction m_UI_LeftClick;
+    private readonly InputAction m_UI_DebugSpawnItem;
     public struct UIActions
     {
         private @GameInputActions m_Wrapper;
         public UIActions(@GameInputActions wrapper) { m_Wrapper = wrapper; }
         public InputAction @CloseInventory => m_Wrapper.m_UI_CloseInventory;
+        public InputAction @LeftClick => m_Wrapper.m_UI_LeftClick;
+        public InputAction @DebugSpawnItem => m_Wrapper.m_UI_DebugSpawnItem;
         public InputActionMap Get() { return m_Wrapper.m_UI; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -416,6 +462,12 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
                 @CloseInventory.started -= m_Wrapper.m_UIActionsCallbackInterface.OnCloseInventory;
                 @CloseInventory.performed -= m_Wrapper.m_UIActionsCallbackInterface.OnCloseInventory;
                 @CloseInventory.canceled -= m_Wrapper.m_UIActionsCallbackInterface.OnCloseInventory;
+                @LeftClick.started -= m_Wrapper.m_UIActionsCallbackInterface.OnLeftClick;
+                @LeftClick.performed -= m_Wrapper.m_UIActionsCallbackInterface.OnLeftClick;
+                @LeftClick.canceled -= m_Wrapper.m_UIActionsCallbackInterface.OnLeftClick;
+                @DebugSpawnItem.started -= m_Wrapper.m_UIActionsCallbackInterface.OnDebugSpawnItem;
+                @DebugSpawnItem.performed -= m_Wrapper.m_UIActionsCallbackInterface.OnDebugSpawnItem;
+                @DebugSpawnItem.canceled -= m_Wrapper.m_UIActionsCallbackInterface.OnDebugSpawnItem;
             }
             m_Wrapper.m_UIActionsCallbackInterface = instance;
             if (instance != null)
@@ -423,6 +475,12 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
                 @CloseInventory.started += instance.OnCloseInventory;
                 @CloseInventory.performed += instance.OnCloseInventory;
                 @CloseInventory.canceled += instance.OnCloseInventory;
+                @LeftClick.started += instance.OnLeftClick;
+                @LeftClick.performed += instance.OnLeftClick;
+                @LeftClick.canceled += instance.OnLeftClick;
+                @DebugSpawnItem.started += instance.OnDebugSpawnItem;
+                @DebugSpawnItem.performed += instance.OnDebugSpawnItem;
+                @DebugSpawnItem.canceled += instance.OnDebugSpawnItem;
             }
         }
     }
@@ -440,5 +498,7 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
     public interface IUIActions
     {
         void OnCloseInventory(InputAction.CallbackContext context);
+        void OnLeftClick(InputAction.CallbackContext context);
+        void OnDebugSpawnItem(InputAction.CallbackContext context);
     }
 }
