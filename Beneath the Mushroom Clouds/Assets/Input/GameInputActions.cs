@@ -245,6 +245,15 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""RotateItem"",
+                    ""type"": ""Button"",
+                    ""id"": ""dacb42d0-de11-4c87-a8df-6f0045569c12"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -280,6 +289,17 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
                     ""action"": ""DebugSpawnItem"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""4c6c579d-ee0a-469f-9ef3-6cb11e71e74c"",
+                    ""path"": ""<Keyboard>/r"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""RotateItem"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -300,6 +320,7 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
         m_UI_CloseInventory = m_UI.FindAction("CloseInventory", throwIfNotFound: true);
         m_UI_LeftClick = m_UI.FindAction("LeftClick", throwIfNotFound: true);
         m_UI_DebugSpawnItem = m_UI.FindAction("DebugSpawnItem", throwIfNotFound: true);
+        m_UI_RotateItem = m_UI.FindAction("RotateItem", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -443,6 +464,7 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
     private readonly InputAction m_UI_CloseInventory;
     private readonly InputAction m_UI_LeftClick;
     private readonly InputAction m_UI_DebugSpawnItem;
+    private readonly InputAction m_UI_RotateItem;
     public struct UIActions
     {
         private @GameInputActions m_Wrapper;
@@ -450,6 +472,7 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
         public InputAction @CloseInventory => m_Wrapper.m_UI_CloseInventory;
         public InputAction @LeftClick => m_Wrapper.m_UI_LeftClick;
         public InputAction @DebugSpawnItem => m_Wrapper.m_UI_DebugSpawnItem;
+        public InputAction @RotateItem => m_Wrapper.m_UI_RotateItem;
         public InputActionMap Get() { return m_Wrapper.m_UI; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -468,6 +491,9 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
                 @DebugSpawnItem.started -= m_Wrapper.m_UIActionsCallbackInterface.OnDebugSpawnItem;
                 @DebugSpawnItem.performed -= m_Wrapper.m_UIActionsCallbackInterface.OnDebugSpawnItem;
                 @DebugSpawnItem.canceled -= m_Wrapper.m_UIActionsCallbackInterface.OnDebugSpawnItem;
+                @RotateItem.started -= m_Wrapper.m_UIActionsCallbackInterface.OnRotateItem;
+                @RotateItem.performed -= m_Wrapper.m_UIActionsCallbackInterface.OnRotateItem;
+                @RotateItem.canceled -= m_Wrapper.m_UIActionsCallbackInterface.OnRotateItem;
             }
             m_Wrapper.m_UIActionsCallbackInterface = instance;
             if (instance != null)
@@ -481,6 +507,9 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
                 @DebugSpawnItem.started += instance.OnDebugSpawnItem;
                 @DebugSpawnItem.performed += instance.OnDebugSpawnItem;
                 @DebugSpawnItem.canceled += instance.OnDebugSpawnItem;
+                @RotateItem.started += instance.OnRotateItem;
+                @RotateItem.performed += instance.OnRotateItem;
+                @RotateItem.canceled += instance.OnRotateItem;
             }
         }
     }
@@ -500,5 +529,6 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
         void OnCloseInventory(InputAction.CallbackContext context);
         void OnLeftClick(InputAction.CallbackContext context);
         void OnDebugSpawnItem(InputAction.CallbackContext context);
+        void OnRotateItem(InputAction.CallbackContext context);
     }
 }

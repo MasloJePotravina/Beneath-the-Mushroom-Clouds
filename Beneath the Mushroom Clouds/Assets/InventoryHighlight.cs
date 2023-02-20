@@ -7,7 +7,7 @@ public class InventoryHighlight : MonoBehaviour
     [SerializeField] RectTransform highlighter;
 
     public void SetSize(InventoryItem targetItem){
-        highlighter.sizeDelta = new Vector2(targetItem.itemData.width * ItemGrid.tileDimension, targetItem.itemData.height * ItemGrid.tileDimension);
+        highlighter.sizeDelta = new Vector2(targetItem.Width * ItemGrid.tileDimension, targetItem.Height * ItemGrid.tileDimension);
     }
 
     public void Show(bool show){
@@ -34,5 +34,9 @@ public class InventoryHighlight : MonoBehaviour
         Vector2 pos = targetGrid.CalculateGridPosition(targetItem, posX, posY);
 
         highlighter.localPosition = pos;
+    }
+
+    public void SetColor(Color color){
+        highlighter.GetComponent<UnityEngine.UI.Image>().color = color;
     }
 }

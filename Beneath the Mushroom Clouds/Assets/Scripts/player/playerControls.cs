@@ -20,6 +20,8 @@ public class PlayerControls : MonoBehaviour
 
     public GameObject mainCamera;
 
+    [SerializeField] private GameObject inventoryScreen;
+
 
     public GameObject playerTorso;
     public GameObject playerLegs;
@@ -35,8 +37,8 @@ public class PlayerControls : MonoBehaviour
     private FirearmScript firearmScript;
     private PlayerInput playerInput;
 
-    [SerializeField] GameObject inventoryScreen;
-    private InventoryController inventoryController;
+    
+    
 
     public bool crouchEnabled;
 
@@ -45,7 +47,7 @@ public class PlayerControls : MonoBehaviour
     {
         playerInput = GetComponent<PlayerInput>();
 
-        inventoryController = mainCamera.GetComponent<InventoryController>();
+        
 
         crouchEnabled = true;
         playerRigidbody = GetComponent<Rigidbody2D>();
@@ -236,34 +238,6 @@ public class PlayerControls : MonoBehaviour
         setAnimatorBools(legsAnimator);
     }
 
-    void OnOpenInventory()
-    {
-        
-        
-        playerInput.SwitchCurrentActionMap("UI");
-        inventoryScreen.SetActive(true);
-        mainCamera.GetComponent<InventoryController>().inventoryOpen = true;
-
-        
-    }
-
-    void OnCloseInventory()
-    {
-        playerInput.SwitchCurrentActionMap("Player");
-        inventoryScreen.SetActive(false);
-        mainCamera.GetComponent<InventoryController>().inventoryOpen = false;
-    }
-
-    //UI action map funtion
-    void OnLeftClick(InputValue value)
-    {
-        inventoryController.InventoryLeftClick(value);
-    }
-
-    //TODO: Debug only, remove later
-    void OnDebugSpawnItem()
-    {
-        inventoryController.SpawnItem();
-    }
+    
 
 }

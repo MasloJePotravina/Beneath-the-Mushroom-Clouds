@@ -10,7 +10,7 @@ public class ItemGrid : MonoBehaviour
     InventoryItem[,] inventorySlot;
 
 
-    RectTransform rectTransform;
+    public RectTransform rectTransform;
 
     [SerializeField] int gridWidth;
     [SerializeField] int gridHeight;
@@ -77,6 +77,9 @@ public class ItemGrid : MonoBehaviour
     }
 
     public InventoryItem GetItem(int posX, int posY){
+        if(posX > gridWidth-1 || posY > gridHeight-1 || posX < 0 || posY < 0){
+            return null;
+        }
         return inventorySlot[posX, posY];
     }
 
@@ -87,8 +90,8 @@ public class ItemGrid : MonoBehaviour
             return null;
         }
         
-        for(int x = 0; x < item.itemData.width; x++){
-            for(int y = 0; y < item.itemData.height; y++){
+        for(int x = 0; x < item.Width; x++){
+            for(int y = 0; y < item.Height; y++){
                 inventorySlot[item.gridPositionX + x, item.gridPositionY + y] = null;
             }
         }
@@ -98,19 +101,19 @@ public class ItemGrid : MonoBehaviour
 
     public bool PlaceItem(InventoryItem item, int posX, int posY){
 
-        if(!BoundaryCheck(posX, posY, item.itemData.width, item.itemData.height)){
+        if(!BoundaryCheck(posX, posY, item.Width, item.Height)){
             return false;
         }
 
-        if(!OverlapCheck(posX, posY, item.itemData.width, item.itemData.height)){
+        if(!OverlapCheck(posX, posY, item.Width, item.Height)){
             return false;
         }
 
         RectTransform itemRectTransform = item.GetComponent<RectTransform>();
         itemRectTransform.SetParent(rectTransform);
 
-        for(int x = 0; x < item.itemData.width; x++){
-            for(int y = 0; y < item.itemData.height; y++){
+        for(int x = 0; x < item.Width; x++){
+            for(int y = 0; y < item.Height; y++){
                 inventorySlot[posX + x, posY + y] = item;
             }
         }
@@ -123,11 +126,6 @@ public class ItemGrid : MonoBehaviour
 
         itemRectTransform.localPosition = position;
 
-        //Items have to be resized if the resolution is different from 1920x1080
-        if(Screen.width != 1920 || Screen.height != 1080){
-            float newTileDimension = tileDimension * (Screen.width/1920f);
-            itemRectTransform.sizeDelta = new Vector2(item.itemData.width * newTileDimension, item.itemData.height * newTileDimension);
-        }
 
         return true;
 
@@ -136,8 +134,8 @@ public class ItemGrid : MonoBehaviour
 
     public Vector2 CalculateGridPosition(InventoryItem item, int posX, int posY){
         Vector2 position = new Vector2();
-        position.x = posX * tileDimension + (tileDimension * item.itemData.width) / 2;
-        position.y = -(posY * tileDimension + (tileDimension * item.itemData.height) / 2);
+        position.x = posX * tileDimension + (tileDimension * item.Width) / 2;
+        position.y = -(posY * tileDimension + (tileDimension * item.Height) / 2);
         return position;
     }
 
@@ -163,7 +161,7 @@ public class ItemGrid : MonoBehaviour
         return true;
     }
 
-    bool OverlapCheck(int posX, int posY, int width, int height){
+    public bool OverlapCheck(int posX, int posY, int width, int height){
         for(int x = 0; x < width; x++){
             for(int y = 0; y < height; y++){
                 if(inventorySlot[posX + x, posY + y] != null){

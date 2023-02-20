@@ -20,6 +20,19 @@ public class InventoryController : MonoBehaviour
         }
     }
 
+    private ItemSlot selectedSlot;
+
+    public ItemSlot SelectedSlot{
+        get{
+            return selectedSlot;
+        }
+        set{
+            selectedSlot = value;
+        }
+    }
+
+    
+
     private InventoryItem selectedItem;
     private InventoryItem highlightedItem;
     RectTransform rectTransform;
@@ -29,7 +42,6 @@ public class InventoryController : MonoBehaviour
     [SerializeField] Transform canvasTransform;
 
     InventoryHighlight highlighter;
-    Vector2Int higlighterOldPos;
 
 
     private void Awake() {
@@ -49,6 +61,9 @@ public class InventoryController : MonoBehaviour
 
         if(selectedItem != null){
             rectTransform.position = Input.mousePosition;
+
+            rectTransform.SetParent(canvasTransform);
+            rectTransform.SetAsLastSibling();
         }
 
         HighlightItem();
@@ -57,6 +72,9 @@ public class InventoryController : MonoBehaviour
 
     //TODO: Debug only, remove later
     public void SpawnItem(){
+        if(selectedItem != null){
+            return;
+        }
         InventoryItem item = Instantiate(itemPrefab).GetComponent<InventoryItem>();
         selectedItem = item;
         rectTransform = item.GetComponent<RectTransform>();
@@ -68,30 +86,55 @@ public class InventoryController : MonoBehaviour
     }
 
     public void InventoryLeftClick(InputValue value){
-        if(selectedGrid == null){
+        if(selectedGrid == null && selectedSlot == null){
             return;
         }
 
-        Vector2Int tilePosition = GetTilePosition();
+        if(selectedGrid != null){
+            Vector2Int tilePosition = GetTilePosition();
 
-        if(selectedItem == null){
-            GrabItem(value, tilePosition.x, tilePosition.y);
-        }else{
-            PlaceItem(value, tilePosition.x, tilePosition.y);  
+            if(selectedItem == null){
+                GrabItemFromGrid(value, tilePosition.x, tilePosition.y);
+            }else{
+                PlaceItemToGrid(value, tilePosition.x, tilePosition.y);  
+            }
+        }else if(selectedSlot != null){
+            if(selectedItem == null){
+                GrabItemFromSlot(value);
+            }else{
+                PlaceItemToSlot(value);
+            }
         }
 
     }
 
-    private void GrabItem(InputValue value, int posX, int posY){
+    private void GrabItemFromSlot(InputValue value){
         if(value.isPressed){
-            selectedItem = selectedGrid.GrabItem(posX, posY);
+            selectedItem = selectedSlot.GrabItem();
             if(selectedItem != null){
                 rectTransform = selectedItem.GetComponent<RectTransform>();
+                rectTransform.SetAsLastSibling();
             }
         }
     }
 
-    private void PlaceItem(InputValue value, int posX, int posY){
+    private void PlaceItemToSlot(InputValue value){
+        if(selectedSlot.PlaceItem(selectedItem)){
+            selectedItem = null;
+        }
+    }
+
+    private void GrabItemFromGrid(InputValue value, int posX, int posY){
+        if(value.isPressed){
+            selectedItem = selectedGrid.GrabItem(posX, posY);
+            if(selectedItem != null){
+                rectTransform = selectedItem.GetComponent<RectTransform>();
+                rectTransform.SetAsLastSibling();
+            }
+        }
+    }
+
+    private void PlaceItemToGrid(InputValue value, int posX, int posY){
         if(selectedGrid.PlaceItem(selectedItem, posX, posY)){
             selectedItem = null;
         }
@@ -103,16 +146,16 @@ public class InventoryController : MonoBehaviour
             return;
         }
 
+
         Vector2Int positionOnGrid = GetTilePosition();
-        if(positionOnGrid == higlighterOldPos){
-            return;
-        }
+
         if(selectedItem == null)
         {
             highlightedItem = selectedGrid.GetItem(positionOnGrid.x, positionOnGrid.y);
             if(highlightedItem != null){
                 highlighter.SetSize(highlightedItem);
                 highlighter.SetPosition(selectedGrid, highlightedItem);
+                highlighter.SetColor(Color.white);
                 highlighter.Show(true);
             }else{
                 highlighter.Show(false);
@@ -120,7 +163,20 @@ public class InventoryController : MonoBehaviour
         }else{
             highlighter.SetSize(selectedItem);
             highlighter.SetPosition(selectedGrid, selectedItem, positionOnGrid.x, positionOnGrid.y);
-            highlighter.Show(selectedGrid.BoundaryCheck(positionOnGrid.x, positionOnGrid.y, selectedItem.itemData.width, selectedItem.itemData.height));
+
+
+            if(selectedGrid.BoundaryCheck(positionOnGrid.x, positionOnGrid.y, selectedItem.Width, selectedItem.Height)){
+                if(selectedGrid.OverlapCheck(positionOnGrid.x, positionOnGrid.y, selectedItem.Width, selectedItem.Height)){
+                    highlighter.SetColor(Color.green);
+                }else{
+                    highlighter.SetColor(Color.red);
+                }
+            }else{
+                highlighter.SetColor(Color.red);
+            }
+            
+
+            highlighter.Show(selectedGrid.BoundaryCheck(positionOnGrid.x, positionOnGrid.y, selectedItem.Width, selectedItem.Height));
         }
     }
 
@@ -128,11 +184,20 @@ public class InventoryController : MonoBehaviour
         //Mouse offset when dragging item
         Vector2 position = Input.mousePosition;
         if(selectedItem != null){
-            position.x -= (selectedItem.itemData.width - 1) * (ItemGrid.tileDimension/2);
-            position.y += (selectedItem.itemData.height - 1) * (ItemGrid.tileDimension/2);
+            position.x -= (selectedItem.Width - 1) * (ItemGrid.tileDimension/2);
+            position.y += (selectedItem.Height - 1) * (ItemGrid.tileDimension/2);
         }
 
         return selectedGrid.GetTilePosition(position);
+    }
+
+    public void RotateItem(){
+        if(selectedItem == null){
+            return;
+        }
+
+        selectedItem.Rotate();
+
     }
 
     
