@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ItemSlot : MonoBehaviour
 {
@@ -8,14 +9,18 @@ public class ItemSlot : MonoBehaviour
 
     InventoryItem item;
     RectTransform rectTransform;
+    Image image;
 
     float slotWidth;
     float slotHeight;
     float slotRatio;
 
+    [SerializeField] private int equipmentType;
+
 
     private void Awake() {
         rectTransform = GetComponent<RectTransform>();
+        image = GetComponent<Image>();
         slotWidth = rectTransform.sizeDelta.x - 0.20f * rectTransform.sizeDelta.x;
         slotHeight = rectTransform.sizeDelta.y - 0.20f * rectTransform.sizeDelta.y;
         slotRatio = slotWidth / slotHeight;
@@ -26,6 +31,12 @@ public class ItemSlot : MonoBehaviour
         if(this.item != null){
             return false;
         }
+
+        if(item.itemData.equipmentType != equipmentType){
+            if(item.itemData.equipmentType != 12 || equipmentType != 11)
+                return false;
+        }
+        
         this.item = item;
         RectTransform itemRectTransform = item.GetComponent<RectTransform>();
         itemRectTransform.SetParent(rectTransform);
@@ -62,6 +73,9 @@ public class ItemSlot : MonoBehaviour
     }
 
     private void GrabResizeItem(InventoryItem item){
+        if(item == null){
+            return;
+        }
         RectTransform itemRectTransform = item.GetComponent<RectTransform>();
         itemRectTransform.sizeDelta = new Vector2(item.Width * ItemGrid.tileDimension, item.Height * ItemGrid.tileDimension);
     }

@@ -5,21 +5,25 @@ using UnityEngine;
 public class ItemGrid : MonoBehaviour
 {
 
+    public InventoryItem parentItem = null;
+
     public const float tileDimension = 64;
 
-    InventoryItem[,] inventorySlot;
+    private InventoryItem[,] inventorySlot;
 
 
     public RectTransform rectTransform;
 
-    [SerializeField] int gridWidth;
-    [SerializeField] int gridHeight;
+    public int gridWidth;
+    public int gridHeight;
 
 
     void Start()
     {
         rectTransform = GetComponent<RectTransform>();
         Init(gridWidth, gridHeight);
+
+        LoadItems(parentItem);
 
    
     }
@@ -29,6 +33,28 @@ public class ItemGrid : MonoBehaviour
         inventorySlot = new InventoryItem[width, height];
         Vector2 size = new Vector2(width * tileDimension, height * tileDimension);
         rectTransform.sizeDelta = size;
+    }
+
+    private void LoadItems(InventoryItem parentItem)
+    {
+        if(parentItem == null)
+            return;
+        inventorySlot = parentItem.LoadGrid(transform.GetSiblingIndex());
+        foreach(InventoryItem item in inventorySlot){
+            if(item != null){
+                item.transform.SetParent(transform);
+                item.transform.localPosition = CalculateGridPosition(item, item.gridPositionX, item.gridPositionY);
+                item.gameObject.SetActive(true);
+            }
+        }
+    }
+
+    public void SaveItems()
+    {
+        if(parentItem == null)
+            return;
+        
+        parentItem.SaveGrid(transform.GetSiblingIndex(), inventorySlot);
     }
 
     Vector2 positionOnGrid = new Vector2();

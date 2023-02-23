@@ -12,6 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ecfbb8176217e3c4484167a9acf83cd9, type: 3}
   m_Name: GoldSapphireEarrings
   m_EditorClassIdentifier: 
+  itemName: GoldSapphireEarrings
   width: 1
   height: 1
-  sprite: {fileID: 21300000, guid: d81c7f6f9899f1c4e8b026d85bf04512, type: 3}
+  equipment: 0
+  clothing: 0
+  weapon: 0
+  container: 0
+  stackable: 0
+  usable: 0
+  equipmentType: 0
+  containerPrefab: {fileID: 0}
+  outlineSprite: {fileID: 0}
+  inventorySprite: {fileID: 21300000, guid: d81c7f6f9899f1c4e8b026d85bf04512, type: 3}

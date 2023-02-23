@@ -10,27 +10,24 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ecfbb8176217e3c4484167a9acf83cd9, type: 3}
-  m_Name: BlackCargoPants
+  m_Name: NiceBrandBackpack
   m_EditorClassIdentifier: 
-  id: 4
-  itemName: BlackCargoPants
-  width: 1
-  height: 2
+  id: 0
+  itemName: NiceBrandBackpack
+  width: 5
+  height: 6
   equipment: 1
   clothing: 1
   weapon: 0
   container: 1
-  gridAmount: 2
+  gridAmount: 1
   gridData:
   - gridID: 0
-    width: 2
-    height: 2
-  - gridID: 1
-    width: 2
-    height: 2
+    width: 5
+    height: 6
   stackable: 0
   usable: 0
-  equipmentType: 8
-  containerPrefab: {fileID: 7647818070181531962, guid: de618c90192168a4d8579c3b27203173, type: 3}
-  outlineSprite: {fileID: 21300000, guid: 4701af992eca0ee499908b97881dc6bc, type: 3}
-  inventorySprite: {fileID: 21300000, guid: 2681967168d5aca4895b893c6c020817, type: 3}
+  equipmentType: 6
+  containerPrefab: {fileID: 5079308047634906712, guid: b88b83ba0ffdd4441a2864222552b1d8, type: 3}
+  outlineSprite: {fileID: 21300000, guid: 9e17f50b02e36c4429f15b2f85bfeffa, type: 3}
+  inventorySprite: {fileID: 21300000, guid: fa7c095ad93afd4488588052a39970cd, type: 3}

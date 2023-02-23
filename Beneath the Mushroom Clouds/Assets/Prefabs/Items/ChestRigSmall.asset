@@ -12,6 +12,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ecfbb8176217e3c4484167a9acf83cd9, type: 3}
   m_Name: ChestRigSmall
   m_EditorClassIdentifier: 
+  id: 2
+  itemName: ChestRigSmall
   width: 2
   height: 2
-  sprite: {fileID: 21300000, guid: dbc75825f8dbc2347a273a9873c3b2cf, type: 3}
+  equipment: 1
+  clothing: 1
+  weapon: 0
+  container: 1
+  gridAmount: 6
+  gridData:
+  - gridID: 0
+    width: 1
+    height: 2
+  - gridID: 1
+    width: 1
+    height: 2
+  - gridID: 2
+    width: 1
+    height: 2
+  - gridID: 3
+    width: 1
+    height: 2
+  - gridID: 4
+    width: 1
+    height: 2
+  - gridID: 5
+    width: 1
+    height: 2
+  stackable: 0
+  usable: 0
+  equipmentType: 2
+  containerPrefab: {fileID: 2285384978617380286, guid: eb68cd8e05982ee4c9a72479df102472, type: 3}
+  outlineSprite: {fileID: 21300000, guid: 84027d139a4f4384c8db8803a452d066, type: 3}
+  inventorySprite: {fileID: 21300000, guid: dbc75825f8dbc2347a273a9873c3b2cf, type: 3}
