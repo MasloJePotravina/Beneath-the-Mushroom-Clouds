@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ecfbb8176217e3c4484167a9acf83cd9, type: 3}
   m_Name: NiceBrandBackpack
   m_EditorClassIdentifier: 
-  id: 0
+  id: 20005
   itemName: NiceBrandBackpack
   width: 5
   height: 6
@@ -26,6 +26,8 @@ MonoBehaviour:
     width: 5
     height: 6
   stackable: 0
+  maxStack: 0
+  stackCountTextPrefab: {fileID: 0}
   usable: 0
   equipmentType: 6
   containerPrefab: {fileID: 5079308047634906712, guid: b88b83ba0ffdd4441a2864222552b1d8, type: 3}

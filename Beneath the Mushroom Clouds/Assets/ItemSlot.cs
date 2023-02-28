@@ -57,7 +57,19 @@ public class ItemSlot : MonoBehaviour
         return item;
     }
 
+    public InventoryItem GetItem(){
+        return item;
+    }
+
+    public void DeleteItem(){
+        Destroy(item.gameObject);
+        item = null;
+    }
+
     private void PlaceResizeItem(InventoryItem item){
+        if (item.rotated){
+            item.Rotate();
+        }
         RectTransform itemRectTransform = item.GetComponent<RectTransform>();
         float ratio = (float)item.Width / item.Height;
 

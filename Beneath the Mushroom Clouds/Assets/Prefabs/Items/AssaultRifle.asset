@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ecfbb8176217e3c4484167a9acf83cd9, type: 3}
-  m_Name: Hammer
+  m_Name: AssaultRifle
   m_EditorClassIdentifier: 
-  id: 30001
-  itemName: Hammer
-  width: 1
+  id: 30002
+  itemName: Assault Rifle
+  width: 6
   height: 2
   equipment: 1
   clothing: 0
@@ -29,4 +29,4 @@ MonoBehaviour:
   equipmentType: 11
   containerPrefab: {fileID: 0}
   outlineSprite: {fileID: 0}
-  inventorySprite: {fileID: 21300000, guid: b541bdfaee37a43429cfaf727aa83ed0, type: 3}
+  inventorySprite: {fileID: 21300000, guid: e165b432527bc6d46a494ee1c5d5edf0, type: 3}

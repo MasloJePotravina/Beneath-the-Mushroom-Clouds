@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ecfbb8176217e3c4484167a9acf83cd9, type: 3}
   m_Name: GoldSapphireEarrings
   m_EditorClassIdentifier: 
+  id: 1
   itemName: GoldSapphireEarrings
   width: 1
   height: 1
@@ -19,7 +20,11 @@ MonoBehaviour:
   clothing: 0
   weapon: 0
   container: 0
+  gridAmount: 0
+  gridData: []
   stackable: 0
+  maxStack: 0
+  stackCountTextPrefab: {fileID: 0}
   usable: 0
   equipmentType: 0
   containerPrefab: {fileID: 0}

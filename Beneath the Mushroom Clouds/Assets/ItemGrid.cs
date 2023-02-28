@@ -67,37 +67,36 @@ public class ItemGrid : MonoBehaviour
         //If the resolution is different, the calculations for tiles in the grid will not work properly due to different mouse and grid positions and have to be normalized
         //This is MUCH less efficient and therefore the 1920x1080 resolution is HIGHLY recommended
         //1920x1080: ~290FPS, different resolution: ~250FPS => ~40FPS difference 
+
+
+
         if(Screen.width == 1920 && Screen.height == 1080){
             positionOnGrid.x = mousePosition.x - rectTransform.position.x;
             positionOnGrid.y = rectTransform.position.y - mousePosition.y;
-
-            tileOnGrid.x = (int)(positionOnGrid.x / tileDimension);
-            tileOnGrid.y = (int)(positionOnGrid.y / tileDimension);
-
         }else{
             //Normalize mouse position
             mousePosition.x = mousePosition.x/Screen.width;
             mousePosition.y = mousePosition.y/Screen.height;
 
-            //Normalize width and height of the grid to reference resolution of 1920x1080
-            float normalizedGridWidth = rectTransform.rect.width/1920f;
-            float normalizedGridHeight = rectTransform.rect.height/1080f;
-            
-            //Normalize position of the grid
-            Vector2 normalizedGridPosition = new Vector2(rectTransform.position.x/Screen.width, rectTransform.position.y/Screen.height);
+            mousePosition.x *= 1920f;
+            mousePosition.y *= 1080f;
 
+            Vector2 transformedGridPosition = new Vector2();
 
-            //Upper left corner and lower right corner of the grid normalized
-            Vector2 upperLeftCorner = new Vector2(normalizedGridPosition.x, normalizedGridPosition.y);
-            Vector2 lowerRightCorner = new Vector2(normalizedGridPosition.x + normalizedGridWidth, normalizedGridPosition.y - normalizedGridHeight);
+            //Normalize grid position
+            transformedGridPosition.x = rectTransform.position.x/Screen.width;
+            transformedGridPosition.y = rectTransform.position.y/Screen.height;
 
+            transformedGridPosition.x *= 1920f;
+            transformedGridPosition.y *= 1080f;
 
-            positionOnGrid.x = (mousePosition.x - upperLeftCorner.x)/(lowerRightCorner.x - upperLeftCorner.x);
-            positionOnGrid.y = (upperLeftCorner.y - mousePosition.y)/(upperLeftCorner.y - lowerRightCorner.y);
+            positionOnGrid.x = mousePosition.x - transformedGridPosition.x;
+            positionOnGrid.y = transformedGridPosition.y - mousePosition.y;
 
-            tileOnGrid.x = (int)(positionOnGrid.x / (tileDimension/rectTransform.rect.width));
-            tileOnGrid.y = (int)(positionOnGrid.y / (tileDimension/rectTransform.rect.height));
         }
+
+        tileOnGrid.x = (int)(positionOnGrid.x / tileDimension);
+        tileOnGrid.y = (int)(positionOnGrid.y / tileDimension);
 
         return tileOnGrid;
     }
@@ -127,11 +126,28 @@ public class ItemGrid : MonoBehaviour
 
     public bool PlaceItem(InventoryItem item, int posX, int posY){
 
+        if(parentItem != null){
+            if(item == parentItem){
+                return false;
+            }
+        }
+
         if(!BoundaryCheck(posX, posY, item.Width, item.Height)){
             return false;
         }
 
-        if(!OverlapCheck(posX, posY, item.Width, item.Height)){
+        bool stackableFlag = false;
+        if(!OverlapCheck(posX, posY, item, ref stackableFlag)){
+            if(stackableFlag){
+                int amountTransfered = inventorySlot[posX, posY].AddToStack(item.currentStack);
+                item.RemoveFromStack(amountTransfered);
+                if(item.currentStack == 0){
+                    Destroy(item.gameObject);
+                    return true;
+                }else{
+                    return false;
+                }
+            }
             return false;
         }
 
@@ -151,10 +167,7 @@ public class ItemGrid : MonoBehaviour
         
 
         itemRectTransform.localPosition = position;
-
-
         return true;
-
         
     }
 
@@ -187,15 +200,54 @@ public class ItemGrid : MonoBehaviour
         return true;
     }
 
-    public bool OverlapCheck(int posX, int posY, int width, int height){
-        for(int x = 0; x < width; x++){
-            for(int y = 0; y < height; y++){
+    public bool OverlapCheck(int posX, int posY, InventoryItem item, ref bool stackableFlag){
+        for(int x = 0; x < item.Width; x++){
+            for(int y = 0; y < item.Height; y++){
                 if(inventorySlot[posX + x, posY + y] != null){
+                    if(CheckIfStackable(inventorySlot[posX + x, posY + y], item)){
+                        stackableFlag = true;
+                    }
                     return false;
                 }
             }
         }
         return true;
+    }
+
+    private bool CheckIfStackable(InventoryItem item1, InventoryItem item2){
+        if(item1.itemData.stackable == false || item2.itemData.stackable == false){
+            return false;
+        }
+        if(item1.itemData.id != item2.itemData.id){
+            return false;
+        }
+        if(item1.itemData.maxStack == item1.currentStack){
+            return false;
+        }
+        return true;
+    }
+
+    public bool FindSpaceForItem(InventoryItem item, out int posX, out int posY){
+        if(item == null){
+            posX = -1;
+            posY = -1;
+            return false;
+        }
+        for(int y = 0; y < gridHeight; y++){
+            for(int x = 0; x < gridWidth; x++){
+                if(BoundaryCheck(x, y, item.Width, item.Height)){
+                    bool boolStackableFlag = false;
+                    if(OverlapCheck(x, y, item, ref boolStackableFlag)){
+                        posX = x;
+                        posY = y;
+                        return true;
+                    }
+                }   
+            }
+        }
+        posX = -1;
+        posY = -1;
+        return false;
     }
 
 

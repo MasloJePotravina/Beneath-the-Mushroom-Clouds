@@ -37,6 +37,7 @@ public class UIControls : MonoBehaviour
     void OnLeftClick(InputValue value)
     {
         inventoryController.InventoryLeftClick(value);
+        
     }
 
     //TODO: Debug only, remove later
@@ -47,5 +48,21 @@ public class UIControls : MonoBehaviour
 
     void OnRotateItem(){
         inventoryController.RotateItem();
+    }
+
+    void OnSplitStack(InputValue value){
+        inventoryController.SplitStackHotkey(value);
+    }
+
+    void OnRightClick(){
+        inventoryController.RightClick();
+    }
+
+    void OnQuickTransfer(InputValue value){
+        inventoryController.QuickTransferHotkey(value);
+    }
+
+    void OnQuickEquip(InputValue value){
+        inventoryController.QuickEquipHotkey(value);
     }
 }

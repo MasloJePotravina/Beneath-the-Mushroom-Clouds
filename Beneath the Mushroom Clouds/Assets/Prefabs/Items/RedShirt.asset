@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ecfbb8176217e3c4484167a9acf83cd9, type: 3}
   m_Name: RedShirt
   m_EditorClassIdentifier: 
+  id: 20002
   itemName: RedShirt
   width: 2
   height: 2
@@ -19,7 +20,11 @@ MonoBehaviour:
   clothing: 1
   weapon: 0
   container: 0
+  gridAmount: 0
+  gridData: []
   stackable: 0
+  maxStack: 0
+  stackCountTextPrefab: {fileID: 0}
   usable: 0
   equipmentType: 3
   containerPrefab: {fileID: 0}

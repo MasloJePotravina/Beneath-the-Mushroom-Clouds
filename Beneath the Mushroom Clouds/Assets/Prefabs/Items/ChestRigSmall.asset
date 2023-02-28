@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ecfbb8176217e3c4484167a9acf83cd9, type: 3}
   m_Name: ChestRigSmall
   m_EditorClassIdentifier: 
-  id: 2
+  id: 20001
   itemName: ChestRigSmall
   width: 2
   height: 2
@@ -41,6 +41,8 @@ MonoBehaviour:
     width: 1
     height: 2
   stackable: 0
+  maxStack: 0
+  stackCountTextPrefab: {fileID: 0}
   usable: 0
   equipmentType: 2
   containerPrefab: {fileID: 2285384978617380286, guid: eb68cd8e05982ee4c9a72479df102472, type: 3}

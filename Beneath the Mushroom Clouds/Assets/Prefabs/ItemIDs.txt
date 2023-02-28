@@ -1,0 +1,27 @@
+Junk items - prefix 00
+000001 - Gold Sapphire Earrings
+
+Consumables - prefix 01
+
+Clothing - prefix 02
+020001 - Chest Rig Small
+020002 - Red Shirt
+020003 - Black Cargo Pants
+020004 - Work Boots
+020005 - Nice Brand Backpack
+020006 - Watch
+
+Weapons - prefix 03
+030001 - Hammer
+030002 - AssaultRifle
+
+Magazines - prefix 04
+040001
+
+Ammo - prefix 05
+040001 - Assault Rifle Ammo
+
+Health Items - prefix 06
+
+Quest Items - prefix 07
+

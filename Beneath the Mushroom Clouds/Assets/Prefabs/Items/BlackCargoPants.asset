@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ecfbb8176217e3c4484167a9acf83cd9, type: 3}
   m_Name: BlackCargoPants
   m_EditorClassIdentifier: 
-  id: 4
+  id: 20003
   itemName: BlackCargoPants
   width: 1
   height: 2
@@ -29,6 +29,8 @@ MonoBehaviour:
     width: 2
     height: 2
   stackable: 0
+  maxStack: 0
+  stackCountTextPrefab: {fileID: 0}
   usable: 0
   equipmentType: 8
   containerPrefab: {fileID: 7647818070181531962, guid: de618c90192168a4d8579c3b27203173, type: 3}

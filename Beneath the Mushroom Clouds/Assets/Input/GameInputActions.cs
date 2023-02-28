@@ -254,6 +254,42 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""SplitStack"",
+                    ""type"": ""Button"",
+                    ""id"": ""b5f89659-d70c-4d89-a552-70f4c9ac2582"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": ""Press(behavior=2)"",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""RightClick"",
+                    ""type"": ""Button"",
+                    ""id"": ""c1abeb7e-9d48-42f0-8ae2-86aa0cd4f970"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""QuickTransfer"",
+                    ""type"": ""Button"",
+                    ""id"": ""b29620f9-53ba-40ae-8382-08a78d493269"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""QuickEquip"",
+                    ""type"": ""Button"",
+                    ""id"": ""2724323c-8d9d-414d-bf19-731e0f0db523"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -300,6 +336,50 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
                     ""action"": ""RotateItem"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""287fd15d-f982-4b5d-9845-3e24082a77e3"",
+                    ""path"": ""<Keyboard>/leftCtrl"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SplitStack"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""14d8fef9-c0c7-40bf-bf2b-78dac361094c"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""RightClick"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""6c2cce7c-fbbf-4101-8e32-92d15d0a9f39"",
+                    ""path"": ""<Keyboard>/leftShift"",
+                    ""interactions"": ""Press(behavior=2)"",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""QuickTransfer"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""af7bfc5c-442e-414c-bbbc-6006bfbb2143"",
+                    ""path"": ""<Keyboard>/leftAlt"",
+                    ""interactions"": ""Press(behavior=2)"",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""QuickEquip"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -321,6 +401,10 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
         m_UI_LeftClick = m_UI.FindAction("LeftClick", throwIfNotFound: true);
         m_UI_DebugSpawnItem = m_UI.FindAction("DebugSpawnItem", throwIfNotFound: true);
         m_UI_RotateItem = m_UI.FindAction("RotateItem", throwIfNotFound: true);
+        m_UI_SplitStack = m_UI.FindAction("SplitStack", throwIfNotFound: true);
+        m_UI_RightClick = m_UI.FindAction("RightClick", throwIfNotFound: true);
+        m_UI_QuickTransfer = m_UI.FindAction("QuickTransfer", throwIfNotFound: true);
+        m_UI_QuickEquip = m_UI.FindAction("QuickEquip", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -465,6 +549,10 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
     private readonly InputAction m_UI_LeftClick;
     private readonly InputAction m_UI_DebugSpawnItem;
     private readonly InputAction m_UI_RotateItem;
+    private readonly InputAction m_UI_SplitStack;
+    private readonly InputAction m_UI_RightClick;
+    private readonly InputAction m_UI_QuickTransfer;
+    private readonly InputAction m_UI_QuickEquip;
     public struct UIActions
     {
         private @GameInputActions m_Wrapper;
@@ -473,6 +561,10 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
         public InputAction @LeftClick => m_Wrapper.m_UI_LeftClick;
         public InputAction @DebugSpawnItem => m_Wrapper.m_UI_DebugSpawnItem;
         public InputAction @RotateItem => m_Wrapper.m_UI_RotateItem;
+        public InputAction @SplitStack => m_Wrapper.m_UI_SplitStack;
+        public InputAction @RightClick => m_Wrapper.m_UI_RightClick;
+        public InputAction @QuickTransfer => m_Wrapper.m_UI_QuickTransfer;
+        public InputAction @QuickEquip => m_Wrapper.m_UI_QuickEquip;
         public InputActionMap Get() { return m_Wrapper.m_UI; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -494,6 +586,18 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
                 @RotateItem.started -= m_Wrapper.m_UIActionsCallbackInterface.OnRotateItem;
                 @RotateItem.performed -= m_Wrapper.m_UIActionsCallbackInterface.OnRotateItem;
                 @RotateItem.canceled -= m_Wrapper.m_UIActionsCallbackInterface.OnRotateItem;
+                @SplitStack.started -= m_Wrapper.m_UIActionsCallbackInterface.OnSplitStack;
+                @SplitStack.performed -= m_Wrapper.m_UIActionsCallbackInterface.OnSplitStack;
+                @SplitStack.canceled -= m_Wrapper.m_UIActionsCallbackInterface.OnSplitStack;
+                @RightClick.started -= m_Wrapper.m_UIActionsCallbackInterface.OnRightClick;
+                @RightClick.performed -= m_Wrapper.m_UIActionsCallbackInterface.OnRightClick;
+                @RightClick.canceled -= m_Wrapper.m_UIActionsCallbackInterface.OnRightClick;
+                @QuickTransfer.started -= m_Wrapper.m_UIActionsCallbackInterface.OnQuickTransfer;
+                @QuickTransfer.performed -= m_Wrapper.m_UIActionsCallbackInterface.OnQuickTransfer;
+                @QuickTransfer.canceled -= m_Wrapper.m_UIActionsCallbackInterface.OnQuickTransfer;
+                @QuickEquip.started -= m_Wrapper.m_UIActionsCallbackInterface.OnQuickEquip;
+                @QuickEquip.performed -= m_Wrapper.m_UIActionsCallbackInterface.OnQuickEquip;
+                @QuickEquip.canceled -= m_Wrapper.m_UIActionsCallbackInterface.OnQuickEquip;
             }
             m_Wrapper.m_UIActionsCallbackInterface = instance;
             if (instance != null)
@@ -510,6 +614,18 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
                 @RotateItem.started += instance.OnRotateItem;
                 @RotateItem.performed += instance.OnRotateItem;
                 @RotateItem.canceled += instance.OnRotateItem;
+                @SplitStack.started += instance.OnSplitStack;
+                @SplitStack.performed += instance.OnSplitStack;
+                @SplitStack.canceled += instance.OnSplitStack;
+                @RightClick.started += instance.OnRightClick;
+                @RightClick.performed += instance.OnRightClick;
+                @RightClick.canceled += instance.OnRightClick;
+                @QuickTransfer.started += instance.OnQuickTransfer;
+                @QuickTransfer.performed += instance.OnQuickTransfer;
+                @QuickTransfer.canceled += instance.OnQuickTransfer;
+                @QuickEquip.started += instance.OnQuickEquip;
+                @QuickEquip.performed += instance.OnQuickEquip;
+                @QuickEquip.canceled += instance.OnQuickEquip;
             }
         }
     }
@@ -530,5 +646,9 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
         void OnLeftClick(InputAction.CallbackContext context);
         void OnDebugSpawnItem(InputAction.CallbackContext context);
         void OnRotateItem(InputAction.CallbackContext context);
+        void OnSplitStack(InputAction.CallbackContext context);
+        void OnRightClick(InputAction.CallbackContext context);
+        void OnQuickTransfer(InputAction.CallbackContext context);
+        void OnQuickEquip(InputAction.CallbackContext context);
     }
 }

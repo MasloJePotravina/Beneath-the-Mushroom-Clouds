@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class InventoryItem : MonoBehaviour
 {
@@ -11,6 +12,17 @@ public class InventoryItem : MonoBehaviour
 
     public int gridPositionX;
     public int gridPositionY;
+
+    public int currentStack;
+    private GameObject currentStackText;
+
+    public bool isEquipped = false;
+    public bool isOpened = false;
+
+    //For magazines
+    public int ammoCount = 0;
+    private GameObject currentAmmoText;
+    
 
     public int Height{
         get{
@@ -37,17 +49,23 @@ public class InventoryItem : MonoBehaviour
             }
         }
 
+        if(itemData.stackable){
+            currentStackText = Instantiate(this.itemData.currentStackTextPrefab, transform, false);
+        }
+
+        if(itemData.magazine){
+            currentAmmoText = Instantiate(this.itemData.currentStackTextPrefab, transform, false);
+            UpdateAmmoText();
+        }
+
 
 
         GetComponent<Image>().sprite = itemData.inventorySprite;
 
-        float tileDimension = ItemGrid.tileDimension;
-        if(Screen.width != 1920 || Screen.height != 1080){
-            tileDimension = ItemGrid.tileDimension * (Screen.width/1920f);
-        }
+        RectTransform rectTransform = GetComponent<RectTransform>();
 
-        Vector2 size = new Vector2(itemData.width * tileDimension, itemData.height * tileDimension);
-        GetComponent<RectTransform>().sizeDelta = size;
+        rectTransform.sizeDelta = new Vector2(Width * ItemGrid.tileDimension, Height * ItemGrid.tileDimension);
+        rectTransform.localScale = Vector2.one;
 
     }
 
@@ -79,7 +97,85 @@ public class InventoryItem : MonoBehaviour
 
         RectTransform rectTransform = GetComponent<RectTransform>();
 
-        rectTransform.rotation = Quaternion.Euler(0, 0, rotated ? 90 : 0);
+        rectTransform.rotation = Quaternion.Euler(0, 0, rotated ? -90 : 0);
+
+
+        if(currentStackText != null){
+            currentStackText.transform.rotation = Quaternion.Euler(0, 0, 0);
+            RectTransform textRect = currentStackText.GetComponent<RectTransform>();
+
+        }
+
+        if(currentAmmoText != null){
+            currentAmmoText.transform.rotation = Quaternion.Euler(0, 0, 0);
+            
+        }
+    }
+
+    public void SetStack(int count){
+        currentStack = count;
+        UpdateStackText();
+    }
+
+    public int AddToStack(int count){
+        if(currentStack + count > itemData.maxStack){
+            int prevStack = currentStack;
+            currentStack = itemData.maxStack;
+            UpdateStackText();
+            return (itemData.maxStack - prevStack);
+        }else{
+            currentStack += count;
+            UpdateStackText();
+            return count;
+        }
+
+
+    }
+
+    public int RemoveFromStack(int count){
+        if(currentStack - count < 0){
+            currentStack = 0;
+        }else{
+            currentStack -= count;
+        }
+
+        UpdateStackText();
+        return currentStack;
+
+    }
+
+    private void UpdateStackText(){
+        if(currentStackText != null){
+            currentStackText.GetComponent<TextMeshProUGUI>().text = currentStack.ToString();
+        }
+    }
+
+    
+    public int AddToMagaize(int count){
+        if(ammoCount + count > itemData.magazineSize){
+            int prevCount = ammoCount;
+            ammoCount = itemData.magazineSize;
+            UpdateAmmoText();
+            return (itemData.magazineSize - prevCount);
+
+        }else{
+            ammoCount += count;
+            UpdateAmmoText();
+            return count;
+        }
+    }
+
+    public int RemoveAllFromMagazine(){
+        int count = ammoCount;
+        ammoCount = 0;
+        UpdateAmmoText();
+        return count;
+    }
+
+    private void UpdateAmmoText(){
+        if(currentAmmoText != null){
+            currentAmmoText.GetComponent<TextMeshProUGUI>().text = ammoCount.ToString() + "/" + itemData.magazineSize.ToString();
+        }
     }
 
 
