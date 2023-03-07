@@ -19,6 +19,7 @@ public class FirearmScript: MonoBehaviour
     public GameObject bulletPrefab;
 
     private bool reloading = false;
+    private bool racking = false;
 
 
     public float initialDeviation; //Worst case initial bullet deviaiton (degrees)
@@ -27,6 +28,7 @@ public class FirearmScript: MonoBehaviour
     private float shooterAbility;
 
     private Coroutine reloadCoroutine;
+    private Coroutine rackCoroutine;
 
 
     private PlayerStatus playerStatus;
@@ -41,6 +43,8 @@ public class FirearmScript: MonoBehaviour
     private int consecShots = 0;
     private bool triggerPressed = false; //Is the trigger pressed
     private bool semiBlock = false; //Has a semi/pump/bolt-action fired already on this press
+    private bool autoChamber = false; //Whether the firearm should be chambering a round by itself 
+                                      //(e.g. the pistol chambers rounds by itself but shouldn't automatically chamber a round after reload) 
 
     private float cooldownStart = 0.2f;//After how long after the first shot the recoil starts cooling down
     private float cooldownStartTimer = 0.0f;
@@ -50,7 +54,7 @@ public class FirearmScript: MonoBehaviour
     private float shotgunSpread = 5.0f;
 
     private float magSwapSpeed = 2.5f;
-    private float rackWeaponSpeed = 0.5f;
+    private float rackWeaponSpeed = 1f;
 
     private RaycastHit2D[] hits; //Field of hit objects
 
@@ -69,11 +73,15 @@ public class FirearmScript: MonoBehaviour
     void Update()
     {
 
-        if(reloading){
+        if(reloading || racking){
             if(selectedFirearm == null || selectedFirearm != reloadedFirearm){
                 reloading = false;
+                racking = false;
                 reloadedFirearm = null;
-                StopCoroutine(reloadCoroutine);
+                if(reloadCoroutine != null)
+                    StopCoroutine(reloadCoroutine);
+                if(rackCoroutine != null)
+                    StopCoroutine(rackCoroutine);
             }
         }
         //Consecutive shots accuracy cooldown
@@ -101,8 +109,17 @@ public class FirearmScript: MonoBehaviour
             return;
 
         if(!selectedFirearm.isChambered){
-            if(WeaponCycled()){
-                selectedFirearm.ChamberFromMagazine();
+            if(selectedFirearm.itemData.manuallyChambered){
+                rackCoroutine =  StartCoroutine(RackFirearm());
+            }else{
+                if(WeaponCycled()){
+                    if(autoChamber){
+                        selectedFirearm.ChamberFromMagazine();
+                        autoChamber = false;
+                    }else{
+                        rackCoroutine =  StartCoroutine(RackFirearm());
+                    }
+                }
             }
             return;
         }
@@ -148,10 +165,13 @@ public class FirearmScript: MonoBehaviour
                 UpdateConeLines(CalcAimCone());
                 break;
         }
+
+        autoChamber = true;
     }
 
     private bool WeaponCycled()
     {
+
         if(firearmMode == 0){
             if(Time.time - lastShot > 1 / fireRate)
             {
@@ -445,10 +465,19 @@ public class FirearmScript: MonoBehaviour
         }
         if(!selectedFirearm.isChambered){
             yield return new WaitForSeconds(rackWeaponSpeed);
-            Debug.Log("racked");
+            inventoryController.RackFirearm(selectedFirearm);
         }
         reloading = false;
         reloadedFirearm = null;
 
+    }
+
+    private IEnumerator RackFirearm(){
+        racking = true;
+        reloadedFirearm = selectedFirearm;
+        yield return new WaitForSeconds(rackWeaponSpeed);
+        inventoryController.RackFirearm(selectedFirearm);
+        racking = false;
+        reloadedFirearm = null;
     }
 }

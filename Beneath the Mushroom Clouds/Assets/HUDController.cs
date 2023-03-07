@@ -201,24 +201,33 @@ public class HUDController : MonoBehaviour
         chamberEmptyImage.sprite = ammoBarEmpty;
 
         float maxAmmo = 0;
+        float barHeight = 0;
 
         switch(weaponType){
             case "AssaultRifle":
                 maxAmmo = 30.0f;
+                barHeight = 150f;
                 break;
             case "Pistol":
                 maxAmmo = 12.0f;
+                barHeight = 130f;
                 break;
             case "Shotgun":
                 maxAmmo = 6.0f;
+                barHeight = 55f;
                 break;
-            case "SniperRifle":
+            case "HuntingRifle":
                 maxAmmo = 4.0f;
+                barHeight = 20f;
                 break;
             default:
                 maxAmmo = 1.0f;
+                barHeight = 0f;
                 break;
         }
+
+        magazineBarFull.GetComponent<RectTransform>().sizeDelta = new Vector2(30f, barHeight);
+        magazineBarEmpty.GetComponent<RectTransform>().sizeDelta = new Vector2(30f, barHeight);
 
         chaberFullImage.fillAmount = 1/maxAmmo;
         chamberEmptyImage.fillAmount = 1/maxAmmo;
@@ -230,11 +239,7 @@ public class HUDController : MonoBehaviour
         if(isChambered){
             chamberFull.SetActive(true);
         }else{
-            //Prevents ugly chamber round flicker in hud when shooting weapons which chamber rounds automatically
-            if(!manuallyChambered && ammoCount > 0)
-                chamberFull.SetActive(true);
-            else
-                chamberFull.SetActive(false);
+            chamberFull.SetActive(false);
         }
 
         if(isChambered){

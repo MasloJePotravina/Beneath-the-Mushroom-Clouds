@@ -1062,6 +1062,13 @@ public class InventoryController : MonoBehaviour
         ammo.SetStack(1);
     }
 
+    public void RackFirearm(InventoryItem weapon){
+        if(weapon == null){
+            return;
+        }
+        weapon.RackFirearm();
+    }
+
     public InventoryItem GetSelectedWeapon(){
         if(selectedWeaponSlot == 0){
             return null;

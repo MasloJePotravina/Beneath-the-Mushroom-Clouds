@@ -159,23 +159,35 @@ public class InventoryItem : MonoBehaviour
     }
 
     public int LoadAmmoIntoInternalMagazine(int count){
+        int ammoLoaded = 0;
         if(ammoCount + count > itemData.internalMagSize){
             int prevCount = ammoCount;
             ammoCount = itemData.internalMagSize;
             UpdateFirearmText();
-            return (itemData.internalMagSize - prevCount);
+            ammoLoaded = (itemData.internalMagSize - prevCount);
         }else{
             ammoCount += count;
             UpdateFirearmText();
-            return count;
+            ammoLoaded =  count;
         }
+
+        if(isEquipped && isSelectedWeapon){
+            hudController.UpdateWeaponHUD(this);
+        }
+
+        return ammoLoaded;
+
+        
     }
 
     public int UnloadAmmoFromInternalMagazine(){
-        int count = ammoCount;
+        int ammoUnloaded = ammoCount;
         ammoCount = 0;
         UpdateFirearmText();
-        return count;
+        if(isEquipped && isSelectedWeapon){
+            hudController.UpdateWeaponHUD(this);
+        }
+        return ammoUnloaded;
     }
 
     
@@ -271,6 +283,18 @@ public class InventoryItem : MonoBehaviour
             return false;
         }
         isChambered = false;
+        UpdateFirearmText();
+        if(isEquipped && isSelectedWeapon)
+            hudController.UpdateWeaponHUD(this);
+        return true;
+    }
+
+    public bool RackFirearm(){
+        if(isChambered || ammoCount == 0){
+            return false;
+        }
+        isChambered = true;
+        ammoCount--;
         UpdateFirearmText();
         if(isEquipped && isSelectedWeapon)
             hudController.UpdateWeaponHUD(this);

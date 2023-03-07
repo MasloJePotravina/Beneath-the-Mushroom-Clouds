@@ -21,6 +21,7 @@ public class ContextMenu : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         {"RemoveMagazine", false},
         {"ChamberRound", false},
         {"ClearChamber", false},
+        {"RackFirearm", false},
         {"UnloadAmmo", false},
         {"LoadAmmo", false},
         {"SplitStack", false},
@@ -96,6 +97,9 @@ public class ContextMenu : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                 menuOptions["ClearChamber"] = true;
             } else {
                 menuOptions["ChamberRound"] = true;
+                if(item.ammoCount > 0){
+                    menuOptions["RackFirearm"] = true;
+                }
             }
         }
 
@@ -167,6 +171,12 @@ public class ContextMenu : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     public void ClearChamberButton()
     {
         inventoryController.ClearChamber(item);
+        inventoryController.CloseContextMenu();
+    }
+
+    public void RackFirearmButton()
+    {
+        inventoryController.RackFirearm(item);
         inventoryController.CloseContextMenu();
     }
 
