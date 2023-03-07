@@ -137,17 +137,65 @@ public class ItemGrid : MonoBehaviour
         }
 
         bool stackableFlag = false;
-        if(!OverlapCheck(posX, posY, item, ref stackableFlag)){
+        InventoryItem overlappingItem = null;
+        if(!OverlapCheck(posX, posY, item, out stackableFlag, out overlappingItem)){
             if(stackableFlag){
                 int amountTransfered = inventorySlot[posX, posY].AddToStack(item.currentStack);
-                item.RemoveFromStack(amountTransfered);
-                if(item.currentStack == 0){
-                    Destroy(item.gameObject);
+                if(item.RemoveFromStack(amountTransfered) == 0){
                     return true;
                 }else{
                     return false;
                 }
             }
+            if(item.itemData.ammo){
+                if(overlappingItem.itemData.magazine){
+                    if(overlappingItem.itemData.weaponType == item.itemData.weaponType){
+                        int amountTransfered = overlappingItem.AddToMagazine(item.currentStack);
+                        if(item.RemoveFromStack(amountTransfered) == 0){
+                            return true;
+                        }else{
+                            return false;
+                        }
+                    }
+                }else if(overlappingItem.itemData.firearm){
+                    if(overlappingItem.itemData.weaponType == item.itemData.weaponType){
+                        if(!overlappingItem.itemData.usesMagazines){
+                            if(overlappingItem.ChamberRound()){
+                                if(item.RemoveFromStack(1) == 0){
+                                    return true; 
+                                }
+                                //No returning false here, if there is ammo left in the stack after chambering, load magazine
+                            }
+                            int amountTransfered = overlappingItem.LoadAmmoIntoInternalMagazine(item.currentStack);
+                            if(item.RemoveFromStack(amountTransfered) == 0){
+                                return true;
+                            }else{
+                                return false;
+                            }
+                        }else{
+                            if(overlappingItem.ChamberRound()){
+                                if(item.RemoveFromStack(1) == 0){
+                                    return true;
+                                }else{
+                                    return false;
+                                }
+                            }
+                        }
+                        
+                    }
+                }
+            }
+
+            if(item.itemData.magazine){
+                if(overlappingItem.itemData.firearm){
+                    if(overlappingItem.itemData.weaponType == item.itemData.weaponType){
+                        overlappingItem.AttachMagazine(item);
+                        Destroy(item.gameObject);
+                        return true;
+                    }
+                }
+            }
+
             return false;
         }
 
@@ -200,13 +248,16 @@ public class ItemGrid : MonoBehaviour
         return true;
     }
 
-    public bool OverlapCheck(int posX, int posY, InventoryItem item, ref bool stackableFlag){
+    public bool OverlapCheck(int posX, int posY, InventoryItem item, out bool stackableFlag, out InventoryItem overlappingItem){
+        stackableFlag = false;
+        overlappingItem = null;
         for(int x = 0; x < item.Width; x++){
             for(int y = 0; y < item.Height; y++){
                 if(inventorySlot[posX + x, posY + y] != null){
                     if(CheckIfStackable(inventorySlot[posX + x, posY + y], item)){
                         stackableFlag = true;
                     }
+                    overlappingItem = inventorySlot[posX + x, posY + y];
                     return false;
                 }
             }
@@ -237,7 +288,8 @@ public class ItemGrid : MonoBehaviour
             for(int x = 0; x < gridWidth; x++){
                 if(BoundaryCheck(x, y, item.Width, item.Height)){
                     bool boolStackableFlag = false;
-                    if(OverlapCheck(x, y, item, ref boolStackableFlag)){
+                    InventoryItem overlappingItem = null;
+                    if(OverlapCheck(x, y, item, out boolStackableFlag, out overlappingItem)){
                         posX = x;
                         posY = y;
                         return true;
@@ -248,6 +300,47 @@ public class ItemGrid : MonoBehaviour
         posX = -1;
         posY = -1;
         return false;
+    }
+
+    public InventoryItem FindBestMagazine(string weaponType){
+        int mostAmmo = -1;
+        InventoryItem bestMagazine = null;
+        foreach(InventoryItem item in inventorySlot){
+            if(item == null){
+                continue;
+            }
+            if(item.itemData.magazine){
+                if(item.itemData.weaponType != weaponType){
+                    continue;
+                }
+                if(item.ammoCount > mostAmmo){
+                    mostAmmo = item.ammoCount;
+                    bestMagazine = item;
+                }
+            }
+        }
+        return bestMagazine;
+    }
+
+    public InventoryItem FindAmmo(string weaponType){
+        foreach(InventoryItem item in inventorySlot){
+            if(item == null){
+                continue;
+            }
+            if(item.itemData.ammo){
+                if(item.itemData.weaponType == weaponType){
+                    //Interesting note:
+                    //While all stackable items are destroyed immediately on empty stack and
+                    //this condition seems futile it is actually very important
+                    //Since Destroy() is called at the end of the frame, but this function is called
+                    //in a loop (which executes multiple times per frame), this fnction would return a reference 
+                    //to an empty stack and cause a never ending loop and crash (2 hours of debugging btw) 
+                    if(item.currentStack > 0)
+                        return item;
+                }
+            }
+        }
+        return null;
     }
 
 

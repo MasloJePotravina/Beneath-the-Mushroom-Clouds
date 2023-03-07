@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ecfbb8176217e3c4484167a9acf83cd9, type: 3}
+  m_Name: Pistol
+  m_EditorClassIdentifier: 
+  id: 30003
+  itemName: Pistol
+  width: 2
+  height: 1
+  equipment: 1
+  equipmentType: 12
+  clothing: 0
+  outlineSprite: {fileID: 0}
+  container: 0
+  gridAmount: 0
+  containerPrefab: {fileID: 0}
+  gridData: []
+  weapon: 1
+  firearm: 1
+  manuallyChambered: 0
+  usesMagazines: 1
+  internalMagSize: 0
+  weaponType: Pistol
+  weaponHUDOutlineSprite: {fileID: 21300000, guid: fc5e31411bf02dc4a87e40e21035794b, type: 3}
+  ammoBarFullSprite: {fileID: 21300000, guid: 05850aefd494e7a458fb4d7728e62a76, type: 3}
+  ammoBarEmptySprite: {fileID: 21300000, guid: c98fa83dae3a94c4ba2b15e42e42d2db, type: 3}
+  ammoItemData: {fileID: 11400000, guid: d2354e761d1b3c74799dca1da466979a, type: 2}
+  magazineItemData: {fileID: 11400000, guid: b301caf587907134191a67bccc9f0761, type: 2}
+  ammo: 0
+  magazine: 0
+  magazineSize: 0
+  usable: 0
+  stackable: 0
+  maxStack: 0
+  itemSubtextPrefab: {fileID: 7965834515029828087, guid: 9b695b4cc89c56f4292c39b2d0d38a68, type: 3}
+  inventorySprite: {fileID: 21300000, guid: de3aa4b220b8cac4fbfdce64de85bcd0, type: 3}
+  inventorySpriteSecondary: {fileID: 21300000, guid: 6d71dec89a29808458a41580c247e4fa, type: 3}

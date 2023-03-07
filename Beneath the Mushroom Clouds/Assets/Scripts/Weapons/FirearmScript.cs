@@ -1,7 +1,16 @@
 using UnityEngine;
+using System.Collections;
 
 public class FirearmScript: MonoBehaviour
 {
+
+    public InventoryItem selectedFirearm;
+    //Need to cache firearm when reloading, so that if the weapons are switched the reload is interrupted
+    //(current selected firearm is not the same as the one that was reloaded)
+    private InventoryItem reloadedFirearm;
+
+    [SerializeField] private GameObject mainCamera;
+    private InventoryController inventoryController;
 
     public GameObject muzzle;
     public GameObject player;
@@ -9,11 +18,15 @@ public class FirearmScript: MonoBehaviour
     public GameObject coneLineR;
     public GameObject bulletPrefab;
 
+    private bool reloading = false;
+
 
     public float initialDeviation; //Worst case initial bullet deviaiton (degrees)
     public float bulletDevIncrement; //How many degrees does another fired bullet add at most
 
     private float shooterAbility;
+
+    private Coroutine reloadCoroutine;
 
 
     private PlayerStatus playerStatus;
@@ -36,6 +49,9 @@ public class FirearmScript: MonoBehaviour
 
     private float shotgunSpread = 5.0f;
 
+    private float magSwapSpeed = 2.5f;
+    private float rackWeaponSpeed = 0.5f;
+
     private RaycastHit2D[] hits; //Field of hit objects
 
 
@@ -45,12 +61,21 @@ public class FirearmScript: MonoBehaviour
         playerStatus = player.GetComponent<PlayerStatus>();
         shooterAbility = playerStatus.shooterAbility;
         UpdateConeLines(shooterAbility * (initialDeviation/2));
+        inventoryController = mainCamera.GetComponent<InventoryController>();
 
     }
 
     // Update is called once per frame
     void Update()
     {
+
+        if(reloading){
+            if(selectedFirearm == null || selectedFirearm != reloadedFirearm){
+                reloading = false;
+                reloadedFirearm = null;
+                StopCoroutine(reloadCoroutine);
+            }
+        }
         //Consecutive shots accuracy cooldown
         if (consecShots > 0)
         {
@@ -74,60 +99,71 @@ public class FirearmScript: MonoBehaviour
         //Early exit if the firearm is not active or is not being shot
         if (!firearmActive)
             return;
+
+        if(!selectedFirearm.isChambered){
+            if(WeaponCycled()){
+                selectedFirearm.ChamberFromMagazine();
+            }
+            return;
+        }
         if (!triggerPressed)
             return;
+
         
         //Trigger is pressed
         Vector2 BulletDeviation = ApplyAimErrorToRaycast(transform.parent.transform.up, CalcAimCone());
         switch (firearmMode)
         {
             case 0://Assault Rifle Mode
-                //Source: https://answers.unity.com/questions/761026/automatic-shooting-script.html
-                if (Time.time - lastShot > 1 / fireRate)
-                {
-                    Shoot(BulletDeviation);
-                    lastShot = Time.time;
-                    if (consecShots < 10)
-                        consecShots += 1;
-                    cooldownStartTimer = 0.0f;
-                    UpdateConeLines(CalcAimCone());
-                }
+                Shoot(BulletDeviation);
+                lastShot = Time.time;
+                if (consecShots < 10)
+                    consecShots += 1;
+                cooldownStartTimer = 0.0f;
+                UpdateConeLines(CalcAimCone());
                 break;
             case 1://Pistol Mode
-                if (fireRateTimer <= 0 && !semiBlock)
-                {
-                    Shoot(BulletDeviation);
-                    semiBlock = true;
-                    if (consecShots < 5)
-                        consecShots += 1;
-                    cooldownStartTimer = 0.0f;
-                    fireRateTimer = 0.15f;
-                    UpdateConeLines(CalcAimCone());
-                }
+                Shoot(BulletDeviation);
+                semiBlock = true;
+                if (consecShots < 5)
+                    consecShots += 1;
+                cooldownStartTimer = 0.0f;
+                fireRateTimer = 0.15f;
+                UpdateConeLines(CalcAimCone());
                 break;
             case 2://Shotgun Mode
-                if (fireRateTimer <= 0 && !semiBlock)
+                for (int i = 0; i < 8; i++)
                 {
-                    for (int i = 0; i < 8; i++)
-                    {
-                        Vector2 pelletBulletDeviation = ApplyAimErrorToRaycast(BulletDeviation, shotgunSpread / 2);
-                        Shoot(pelletBulletDeviation);
-                    }
-                    semiBlock = true;
-                    fireRateTimer = 1.5f;
-                    UpdateConeLines(CalcAimCone());
+                    Vector2 pelletBulletDeviation = ApplyAimErrorToRaycast(BulletDeviation, shotgunSpread / 2);
+                    Shoot(pelletBulletDeviation);
                 }
+                semiBlock = true;
+                fireRateTimer = 1.5f;
+                UpdateConeLines(CalcAimCone());
                 break;
             case 3://Bolt-Action Mode
-                if (fireRateTimer <= 0 && !semiBlock)
-                {
-                    Shoot(BulletDeviation);
-                    semiBlock = true;
-                    fireRateTimer = 1.5f;
-                    UpdateConeLines(CalcAimCone());
-                }
+                Shoot(BulletDeviation);
+                semiBlock = true;
+                fireRateTimer = 1.5f;
+                UpdateConeLines(CalcAimCone());
                 break;
         }
+    }
+
+    private bool WeaponCycled()
+    {
+        if(firearmMode == 0){
+            if(Time.time - lastShot > 1 / fireRate)
+            {
+                return true;
+            }
+        }else{
+            if(fireRateTimer <= 0 && !semiBlock)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     
@@ -164,6 +200,10 @@ public class FirearmScript: MonoBehaviour
 
     private void Shoot(Vector2 BulletDeviation)
     { 
+
+        if(!selectedFirearm.FireRound()){
+            return;
+        }
         hits = Physics2D.RaycastAll(muzzle.transform.position, BulletDeviation);
         float halfWallDistance = -1.0f;//If the bullet passes a half wall we need to store
                                        //the distance from the wall for future calculations
@@ -349,5 +389,66 @@ public class FirearmScript: MonoBehaviour
         LineRenderer lineRenderer = bullet.GetComponent<LineRenderer>();
         Vector3[] trajectory = { muzzlePos, hit.point };
         lineRenderer.SetPositions(trajectory);
+    }
+
+    public void ChangeSelectedFirearm(InventoryItem firearm){
+        selectedFirearm = firearm;
+        if(selectedFirearm == null){
+            firearmActive = false;
+            return;
+        }
+        firearmActive = true;
+        switch(firearm.itemData.weaponType){
+            case "AssaultRifle":
+                firearmMode = 0;
+                break;
+            case "Pistol":
+                firearmMode = 1;
+                break;
+            case "Shotgun":
+                firearmMode = 2;
+                break;
+            case "HuntingRifle":
+                firearmMode = 3;
+                break;
+        }
+
+        
+    }
+
+    public void ReloadButtonPressed(){
+        
+        if(selectedFirearm == null){
+            return;
+        }
+
+        if(inventoryController.FindMagazine(selectedFirearm.itemData.weaponType, true) == null){
+            return;
+        }
+
+        if(!reloading){
+            reloadCoroutine = StartCoroutine(Reload());
+        }
+    }
+
+    private IEnumerator Reload(){
+        reloading = true;
+        reloadedFirearm = selectedFirearm;
+        
+        if(selectedFirearm.hasMagazine){
+            inventoryController.ReloadRemoveMagazine(selectedFirearm);
+            yield return new WaitForSeconds(magSwapSpeed);
+            inventoryController.AttachMagazine(selectedFirearm, true);
+        }else{
+            yield return new WaitForSeconds(magSwapSpeed/2);
+            inventoryController.AttachMagazine(selectedFirearm, true);
+        }
+        if(!selectedFirearm.isChambered){
+            yield return new WaitForSeconds(rackWeaponSpeed);
+            Debug.Log("racked");
+        }
+        reloading = false;
+        reloadedFirearm = null;
+
     }
 }

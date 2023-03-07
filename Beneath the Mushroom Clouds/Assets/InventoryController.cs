@@ -7,12 +7,19 @@ using UnityEngine.UI;
 public class InventoryController : MonoBehaviour
 {
 
-
+    
 
     //EquipmentType zero is reserved for non equippable items and therefore is never initilized in this field
     [SerializeField] private GameObject[] itemSlots;
 
+    //GameObject attached to player from which the bullets are fired
+    [SerializeField] private GameObject playerFirearm;
+    private FirearmScript firearmScript;
+
     private List<GameObject> openedWindows = new List<GameObject>();
+
+    [SerializeField] private GameObject hudCanvas;
+    private HUDController hudController;
 
 
     Dictionary<string, InventoryItem> equippedItems = new Dictionary<string, InventoryItem>{
@@ -76,6 +83,14 @@ public class InventoryController : MonoBehaviour
     public InventoryWindowTop hoveredWindowTop;
     public InventoryWindowTop selectedWindowTop;
 
+    //TODO: Debug only, remove later
+    public int spawnedItem = 0;
+
+    //0 = no weapon
+    //1 = primary weapon
+    //2 = secondary weapon
+    public int selectedWeaponSlot = 1;
+
     private ItemGrid selectedGrid;
 
     public ItemGrid SelectedGrid{
@@ -114,6 +129,8 @@ public class InventoryController : MonoBehaviour
 
     private void Awake() {
         highlighter = GetComponent<InventoryHighlight>();
+        firearmScript = playerFirearm.GetComponent<FirearmScript>();
+        hudController = hudCanvas.GetComponent<HUDController>();
     }
 
     
@@ -148,21 +165,33 @@ public class InventoryController : MonoBehaviour
     }
 
     //TODO: Debug only, remove later
-    public void SpawnItem(){
+    public void QuickSpawnItem(){
         if(selectedItem != null){
+            Destroy(selectedItem.gameObject);
+        }
+
+        int selectedItemID = UnityEngine.Random.Range(0, items.Count);
+        InventoryItem item = SpawnItem(items[selectedItemID]);
+
+        if(item == null){
             return;
         }
+
+        if(item.itemData.stackable){
+            item.SetStack(UnityEngine.Random.Range(1, item.itemData.maxStack));
+        }
+
+    }
+
+    public InventoryItem SpawnItem(ItemData itemData){
         InventoryItem item = Instantiate(itemPrefab).GetComponent<InventoryItem>();
         selectedItem = item;
         rectTransform = item.GetComponent<RectTransform>();
         rectTransform.SetParent(canvasTransform);
 
-        int selectedItemID = UnityEngine.Random.Range(0, items.Count);
-        item.Set(items[selectedItemID]);
+        item.Set(itemData);
 
-        if(item.itemData.stackable){
-            item.SetStack(UnityEngine.Random.Range(1, item.itemData.maxStack));
-        }
+        return item;
 
     }
 
@@ -253,6 +282,10 @@ public class InventoryController : MonoBehaviour
             return;
         }
 
+        if(selectedItem != null){
+            return;
+        }
+
         if(selectedGrid != null){
             Vector2Int tilePosition = GetTilePosition();
             InventoryItem clickedItem = selectedGrid.GetItem(tilePosition.x, tilePosition.y);
@@ -279,7 +312,10 @@ public class InventoryController : MonoBehaviour
                 ToggleContainerGrid(selectedItem, false);
                 selectedItem.isEquipped = false;
                 RemoveOutlineSprite(selectedItem);
-                equippedItems[equipmentTypes[selectedItem.itemData.equipmentType]] = null;
+                RemoveEquippedItemFromDict(selectedItem);
+                if(selectedItem.itemData.weapon){
+                    WeaponSelectUpdate();
+                }
             }
         }
         HighlightSlot(true);
@@ -290,8 +326,13 @@ public class InventoryController : MonoBehaviour
             ToggleContainerGrid(selectedItem, true);
             AddOutlineSprite(selectedItem);
             selectedItem.isEquipped = true;
+            AddEquippedItemToDict(selectedItem);
+            if(selectedItem.itemData.weapon){
+                WeaponSelectUpdate();
+            }
             selectedItem = null;
             HighlightSlot(false);
+
 
         }
         
@@ -343,11 +384,6 @@ public class InventoryController : MonoBehaviour
 
         itemSlots[selectedItem.itemData.equipmentType].GetComponent<Image>().color = Color.green;
 
-        //Secondary weapon can be used as primary
-        if(selectedItem.itemData.equipmentType == 12){
-            itemSlots[11].GetComponent<Image>().color = Color.green;
-        }
-
 
     }
 
@@ -359,6 +395,7 @@ public class InventoryController : MonoBehaviour
 
 
         Vector2Int positionOnGrid = GetTilePosition();
+        bool highlightGreen = false;
 
         if(selectedItem == null)
         {
@@ -378,15 +415,22 @@ public class InventoryController : MonoBehaviour
 
             if(selectedGrid.BoundaryCheck(positionOnGrid.x, positionOnGrid.y, selectedItem.Width, selectedItem.Height)){
                 bool stackableFlag = false;
-                if(selectedGrid.OverlapCheck(positionOnGrid.x, positionOnGrid.y, selectedItem, ref stackableFlag)){
-                    highlighter.SetColor(Color.green);
+                InventoryItem overlappingItem = null;
+                if(selectedGrid.OverlapCheck(positionOnGrid.x, positionOnGrid.y, selectedItem, out stackableFlag, out overlappingItem)){
+                    highlightGreen = true;
                 }else{
                     if(stackableFlag){
-                        highlighter.SetColor(Color.green);
-                    }else{
-                        highlighter.SetColor(Color.red);
+                        highlightGreen = true;
+                    }else if(selectedItem.itemData.ammo){
+                        if(overlappingItem != null && overlappingItem.itemData.magazine && overlappingItem.itemData.weaponType == selectedItem.itemData.weaponType){
+                            highlightGreen = true;
+                        }
                     }
                 }
+            }
+
+            if(highlightGreen){
+                highlighter.SetColor(Color.green);
             }else{
                 highlighter.SetColor(Color.red);
             }
@@ -420,6 +464,9 @@ public class InventoryController : MonoBehaviour
     }
 
     public void AddEquippedItemToDict(InventoryItem item){
+        if(item.itemData.equipmentType == 0){
+            return;
+        }
         if(equippedItems.ContainsKey(equipmentTypes[item.itemData.equipmentType])){
             equippedItems[equipmentTypes[item.itemData.equipmentType]] = item;
         }
@@ -480,13 +527,10 @@ public class InventoryController : MonoBehaviour
             }else{
                 containerGrid.transform.SetAsLastSibling();
             }
-            AddEquippedItemToDict(item);
         //Equipment item is being unequipped
         }else{
             //This is needed, so that the higlighter does not get destroyed
             highlighter.SetHighlighterParent(tempGrid);
-
-            RemoveEquippedItemFromDict(item);
 
             //Destroyed prefab
             GameObject prefab = inventoryContent.transform.Find(item.itemData.containerPrefab.name).gameObject;
@@ -615,7 +659,7 @@ public class InventoryController : MonoBehaviour
         }
     }
 
-    private bool AttemptTransferToContainer(InventoryItem clickedItem, ItemGrid itemGrid, ItemSlot itemSlot){
+    private bool AttemptTransferToContainer(InventoryItem clickedItem, ItemGrid itemGrid, ItemSlot itemSlot, bool grabItem = true){
         if(clickedItem.isOpened){
             CloseInventoryContainerWindow(clickedItem);
         }
@@ -623,11 +667,15 @@ public class InventoryController : MonoBehaviour
         int posY;
         if(containerGrid.FindSpaceForItem(clickedItem, out posX, out posY)){
             InventoryItem transferedItem = null;
-            if(itemGrid != null){
-                transferedItem = itemGrid.GrabItem(clickedItem.gridPositionX, clickedItem.gridPositionY);
-            }
-            if(itemSlot != null){
-                transferedItem = itemSlot.GrabItem();
+            if(grabItem){
+                if(itemGrid != null){
+                    transferedItem = itemGrid.GrabItem(clickedItem.gridPositionX, clickedItem.gridPositionY);
+                }
+                if(itemSlot != null){
+                    transferedItem = itemSlot.GrabItem();
+                }
+            }else{
+                transferedItem = clickedItem;
             }
             containerGrid.PlaceItem(transferedItem, posX, posY);
             return true;
@@ -661,7 +709,7 @@ public class InventoryController : MonoBehaviour
     }
 
 
-    private bool AttempTransferToEquippedItem(GameObject container, InventoryItem clickedItem, ItemGrid itemGrid, ItemSlot itemSlot){
+    private bool AttempTransferToEquippedItem(GameObject container, InventoryItem clickedItem, ItemGrid itemGrid, ItemSlot itemSlot, bool grabItem = true){
         int posX;
         int posY;
         GameObject grids = container.transform.Find("Grid").gameObject;
@@ -678,12 +726,17 @@ public class InventoryController : MonoBehaviour
             }
             if(grid.FindSpaceForItem(clickedItem, out posX, out posY)){
                 InventoryItem transferedItem = null;
-                if(itemGrid != null){
-                    transferedItem = itemGrid.GrabItem(clickedItem.gridPositionX, clickedItem.gridPositionY);
+                if(grabItem){
+                    if(itemGrid != null){
+                        transferedItem = itemGrid.GrabItem(clickedItem.gridPositionX, clickedItem.gridPositionY);
+                    }
+                    if(itemSlot != null){
+                        transferedItem = itemSlot.GrabItem();
+                    }
+                }else{
+                    transferedItem = clickedItem;
                 }
-                if(itemSlot != null){
-                    transferedItem = itemSlot.GrabItem();
-                }
+                
                 grid.PlaceItem(transferedItem, posX, posY);
                 return true;
             }
@@ -766,5 +819,349 @@ public class InventoryController : MonoBehaviour
         }
 
         openedWindows.Remove(saveWindow);
+    }
+
+    public void LoadAmmoIntoMagazine(InventoryItem magazine){
+        if(magazine.ammoCount == magazine.itemData.magazineSize){
+            return;
+        }
+
+        while(magazine.ammoCount < magazine.itemData.magazineSize){
+            InventoryItem ammo = null;
+            ammo = FindAmmo(magazine.itemData.weaponType);
+            if(ammo == null){
+                return;
+            }
+
+            int neededAmount = magazine.itemData.magazineSize - magazine.ammoCount;
+            int availableAmount = ammo.currentStack;
+            int addedAmount = 0;
+            if(neededAmount > availableAmount){
+                addedAmount = availableAmount;
+            }else{
+                addedAmount = neededAmount;
+            }
+
+            magazine.AddToMagazine(addedAmount);
+            ammo.RemoveFromStack(addedAmount);
+
+        }    
+    }
+
+    public void UnloadAmmoFromMagazine(InventoryItem magazine){
+
+        if(magazine.ammoCount == 0){
+            return;
+        }
+
+        int removedAmount = magazine.RemoveAllFromMagazine();
+
+        InventoryItem ammo = SpawnItem(magazine.itemData.ammoItemData);
+        ammo.SetStack(removedAmount);
+    }
+
+    public void UnloadAmmoFromFirearm(InventoryItem firearm){
+        if(firearm.ammoCount == 0){
+            return;
+        }
+
+        int removedAmount = firearm.UnloadAmmoFromInternalMagazine();
+
+        InventoryItem ammo = SpawnItem(firearm.itemData.ammoItemData);
+        ammo.SetStack(removedAmount);
+
+    }
+
+    public void LoadAmmoIntoFirearm(InventoryItem firearm){
+        if(firearm.ammoCount == firearm.itemData.internalMagSize){
+            return;
+        }
+
+        while(firearm.ammoCount < firearm.itemData.internalMagSize){
+            InventoryItem ammo = null;
+            ammo = FindAmmo(firearm.itemData.weaponType);
+            if(ammo == null){
+                return;
+            }
+
+            int neededAmount = firearm.itemData.internalMagSize - firearm.ammoCount;
+            int availableAmount = ammo.currentStack;
+            int addedAmount = 0;
+            if(neededAmount > availableAmount){
+                addedAmount = availableAmount;
+            }else{
+                addedAmount = neededAmount;
+            }
+
+            firearm.LoadAmmoIntoInternalMagazine(addedAmount);
+            ammo.RemoveFromStack(addedAmount);
+
+        }
+    }
+
+    public InventoryItem FindMagazine(string weaponType, bool quickReload){
+        InventoryItem bestMagazine = null;
+        //Minus one so that a magazine with 0 ammo is selected if no other is found
+        //This could be done with ">=" when checking for bestAmmoCount but that would cause the last found magazine to be used
+        int bestAmmoCount = -1;
+        ItemGrid currentGrid = null;
+        InventoryItem currentMagazine = null;
+        //Loop through equipped items
+        foreach(KeyValuePair<string, InventoryItem> item in equippedItems){
+            //Skip if item is null
+            if(item.Value == null){
+                continue;
+            }
+            //Skip if item is not a container
+            if(!item.Value.itemData.container){
+                continue;
+            }
+            //Skip backpack if this is called during quick reload (pressing reload button during gameplay)
+            if(quickReload){
+                if(item.Value.itemData.equipmentType == 6){
+                    continue;
+                }
+            }
+            //Get container
+            GameObject container = inventoryContent.transform.Find(item.Value.itemData.containerPrefab.name).gameObject;
+            //Get grid
+            GameObject grids = container.transform.Find("Grid").gameObject;
+            //Get child count
+            int childCount = grids.transform.childCount;
+            //Loop through children
+            for(int i = 0; i < childCount; i++){
+                //Get child
+                Transform child = grids.transform.GetChild(i);
+                //Get grid
+                currentGrid = child.GetComponent<ItemGrid>();
+                currentMagazine = currentGrid.FindBestMagazine(weaponType);
+                if(currentMagazine != null){
+                    if(currentMagazine.ammoCount > bestAmmoCount){
+                        bestMagazine = currentMagazine;
+                        bestAmmoCount = currentMagazine.ammoCount;
+                    }
+                }
+            }
+        }
+
+        //Skip container/ground as well if this is called during quick reload
+        if(quickReload){
+            return bestMagazine;
+        }
+
+        //Check container/ground as well
+        currentGrid = containerGrid.GetComponent<ItemGrid>();
+        currentMagazine = currentGrid.FindBestMagazine(weaponType);
+        if(currentMagazine != null){
+            if(currentMagazine.ammoCount > bestAmmoCount){
+                bestAmmoCount = currentMagazine.ammoCount;
+                bestMagazine = currentMagazine;
+            }
+        }
+        return bestMagazine;
+    }
+
+    
+
+    private InventoryItem FindAmmo(string weaponType){
+        ItemGrid currentGrid = null;
+        InventoryItem ammo = null;
+        for(int i = 0; i < inventoryContent.transform.childCount; i++){
+            Transform child = inventoryContent.transform.GetChild(i);
+            GameObject grids = child.Find("Grid").gameObject;
+            int childCount = grids.transform.childCount;
+            for(int j = 0; j < childCount; j++){
+                currentGrid = grids.transform.GetChild(j).GetComponent<ItemGrid>();
+                ammo = currentGrid.FindAmmo(weaponType);
+                if(ammo != null){
+                    return ammo;
+                }
+            }
+        }
+
+        //Check container/ground as well
+        currentGrid = containerGrid.GetComponent<ItemGrid>();
+        ammo = currentGrid.FindAmmo(weaponType);
+        if(ammo != null){
+            return ammo;
+        }
+
+        return null;
+    }
+
+
+    private bool AttemptMagPlaceToInventory(InventoryItem magazine){
+        if(equippedItems["ChestRig"] != null){
+            GameObject container = inventoryContent.transform.Find(equippedItems["ChestRig"].itemData.containerPrefab.name).gameObject;
+            if(AttempTransferToEquippedItem(container, magazine, null, null, false))
+                return true;
+        }
+        if(equippedItems["TorsoTopLayer"] != null){
+            GameObject container = inventoryContent.transform.Find(equippedItems["TorsoTopLayer"].itemData.containerPrefab.name).gameObject;
+            if(AttempTransferToEquippedItem(container, magazine, null, null, false))
+                return true;
+        }
+        if(equippedItems["LegsTopLayer"] != null){
+            GameObject container = inventoryContent.transform.Find(equippedItems["LegsTopLayer"].itemData.containerPrefab.name).gameObject;
+            if(AttempTransferToEquippedItem(container, magazine, null, null, false))
+                return true;
+        }
+
+        return false;
+    }
+
+
+    public void ReloadRemoveMagazine(InventoryItem weapon){
+        int ammoCount = weapon.RemoveMagazine();
+        InventoryItem magazine = SpawnItem(weapon.itemData.magazineItemData);
+        //In this case the removed magazine should not be the selected item but should be automatically transfered to pockets
+        selectedItem = null;
+        magazine.AddToMagazine(ammoCount);
+
+        if(AttemptMagPlaceToInventory(magazine)){
+            return;
+        }
+        AttemptTransferToContainer(magazine, null, null, false);
+    }
+
+    public void AttachMagazine(InventoryItem weapon, bool quickReload){
+        InventoryItem magazine = FindMagazine(weapon.itemData.weaponType, quickReload);
+        if(magazine == null){
+            return;
+        }
+
+        weapon.AttachMagazine(magazine);
+        Destroy(magazine.gameObject);
+        
+    }
+
+    
+
+    public void RemoveMagazine(InventoryItem weapon){
+        int ammoCount = weapon.RemoveMagazine();
+        InventoryItem magazine = SpawnItem(weapon.itemData.magazineItemData);
+        magazine.AddToMagazine(ammoCount);
+
+    }
+
+    public void ChamberRound(InventoryItem weapon){
+        InventoryItem ammo = FindAmmo(weapon.itemData.weaponType);
+        if(ammo == null){
+            return;
+        }
+
+        bool roundChambered = weapon.ChamberRound();
+        if(roundChambered){
+            ammo.RemoveFromStack(1);
+        }
+    }
+
+    public void ClearChamber(InventoryItem weapon){
+        weapon.ClearChamber();
+        InventoryItem ammo = SpawnItem(weapon.itemData.ammoItemData);
+        ammo.SetStack(1);
+    }
+
+    public InventoryItem GetSelectedWeapon(){
+        if(selectedWeaponSlot == 0){
+            return null;
+        }else if(selectedWeaponSlot == 1){
+            return equippedItems["PrimaryWeapon"];
+        }else if(selectedWeaponSlot == 2){
+            return equippedItems["SecondaryWeapon"];
+        }
+
+        return null;
+    }
+
+    public ItemSlot GetSelectedWeaponSlot(){
+        if(selectedWeaponSlot == 0){
+            return null;
+        }else if(selectedWeaponSlot == 1){
+            return itemSlots[11].GetComponent<ItemSlot>();
+        }else if(selectedWeaponSlot == 2){
+            return itemSlots[12].GetComponent<ItemSlot>();
+        }
+
+        return null;
+    }
+
+    public void WeaponSelectUpdate(){
+        InventoryItem primaryWeapon = equippedItems["PrimaryWeapon"];
+        InventoryItem secondaryWeapon = equippedItems["SecondaryWeapon"];
+        if(selectedWeaponSlot == 0){
+            if(primaryWeapon != null){
+                primaryWeapon.isSelectedWeapon = false;
+            }
+            if(secondaryWeapon != null){
+                secondaryWeapon.isSelectedWeapon = false;
+            }
+        }else if(selectedWeaponSlot == 1){
+            if(primaryWeapon != null){
+                primaryWeapon.isSelectedWeapon = true;
+            }
+            if(secondaryWeapon != null){
+                secondaryWeapon.isSelectedWeapon = false;
+            }
+        }else if(selectedWeaponSlot == 2){
+            if(primaryWeapon != null){
+                primaryWeapon.isSelectedWeapon = false;
+            }
+            if(secondaryWeapon != null){
+                secondaryWeapon.isSelectedWeapon = true;
+            }
+        }
+
+        firearmScript.ChangeSelectedFirearm(GetSelectedWeapon());
+        hudController.UpdateWeaponHUD(GetSelectedWeapon());
+
+    }
+
+    public void CycleWeapon(InputValue value){
+        float input = value.Get<float>();
+        if(selectedWeaponSlot == 0){
+            if(input > 0){
+                selectedWeaponSlot = 1;
+            }else if(input < 0){
+                selectedWeaponSlot = 2;
+            }
+        }else if(selectedWeaponSlot == 1){
+            if(input > 0){
+                selectedWeaponSlot = 2;
+            }else if(input < 0){
+                selectedWeaponSlot = 0;
+            }
+        }else if(selectedWeaponSlot == 2){
+            if(input > 0){
+                selectedWeaponSlot = 0;
+            }else if(input < 0){
+                selectedWeaponSlot = 1;
+            }
+        }
+
+        WeaponSelectUpdate();
+
+        
+    }
+
+    public void SelectWeapon(int value){
+        if(selectedWeaponSlot == 0){
+            selectedWeaponSlot = value;
+        }else if(selectedWeaponSlot == 1){
+            if(value == 1){
+                selectedWeaponSlot = 0;
+            }else if(value == 2){
+                selectedWeaponSlot = 2;
+            }
+        }else if(selectedWeaponSlot == 2){
+            if(value == 1){
+                selectedWeaponSlot = 1;
+            }else if(value == 2){
+                selectedWeaponSlot = 0;
+            }
+        }
+
+        WeaponSelectUpdate();
+        
     }
 }

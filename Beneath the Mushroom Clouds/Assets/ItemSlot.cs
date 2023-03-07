@@ -2,10 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class ItemSlot : MonoBehaviour
 {
-
 
     InventoryItem item;
     RectTransform rectTransform;
@@ -15,7 +15,7 @@ public class ItemSlot : MonoBehaviour
     float slotHeight;
     float slotRatio;
 
-    [SerializeField] private int equipmentType;
+    public int equipmentType;
 
 
     private void Awake() {
@@ -27,23 +27,55 @@ public class ItemSlot : MonoBehaviour
     }
 
 
-    public bool PlaceItem(InventoryItem item){
-        if(this.item != null){
+    public bool PlaceItem(InventoryItem placedItem){
+        if(item != null){
+            if(item.itemData.firearm){
+                if(placedItem.itemData.magazine){
+                    if(item.itemData.weaponType == placedItem.itemData.weaponType){
+                        item.AttachMagazine(placedItem);
+                        Destroy(placedItem.gameObject);
+                        return true;
+                    }
+                }
+                if(placedItem.itemData.ammo){
+                    if(item.itemData.weaponType == placedItem.itemData.weaponType){
+                        if(!item.itemData.usesMagazines){
+                            if(item.ChamberRound()){
+                                if(placedItem.RemoveFromStack(1) == 0){
+                                    return true; 
+                                }
+                            }
+                            int amountTransfered = item.LoadAmmoIntoInternalMagazine(placedItem.currentStack);
+                            if(placedItem.RemoveFromStack(amountTransfered) == 0){
+                                return true;
+                            }else{
+                                return false;
+                            }
+                        }else{
+                            if(item.ChamberRound()){
+                                placedItem.RemoveFromStack(1);
+                                return false;
+                            }
+                        }
+                        
+                    }
+                }
+            }
             return false;
         }
 
-        if(item.itemData.equipmentType != equipmentType){
-            if(item.itemData.equipmentType != 12 || equipmentType != 11)
-                return false;
+        if(placedItem.itemData.equipmentType != equipmentType){
+            return false;
         }
         
-        this.item = item;
-        RectTransform itemRectTransform = item.GetComponent<RectTransform>();
+        item = placedItem;
+        RectTransform itemRectTransform = placedItem.GetComponent<RectTransform>();
         itemRectTransform.SetParent(rectTransform);
         itemRectTransform.SetAsFirstSibling();
         itemRectTransform.localPosition = Vector2.zero;
 
-        PlaceResizeItem(item);
+        PlaceResizeItem(placedItem);
+        
 
         return true;
     }
@@ -91,4 +123,5 @@ public class ItemSlot : MonoBehaviour
         RectTransform itemRectTransform = item.GetComponent<RectTransform>();
         itemRectTransform.sizeDelta = new Vector2(item.Width * ItemGrid.tileDimension, item.Height * ItemGrid.tileDimension);
     }
+
 }

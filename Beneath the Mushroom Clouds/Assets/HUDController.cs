@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class HUDController : MonoBehaviour
 {
@@ -37,12 +38,7 @@ public class HUDController : MonoBehaviour
     void Start()
     {
         GetStatusBarObjects();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        GetWeaponObjects();
     }
 
     private void GetStatusBarObjects(){
@@ -95,6 +91,23 @@ public class HUDController : MonoBehaviour
         stance = this.transform.Find("LowerStatusBars").Find("Stance").gameObject;
         stanceImage = stance.GetComponent<Image>();
 
+    }
+
+    private void GetWeaponObjects(){
+        weapon = transform.Find("Weapon").gameObject;
+
+        weaponName = weapon.transform.Find("WeaponName").gameObject;
+        weaponImage = weapon.transform.Find("WeaponImage").gameObject;
+        fireModeText = weapon.transform.Find("FireModeText").gameObject;
+        magazineBar = weapon.transform.Find("MagazineBar").gameObject;
+
+        magazineBarFull = magazineBar.transform.Find("MagazineBarFull").gameObject;
+        magazineBarEmpty = magazineBar.transform.Find("MagazineBarEmpty").gameObject;
+
+        chamberFull = magazineBarFull.transform.Find("ChamberFull").gameObject;
+        chamberEmpty = magazineBarEmpty.transform.Find("ChamberEmpty").gameObject;
+
+        ammoCountText = chamberEmpty.transform.Find("AmmoCountText").gameObject;
     }
 
     public void ArrowEdges(string bar){
@@ -155,4 +168,98 @@ public class HUDController : MonoBehaviour
             }
         }
     }
+
+    public void ActivateWeaponSection(){
+        weapon.SetActive(true);
+    }
+
+    public void DeactivateWeaponSection(){
+        weapon.SetActive(false);
+    }
+
+    public void UpdateWeaponName(string name){
+        weaponName.GetComponent<TextMeshProUGUI>().text = name;
+    }
+
+    public void UpdateWeaponImage(Sprite image){
+        weaponImage.GetComponent<Image>().sprite = image;
+    }
+
+    public void UpdateFireModeText(string mode){
+        fireModeText.GetComponent<TextMeshProUGUI>().text = mode;
+    }
+
+    public void UpdateMagazineBarImage(Sprite ammoBarFull, Sprite ammoBarEmpty, string weaponType){
+
+        magazineBarFull.GetComponent<Image>().sprite = ammoBarFull;
+        magazineBarEmpty.GetComponent<Image>().sprite = ammoBarEmpty;
+
+        Image chaberFullImage = chamberFull.GetComponent<Image>();
+        Image chamberEmptyImage = chamberEmpty.GetComponent<Image>();
+
+        chaberFullImage.sprite = ammoBarFull;
+        chamberEmptyImage.sprite = ammoBarEmpty;
+
+        float maxAmmo = 0;
+
+        switch(weaponType){
+            case "AssaultRifle":
+                maxAmmo = 30.0f;
+                break;
+            case "Pistol":
+                maxAmmo = 12.0f;
+                break;
+            case "Shotgun":
+                maxAmmo = 6.0f;
+                break;
+            case "SniperRifle":
+                maxAmmo = 4.0f;
+                break;
+            default:
+                maxAmmo = 1.0f;
+                break;
+        }
+
+        chaberFullImage.fillAmount = 1/maxAmmo;
+        chamberEmptyImage.fillAmount = 1/maxAmmo;
+    }
+
+    public void UpdateAmmoStatus(int ammoCount, int maxAmmo, bool isChambered, bool manuallyChambered){
+        float ammoPercent = (float)ammoCount / (float)maxAmmo;
+        magazineBarFull.GetComponent<Image>().fillAmount = ammoPercent;
+        if(isChambered){
+            chamberFull.SetActive(true);
+        }else{
+            //Prevents ugly chamber round flicker in hud when shooting weapons which chamber rounds automatically
+            if(!manuallyChambered && ammoCount > 0)
+                chamberFull.SetActive(true);
+            else
+                chamberFull.SetActive(false);
+        }
+
+        if(isChambered){
+            ammoCount += 1;
+        }
+        this.ammoCountText.GetComponent<TextMeshProUGUI>().text = ammoCount.ToString() + "/" + maxAmmo.ToString();
+
+    }
+
+    public void UpdateWeaponHUD(InventoryItem item){
+        if(item == null){
+            DeactivateWeaponSection();
+            return;
+        }
+        ActivateWeaponSection();
+        if(item.itemData.firearm){
+            UpdateWeaponName(item.itemData.itemName.ToUpper());
+            UpdateWeaponImage(item.itemData.weaponHUDOutlineSprite);
+            //TODO: Change when firemode selection is added
+            UpdateFireModeText("AUTOMATIC");
+            UpdateMagazineBarImage( item.itemData.ammoBarFullSprite, item.itemData.ammoBarEmptySprite, 
+                                    item.itemData.weaponType);
+            UpdateAmmoStatus(item.ammoCount, item.currentMagazineSize, item.isChambered, item.itemData.manuallyChambered);
+        }
+    }
+    
+        
 }

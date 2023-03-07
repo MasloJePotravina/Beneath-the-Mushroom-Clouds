@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ecfbb8176217e3c4484167a9acf83cd9, type: 3}
+  m_Name: PistolAmmo
+  m_EditorClassIdentifier: 
+  id: 50002
+  itemName: Pistol Ammo
+  width: 1
+  height: 1
+  equipment: 0
+  clothing: 0
+  weapon: 0
+  weaponHUDOutlineSprite: {fileID: 0}
+  firearm: 0
+  ammoBarFullSprite: {fileID: 0}
+  ammoBarEmptySprite: {fileID: 0}
+  manuallyChambered: 0
+  ammo: 1
+  weaponType: Pistol
+  container: 0
+  gridAmount: 0
+  gridData: []
+  stackable: 1
+  maxStack: 60
+  itemSubtextPrefab: {fileID: 7965834515029828087, guid: 9b695b4cc89c56f4292c39b2d0d38a68, type: 3}
+  magazine: 0
+  magazineSize: 0
+  ammoItemData: {fileID: 0}
+  magazineItemData: {fileID: 0}
+  usable: 0
+  equipmentType: 0
+  containerPrefab: {fileID: 0}
+  outlineSprite: {fileID: 0}
+  inventorySprite: {fileID: 21300000, guid: 046aceb0699a66649a5744f796459ead, type: 3}
+  inventorySpriteSecondary: {fileID: 0}

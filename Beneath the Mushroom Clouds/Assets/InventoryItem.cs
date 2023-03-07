@@ -6,23 +6,33 @@ using TMPro;
 
 public class InventoryItem : MonoBehaviour
 {
+
+    private GameObject HUDCanvas;
+    private HUDController hudController;
+
     public ItemData itemData;
 
     public InventoryItem[][,] itemGrids;
+
 
     public int gridPositionX;
     public int gridPositionY;
 
     public int currentStack;
-    private GameObject currentStackText;
+    public GameObject itemSubtext;
 
     public bool isEquipped = false;
+    public bool isSelectedWeapon = false;
     public bool isOpened = false;
 
     //For magazines
     public int ammoCount = 0;
-    private GameObject currentAmmoText;
-    
+
+    //For weapons
+    public int currentMagazineSize = 0;
+
+    public bool isChambered = false;
+    public bool hasMagazine = false;
 
     public int Height{
         get{
@@ -49,16 +59,9 @@ public class InventoryItem : MonoBehaviour
             }
         }
 
-        if(itemData.stackable){
-            currentStackText = Instantiate(this.itemData.currentStackTextPrefab, transform, false);
+        if(itemData.stackable || itemData.magazine || itemData.firearm){
+            InstantiateSubtext();
         }
-
-        if(itemData.magazine){
-            currentAmmoText = Instantiate(this.itemData.currentStackTextPrefab, transform, false);
-            UpdateAmmoText();
-        }
-
-
 
         GetComponent<Image>().sprite = itemData.inventorySprite;
 
@@ -67,15 +70,20 @@ public class InventoryItem : MonoBehaviour
         rectTransform.sizeDelta = new Vector2(Width * ItemGrid.tileDimension, Height * ItemGrid.tileDimension);
         rectTransform.localScale = Vector2.one;
 
+        HUDCanvas = GameObject.Find("HUD");
+        hudController = HUDCanvas.GetComponent<HUDController>();
+
+        if(itemData.firearm){
+            if(!itemData.usesMagazines){
+                currentMagazineSize = itemData.internalMagSize;
+            }
+        }
+
+        
     }
 
     public InventoryItem[,] LoadGrid(int gridID){
-        
-
-
         return itemGrids[gridID];
-
-        
     }
 
     public void SaveGrid(int gridID, InventoryItem[,] items){
@@ -99,17 +107,12 @@ public class InventoryItem : MonoBehaviour
 
         rectTransform.rotation = Quaternion.Euler(0, 0, rotated ? -90 : 0);
 
-
-        if(currentStackText != null){
-            currentStackText.transform.rotation = Quaternion.Euler(0, 0, 0);
-            RectTransform textRect = currentStackText.GetComponent<RectTransform>();
-
+        if(itemSubtext != null){
+            itemSubtext.GetComponent<ItemSubtext>().UpdatePosition();
         }
 
-        if(currentAmmoText != null){
-            currentAmmoText.transform.rotation = Quaternion.Euler(0, 0, 0);
-            
-        }
+
+        
     }
 
     public void SetStack(int count){
@@ -139,28 +142,53 @@ public class InventoryItem : MonoBehaviour
             currentStack -= count;
         }
 
+        if(currentStack == 0){
+            Destroy(gameObject);
+        }
+
+
         UpdateStackText();
         return currentStack;
 
     }
 
     private void UpdateStackText(){
-        if(currentStackText != null){
-            currentStackText.GetComponent<TextMeshProUGUI>().text = currentStack.ToString();
+        if(itemSubtext != null){
+            itemSubtext.GetComponent<ItemSubtext>().UpdateText(currentStack.ToString());
         }
     }
 
+    public int LoadAmmoIntoInternalMagazine(int count){
+        if(ammoCount + count > itemData.internalMagSize){
+            int prevCount = ammoCount;
+            ammoCount = itemData.internalMagSize;
+            UpdateFirearmText();
+            return (itemData.internalMagSize - prevCount);
+        }else{
+            ammoCount += count;
+            UpdateFirearmText();
+            return count;
+        }
+    }
+
+    public int UnloadAmmoFromInternalMagazine(){
+        int count = ammoCount;
+        ammoCount = 0;
+        UpdateFirearmText();
+        return count;
+    }
+
     
-    public int AddToMagaize(int count){
+    public int AddToMagazine(int count){
         if(ammoCount + count > itemData.magazineSize){
             int prevCount = ammoCount;
             ammoCount = itemData.magazineSize;
-            UpdateAmmoText();
+            UpdateMagazineText();
             return (itemData.magazineSize - prevCount);
 
         }else{
             ammoCount += count;
-            UpdateAmmoText();
+            UpdateMagazineText();
             return count;
         }
     }
@@ -168,15 +196,119 @@ public class InventoryItem : MonoBehaviour
     public int RemoveAllFromMagazine(){
         int count = ammoCount;
         ammoCount = 0;
-        UpdateAmmoText();
+        UpdateMagazineText();
         return count;
     }
 
-    private void UpdateAmmoText(){
-        if(currentAmmoText != null){
-            currentAmmoText.GetComponent<TextMeshProUGUI>().text = ammoCount.ToString() + "/" + itemData.magazineSize.ToString();
+    private void UpdateMagazineText(){
+        if(itemSubtext != null){
+            itemSubtext.GetComponent<ItemSubtext>().UpdateText(ammoCount.ToString() + "/" + itemData.magazineSize.ToString()); ;
         }
     }
+
+    private void UpdateFirearmText(){
+        if(itemSubtext != null){
+            if(isChambered){
+                itemSubtext.GetComponent<ItemSubtext>().UpdateText(ammoCount.ToString() + "+1"  + "/" + currentMagazineSize.ToString());
+            }else{
+                itemSubtext.GetComponent<ItemSubtext>().UpdateText(ammoCount.ToString() + "/" + currentMagazineSize.ToString());
+            }
+        }
+    }
+
+    private void InstantiateSubtext(){
+        itemSubtext = Instantiate(this.itemData.itemSubtextPrefab, transform, false);
+        if(itemData.stackable){
+            UpdateStackText();
+        }
+        if(itemData.magazine){
+            UpdateMagazineText();
+        }
+
+        if(itemData.firearm){
+            UpdateFirearmText();
+        }
+
+        itemSubtext.GetComponent<ItemSubtext>().item = this;
+        itemSubtext.GetComponent<ItemSubtext>().UpdatePosition();
+    }
+
+    public void AttachMagazine(InventoryItem magazine){
+        hasMagazine = true;
+        ammoCount = magazine.ammoCount;
+        currentMagazineSize = magazine.itemData.magazineSize;
+        UpdateFirearmText();
+        SelectSprite(1);
+        if(isEquipped && isSelectedWeapon)
+            hudController.UpdateWeaponHUD(this);
+    }
+
+    public int RemoveMagazine(){
+        hasMagazine = false;
+        int count = ammoCount;
+        ammoCount = 0;
+        currentMagazineSize = 0;
+        UpdateFirearmText();
+        SelectSprite(0);
+        if(isEquipped && isSelectedWeapon)
+            hudController.UpdateWeaponHUD(this);
+        return count;
+    }
+
+    public bool ChamberRound(){
+        if(isChambered){
+            return false;
+        }
+        isChambered = true;
+        UpdateFirearmText();
+        if(isEquipped && isSelectedWeapon)
+            hudController.UpdateWeaponHUD(this);
+        return true;
+    }
+
+    public bool ClearChamber(){
+        if(!isChambered){
+            return false;
+        }
+        isChambered = false;
+        UpdateFirearmText();
+        if(isEquipped && isSelectedWeapon)
+            hudController.UpdateWeaponHUD(this);
+        return true;
+    }
+
+    public bool FireRound(){
+        if(!isChambered){
+            return false;
+        }
+        isChambered = false;
+        UpdateFirearmText();
+        if(isEquipped && isSelectedWeapon)
+            hudController.UpdateWeaponHUD(this);
+        return true;
+    }
+
+    public bool ChamberFromMagazine(){
+        if(isChambered || ammoCount == 0){
+            return false;
+        }
+        isChambered = true;
+        ammoCount--;
+        UpdateFirearmText();
+        if(isEquipped && isSelectedWeapon)
+            hudController.UpdateWeaponHUD(this);
+        return true;
+    }
+
+    private void SelectSprite(int selector){
+        if(selector == 0){
+            GetComponent<Image>().sprite = itemData.inventorySprite;
+        }else if(selector == 1){
+            GetComponent<Image>().sprite = itemData.inventorySpriteSecondary;
+        }
+    }
+
+    
 
 
 }

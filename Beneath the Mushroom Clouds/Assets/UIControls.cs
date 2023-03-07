@@ -43,7 +43,7 @@ public class UIControls : MonoBehaviour
     //TODO: Debug only, remove later
     void OnDebugSpawnItem()
     {
-        inventoryController.SpawnItem();
+        inventoryController.QuickSpawnItem();
     }
 
     void OnRotateItem(){

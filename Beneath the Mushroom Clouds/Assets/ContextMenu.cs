@@ -22,6 +22,7 @@ public class ContextMenu : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         {"ChamberRound", false},
         {"ClearChamber", false},
         {"UnloadAmmo", false},
+        {"LoadAmmo", false},
         {"SplitStack", false},
         {"Destroy", true}
     };
@@ -43,22 +44,60 @@ public class ContextMenu : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     }
 
     public void MenuSetup(){
-        if(item.isEquipped){
-            menuOptions["Unequip"] = true;
-        } else {
-            menuOptions["Equip"] = true;
+        if(item.itemData.equipment){
+            if(item.isEquipped){
+                menuOptions["Unequip"] = true;
+            } else {
+                menuOptions["Equip"] = true;
+            }
         }
 
-        if(item.itemData.container && !item.isEquipped && !item.isOpened){
-            menuOptions["Open"] = true;
+        if(item.itemData.container){
+            if(!item.isEquipped){
+                if(!item.isOpened){
+                    menuOptions["Open"] = true;
+                } else {
+                    menuOptions["Close"] = true;
+                }
+            }
+        }
+        
+        if(item.itemData.stackable){
+            if(item.currentStack > 1)
+                menuOptions["SplitStack"] = true;
         }
 
-        if(item.itemData.container && !item.isEquipped && item.isOpened){
-            menuOptions["Close"] = true;
+        if(item.itemData.usable){
+            menuOptions["Use"] = true;
         }
 
+        if(item.itemData.magazine){
+            if(item.ammoCount > 0)
+                menuOptions["UnloadAmmo"] = true;
+            if(item.ammoCount < item.itemData.magazineSize)
+                menuOptions["LoadAmmo"] = true;
+        }
 
+        if(item.itemData.firearm){
+            if(item.itemData.usesMagazines){
+                if(item.hasMagazine){
+                    menuOptions["RemoveMagazine"] = true;
+                } else {
+                    menuOptions["AttachMagazine"] = true;
+                }
+            }else{
+                if(item.ammoCount > 0)
+                    menuOptions["UnloadAmmo"] = true;
+                if(item.ammoCount < item.itemData.internalMagSize)
+                    menuOptions["LoadAmmo"] = true;
+            }
 
+            if(item.isChambered){
+                menuOptions["ClearChamber"] = true;
+            } else {
+                menuOptions["ChamberRound"] = true;
+            }
+        }
 
         SetupMenuOptions();
     }
@@ -109,31 +148,45 @@ public class ContextMenu : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public void AttachMagazineButton()
     {
-        Debug.Log("Use Button");
+        inventoryController.AttachMagazine(item, false);
         inventoryController.CloseContextMenu();
     }
 
     public void RemoveMagaizneButton()
     {
-        Debug.Log("Use Button");
+        inventoryController.RemoveMagazine(item);
         inventoryController.CloseContextMenu();
     }
 
     public void ChamberRoundButton()
     {
-        Debug.Log("Use Button");
+        inventoryController.ChamberRound(item);
         inventoryController.CloseContextMenu();
     }
 
     public void ClearChamberButton()
     {
-        Debug.Log("Use Button");
+        inventoryController.ClearChamber(item);
+        inventoryController.CloseContextMenu();
+    }
+
+    public void LoadAmmoButton()
+    {
+        if(item.itemData.firearm){
+            inventoryController.LoadAmmoIntoFirearm(item);
+        }else{
+            inventoryController.LoadAmmoIntoMagazine(item);
+        }
         inventoryController.CloseContextMenu();
     }
 
     public void UnloadAmmoButton()
     {
-        Debug.Log("Use Button");
+        if(item.itemData.firearm){
+            inventoryController.UnloadAmmoFromFirearm(item);
+        }else{
+            inventoryController.UnloadAmmoFromMagazine(item);
+        }
         inventoryController.CloseContextMenu();
     }
 
@@ -148,7 +201,10 @@ public class ContextMenu : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         if(item.isEquipped){
             inventoryController.ToggleContainerGrid(item, false);
             inventoryController.RemoveOutlineSprite(item);
-            selectedSlot.DeleteItem();
+            bool wasWeapon = item.itemData.weapon;
+            if(wasWeapon){
+                inventoryController.WeaponSelectUpdate();
+            }
 
         }
         Destroy(item.gameObject);

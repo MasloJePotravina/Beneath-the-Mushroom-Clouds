@@ -19,17 +19,22 @@ MonoBehaviour:
   equipment: 0
   clothing: 0
   weapon: 0
+  firearm: 0
+  ammo: 0
+  weaponType: AssaultRifle
   container: 0
   gridAmount: 0
   gridData: []
   stackable: 0
   maxStack: 0
-  currentStackTextPrefab: {fileID: 7965834515029828087, guid: 9b695b4cc89c56f4292c39b2d0d38a68, type: 3}
+  itemSubtextPrefab: {fileID: 7965834515029828087, guid: 9b695b4cc89c56f4292c39b2d0d38a68, type: 3}
   magazine: 1
   magazineSize: 30
-  magazineWeaponType: AssaultRifle
+  ammoItemData: {fileID: 11400000, guid: 031552737fb8c574998a810c1499ef8a, type: 2}
+  magazineItemData: {fileID: 0}
   usable: 0
   equipmentType: 0
   containerPrefab: {fileID: 0}
   outlineSprite: {fileID: 0}
   inventorySprite: {fileID: 21300000, guid: 53a877f86c29dfd41b6f0bdf6dc59750, type: 3}
+  inventorySpriteSecondary: {fileID: 0}

@@ -19,6 +19,7 @@ public class PlayerControls : MonoBehaviour
     public PlayerStatus status;
 
     public GameObject mainCamera;
+    private InventoryController inventoryController;
 
     [SerializeField] private GameObject inventoryScreen;
 
@@ -56,9 +57,8 @@ public class PlayerControls : MonoBehaviour
         torsoAnimator = playerTorso.GetComponent<Animator>();
         legsAnimator = playerLegs.GetComponent<Animator>();
         firearmScript = playerWeapon.GetComponent<FirearmScript>();
-        //TODO: Temporary before inventory system is implemented
-        firearmScript.SetFirearmMode(2);
-        firearmScript.SetFirearmActive(true);
+
+        inventoryController = mainCamera.GetComponent<InventoryController>();
     }
 
     void Update()
@@ -159,9 +159,27 @@ public class PlayerControls : MonoBehaviour
 
     private void OnFire()
     {
-        
-
         firearmScript.PressTrigger();
+    }
+
+    private void OnReload()
+    {
+        firearmScript.ReloadButtonPressed();
+    }
+
+    private void OnCycleWeapon(InputValue value)
+    { 
+        inventoryController.CycleWeapon(value);
+    }
+
+    private void OnPrimaryWeapon()
+    {
+        inventoryController.SelectWeapon(1);
+    }
+
+    private void OnSecondaryWeapon()
+    {
+        inventoryController.SelectWeapon(2);
     }
 
     void setAnimatorBools(Animator animator)

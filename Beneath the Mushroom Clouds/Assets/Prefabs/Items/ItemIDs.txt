@@ -13,13 +13,20 @@ Clothing - prefix 02
 
 Weapons - prefix 03
 030001 - Hammer
-030002 - AssaultRifle
+030002 - Assault Rifle
+030003 - Pistol
+030004 - Pump Shotgun
+030005 - Hunting Rifle
 
 Magazines - prefix 04
-040001
+040001 - Assault Rifle Magazines
+040002 - Pistol Magazine
 
 Ammo - prefix 05
-040001 - Assault Rifle Ammo
+050001 - Assault Rifle Ammo
+050002 - Pistol Ammo
+050003 - Shotgun Ammo
+050005 - Huning Rifle Ammo
 
 Health Items - prefix 06
 

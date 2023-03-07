@@ -20,37 +20,14 @@ public class ItemData : ScriptableObject
     //05 - Ammo
     //06 - Health items
     //07 - Quest items
+    [Header("Required")]
     public int id;
     public string itemName;
-
     public int width;
     public int height;
 
+    [Header("Equipment")]
     public bool equipment;
-    public bool clothing;
-    public bool weapon;
-
-    public bool container;
-    public int gridAmount;
-    [System.Serializable]
-    public struct GridData{
-        public int gridID;
-        public int width;
-        public int height;
-    }
-
-    public GridData[] gridData;
-
-    public bool stackable;
-    public int maxStack;
-    public GameObject currentStackTextPrefab;
-
-    public bool magazine;
-    public int magazineSize;
-    public string magazineWeaponType;
-
-    public bool usable;
-
     //0 - reserved for non equppable items
     //1 - head
     //2 - chest rig
@@ -62,16 +39,72 @@ public class ItemData : ScriptableObject
     //8 - legs top layer
     //9 - socks
     //10 - boots
-    //11 - primary weapon (only)
-    //12 - secondary weapon (can be also used as primary)
+    //11 - primary weapon 
+    //12 - secondary weapon 
     //13 - watch
     //14 - geiger counter
     public int equipmentType;
-
-    public GameObject containerPrefab;
-
+    public bool clothing;
     public Sprite outlineSprite;
 
 
+
+    [Header("Container")]
+    public bool container;
+    public int gridAmount;
+    [System.Serializable]
+    public struct GridData{
+        public int gridID;
+        public int width;
+        public int height;
+    }
+    public GameObject containerPrefab;
+    public GridData[] gridData;
+    
+
+    [Header("Weapon")]
+    public bool weapon;
+    public bool firearm;
+    public bool manuallyChambered;
+    public bool usesMagazines;
+    public int internalMagSize;
+    //Used for ammo, magazihnes and weapons for compatibility checks
+    public string weaponType;
+    public Sprite weaponHUDOutlineSprite;
+    public Sprite ammoBarFullSprite;
+    public Sprite ammoBarEmptySprite;
+
+    public ItemData ammoItemData;
+    //Item data for the magazine is needed to spawn the appropriate magazine type when the magazine is removed from weapon
+    public ItemData magazineItemData;
+
+    public bool ammo;
+    public bool magazine;
+    public int magazineSize;
+
+    [Header("Usable")]
+    public bool usable;
+
+
+    [Header("Misc")]
+    public bool stackable;
+    public int maxStack;
+    public GameObject itemSubtextPrefab;
     public Sprite inventorySprite;
+    //Used for example for weapons with and without magazines
+    public Sprite inventorySpriteSecondary;
+
+    //Item data for ammuniti0n is needed to spawn the appropriate ammo type when the magazine is emptied
+    
+
+    
+
+    
+
+    
+
+    
+
+
+    
 }

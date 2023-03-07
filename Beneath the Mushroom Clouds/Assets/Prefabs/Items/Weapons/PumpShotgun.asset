@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ecfbb8176217e3c4484167a9acf83cd9, type: 3}
+  m_Name: PumpShotgun
+  m_EditorClassIdentifier: 
+  id: 30004
+  itemName: Pump Shotgun
+  width: 6
+  height: 1
+  equipment: 1
+  equipmentType: 11
+  clothing: 0
+  outlineSprite: {fileID: 0}
+  container: 0
+  gridAmount: 0
+  containerPrefab: {fileID: 0}
+  gridData: []
+  weapon: 1
+  firearm: 1
+  manuallyChambered: 1
+  usesMagazines: 0
+  internalMagSize: 6
+  weaponType: Shotgun
+  weaponHUDOutlineSprite: {fileID: 21300000, guid: f0e179e4253e3e5498199bceeb048ab3, type: 3}
+  ammoBarFullSprite: {fileID: 21300000, guid: 01238e68f1768ef4b85fde87f40be5d1, type: 3}
+  ammoBarEmptySprite: {fileID: 21300000, guid: a7fbb8608cbde1b49b29eba813eacbd6, type: 3}
+  ammoItemData: {fileID: 11400000, guid: 1ed4751ec0103774f82ac241d741510e, type: 2}
+  magazineItemData: {fileID: 0}
+  ammo: 0
+  magazine: 0
+  magazineSize: 0
+  usable: 0
+  stackable: 0
+  maxStack: 0
+  itemSubtextPrefab: {fileID: 7965834515029828087, guid: 9b695b4cc89c56f4292c39b2d0d38a68, type: 3}
+  inventorySprite: {fileID: 21300000, guid: baf456160b861764f9ff4dfec6fd4859, type: 3}
+  inventorySpriteSecondary: {fileID: 0}
