@@ -4513,7 +4513,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 6506180906582082779}
         m_TargetAssemblyTypeName: ContextMenu, Assembly-CSharp
-        m_MethodName: EquipButton
+        m_MethodName: InfoButton
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

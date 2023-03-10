@@ -24,6 +24,7 @@ public class InventoryItem : MonoBehaviour
     public bool isEquipped = false;
     public bool isSelectedWeapon = false;
     public bool isOpened = false;
+    public bool infoOpened = false;
 
     //For magazines
     public int ammoCount = 0;

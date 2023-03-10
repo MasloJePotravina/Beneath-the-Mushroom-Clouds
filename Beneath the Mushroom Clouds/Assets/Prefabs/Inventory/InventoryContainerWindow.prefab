@@ -251,9 +251,9 @@ GameObject:
   - component: {fileID: 5086228636294662195}
   - component: {fileID: 5086228636294662194}
   - component: {fileID: 5086228636294662197}
-  - component: {fileID: 7541890267540191916}
+  - component: {fileID: 2200131038838022883}
   m_Layer: 5
-  m_Name: InventoryWindow
+  m_Name: InventoryContainerWindow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -321,7 +321,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_HorizontalFit: 2
   m_VerticalFit: 2
---- !u!114 &7541890267540191916
+--- !u!114 &2200131038838022883
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -330,12 +330,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 5086228636294662192}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d660a8a8d52e30f418e9345322712937, type: 3}
+  m_Script: {fileID: 11500000, guid: ecc6d1c29a3197044964a5510507f862, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  containerWindow: 0
   inventoryController: {fileID: 0}
   item: {fileID: 0}
   windowTop: {fileID: 5086228637114419737}
+  statPrefab: {fileID: 0}
+  leftSide: {fileID: 0}
+  rightSide: {fileID: 0}
+  itemImage: {fileID: 0}
+  itemName: {fileID: 5086228636125139306}
+  itemDescription: {fileID: 0}
 --- !u!1 &5086228636333919713
 GameObject:
   m_ObjectHideFlags: 0

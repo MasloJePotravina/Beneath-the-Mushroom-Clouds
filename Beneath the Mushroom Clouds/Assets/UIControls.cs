@@ -10,10 +10,13 @@ public class UIControls : MonoBehaviour
     [SerializeField] GameObject inventoryScreen;
     private InventoryController inventoryController;
     [SerializeField] GameObject mainCamera;
+    private FirearmScript firearmScript;
 
     void Awake(){
         playerInput = GetComponent<PlayerInput>();
         inventoryController = mainCamera.GetComponent<InventoryController>();
+        firearmScript = transform.Find("PlayerFirearm").GetComponent<FirearmScript>();
+
     }
     void OnOpenInventory()
     {
@@ -22,6 +25,8 @@ public class UIControls : MonoBehaviour
         playerInput.SwitchCurrentActionMap("UI");
         inventoryScreen.SetActive(true);
         mainCamera.GetComponent<InventoryController>().inventoryOpen = true;
+        firearmScript.InventoryOpened();
+
 
         
     }

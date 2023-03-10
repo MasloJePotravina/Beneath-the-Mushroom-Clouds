@@ -32,6 +32,7 @@ public class InventoryWindowTop : MonoBehaviour, IPointerEnterHandler, IPointerE
     }
 
     public void CloseButton(){
-        inventoryController.CloseInventoryContainerWindow(this.gameObject.transform.parent.gameObject.GetComponent<ContainerWindow>().item);
+        GameObject window = this.gameObject.transform.parent.gameObject;
+        window.GetComponent<InventoryWindow>().CloseWindow();
     }
 }

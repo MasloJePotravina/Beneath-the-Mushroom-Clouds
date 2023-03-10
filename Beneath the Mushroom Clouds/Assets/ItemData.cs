@@ -25,6 +25,9 @@ public class ItemData : ScriptableObject
     public string itemName;
     public int width;
     public int height;
+    public float weight;
+    public float value;
+    public string description;
 
     [Header("Equipment")]
     public bool equipment;
@@ -93,6 +96,8 @@ public class ItemData : ScriptableObject
     public Sprite inventorySprite;
     //Used for example for weapons with and without magazines
     public Sprite inventorySpriteSecondary;
+
+
 
     //Item data for ammuniti0n is needed to spawn the appropriate ammo type when the magazine is emptied
     

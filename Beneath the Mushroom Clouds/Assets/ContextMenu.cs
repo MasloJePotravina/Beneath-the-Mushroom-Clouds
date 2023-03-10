@@ -45,6 +45,12 @@ public class ContextMenu : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     }
 
     public void MenuSetup(){
+        if(!item.infoOpened){
+            menuOptions["Info"] = true;
+        } else {
+            menuOptions["Info"] = false;
+        }
+
         if(item.itemData.equipment){
             if(item.isEquipped){
                 menuOptions["Unequip"] = true;
@@ -115,13 +121,12 @@ public class ContextMenu : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public void InfoButton()
     {
-        Debug.Log("Info Button");
+        inventoryController.OpenItemInfoWindow(item);
         inventoryController.CloseContextMenu();
     }
 
     public void EquipButton()
     {
-        Debug.Log("Equip Button");
         inventoryController.QuickEquip(item, selectedGrid);
         inventoryController.CloseContextMenu();
     }
@@ -134,13 +139,13 @@ public class ContextMenu : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     
     public void OpenButton()
     {
-        inventoryController.OpenInventoryContainerWindow(item);
+        inventoryController.OpenContainerItemWindow(item);
         inventoryController.CloseContextMenu();
     }
 
     public void CloseButton()
     {
-        inventoryController.CloseInventoryContainerWindow(item);
+        inventoryController.CloseContainerItemWindow(item);
         inventoryController.CloseContextMenu();
     }
 
@@ -219,8 +224,9 @@ public class ContextMenu : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         }
         Destroy(item.gameObject);
         if(item.isOpened){
-            inventoryController.CloseInventoryContainerWindow(item);
+            inventoryController.CloseContainerItemWindow(item);
         }
+        inventoryController.CloseItemInfoWindow(item);
         inventoryController.CloseContextMenu();
     }
 

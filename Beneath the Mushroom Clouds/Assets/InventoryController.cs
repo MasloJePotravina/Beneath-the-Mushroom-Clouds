@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using TMPro;
 
 public class InventoryController : MonoBehaviour
 {
-
-    
+    //TODO: Debug only, remove later
+    [SerializeField] private GameObject debugSpawner;
+    private TMP_Dropdown debugSpawnerDropdown;
 
     //EquipmentType zero is reserved for non equippable items and therefore is never initilized in this field
     [SerializeField] private GameObject[] itemSlots;
@@ -16,7 +18,7 @@ public class InventoryController : MonoBehaviour
     [SerializeField] private GameObject playerFirearm;
     private FirearmScript firearmScript;
 
-    private List<GameObject> openedWindows = new List<GameObject>();
+    private List<GameObject> openWindows = new List<GameObject>();
 
     [SerializeField] private GameObject hudCanvas;
     private HUDController hudController;
@@ -66,7 +68,8 @@ public class InventoryController : MonoBehaviour
     [SerializeField] private ItemGrid tempGrid;
     [SerializeField] private ItemGrid containerGrid;
 
-    [SerializeField] private GameObject inventoryWindowPrefab;
+    [SerializeField] private GameObject inventoryContainerWindowPrefab;
+    [SerializeField] private GameObject inventoryInfoWindowPrefab;
     [SerializeField] private GameObject equipmentOutline;
     [SerializeField] private GameObject contextMenuPrefab;
     private GameObject contextMenu;
@@ -126,11 +129,23 @@ public class InventoryController : MonoBehaviour
 
     InventoryHighlight highlighter;
 
+    private void SetUpDebugDropdown(){
+        List<string> itemNames = new List<string>();
+
+        foreach(ItemData item in items){
+            itemNames.Add(item.itemName);
+        }
+
+        debugSpawnerDropdown.AddOptions(itemNames);
+    }
+
 
     private void Awake() {
         highlighter = GetComponent<InventoryHighlight>();
         firearmScript = playerFirearm.GetComponent<FirearmScript>();
         hudController = hudCanvas.GetComponent<HUDController>();
+        debugSpawnerDropdown = debugSpawner.GetComponent<TMP_Dropdown>();
+        SetUpDebugDropdown();
     }
 
     
@@ -172,6 +187,23 @@ public class InventoryController : MonoBehaviour
 
         int selectedItemID = UnityEngine.Random.Range(0, items.Count);
         InventoryItem item = SpawnItem(items[selectedItemID]);
+
+        if(item == null){
+            return;
+        }
+
+        if(item.itemData.stackable){
+            item.SetStack(UnityEngine.Random.Range(1, item.itemData.maxStack));
+        }
+
+    }
+
+    public void DropdownSpawnItem(int itemID){
+        if(selectedItem != null){
+            Destroy(selectedItem.gameObject);
+        }
+
+        InventoryItem item = SpawnItem(items[itemID]);
 
         if(item == null){
             return;
@@ -350,7 +382,7 @@ public class InventoryController : MonoBehaviour
                 rectTransform = selectedItem.GetComponent<RectTransform>();
                 rectTransform.SetAsLastSibling();
                 if(selectedItem.isOpened){
-                    CloseInventoryContainerWindow(selectedItem);
+                    CloseContainerItemWindow(selectedItem);
                 }
             }
         }
@@ -628,7 +660,7 @@ public class InventoryController : MonoBehaviour
         }
 
         if(clickedItem.isOpened){
-            CloseInventoryContainerWindow(clickedItem);
+            CloseContainerItemWindow(clickedItem);
         }
 
         if(itemGrid != null){
@@ -661,7 +693,7 @@ public class InventoryController : MonoBehaviour
 
     private bool AttemptTransferToContainer(InventoryItem clickedItem, ItemGrid itemGrid, ItemSlot itemSlot, bool grabItem = true){
         if(clickedItem.isOpened){
-            CloseInventoryContainerWindow(clickedItem);
+            CloseContainerItemWindow(clickedItem);
         }
         int posX;
         int posY;
@@ -758,7 +790,7 @@ public class InventoryController : MonoBehaviour
         }
 
         if(clickedItem.isOpened){
-            CloseInventoryContainerWindow(clickedItem);
+            CloseContainerItemWindow(clickedItem);
         }
 
         AttemptToEquipItem(clickedItem, itemGrid);
@@ -783,7 +815,7 @@ public class InventoryController : MonoBehaviour
         return false;
     }
 
-    public void OpenInventoryContainerWindow(InventoryItem clickedItem){
+    public void OpenContainerItemWindow(InventoryItem clickedItem){
         if(clickedItem == null){
             return;
         }
@@ -792,34 +824,71 @@ public class InventoryController : MonoBehaviour
             return;
         }
 
-        GameObject inventoryWindow = Instantiate(inventoryWindowPrefab);
+        GameObject inventoryWindow = Instantiate(inventoryContainerWindowPrefab);
         inventoryWindow.transform.SetParent(canvasTransform);
         inventoryWindow.transform.position = Input.mousePosition;
-        ContainerWindow windowScript = inventoryWindow.GetComponent<ContainerWindow>();
-        windowScript.Init(clickedItem, this);
+        InventoryWindow windowScript = inventoryWindow.GetComponent<InventoryWindow>();
+        windowScript.Init(clickedItem, this, containerWindow: true);
         windowScript.LoadContainerGrid();
-        openedWindows.Add(inventoryWindow);
+        openWindows.Add(inventoryWindow);
         clickedItem.isOpened = true;
 
     }
 
-    public void CloseInventoryContainerWindow(InventoryItem item){
+    public void CloseContainerItemWindow(InventoryItem item){
         GameObject saveWindow = null;
-        foreach(GameObject window in openedWindows){
-            ContainerWindow windowScript = window.GetComponent<ContainerWindow>();
+        foreach(GameObject window in openWindows){
+            InventoryWindow windowScript = window.GetComponent<InventoryWindow>();
             if(windowScript.item == item){
+                if(!windowScript.containerWindow){
+                    continue;
+                }
                 saveWindow = window;
                 GameObject container = window.transform.Find("Background").GetChild(0).gameObject;
                 SaveContainerItems(container);
-                item.isOpened = false;
                 //This is needed, so that the higlighter does not get destroyed
                 highlighter.SetHighlighterParent(tempGrid);
                 Destroy(window);
+                break;
             }
         }
-
-        openedWindows.Remove(saveWindow);
+        item.isOpened = false;
+        openWindows.Remove(saveWindow);
     }
+
+    public void OpenItemInfoWindow(InventoryItem clickedItem){
+        if(clickedItem == null){
+            return;
+        }
+
+        GameObject inventoryWindow = Instantiate(inventoryInfoWindowPrefab);
+        inventoryWindow.transform.SetParent(canvasTransform);
+        inventoryWindow.transform.position = Input.mousePosition;
+        InventoryWindow windowScript = inventoryWindow.GetComponent<InventoryWindow>();
+        windowScript.Init(clickedItem, this, containerWindow: false);
+        windowScript.LoadItemInfo();
+        openWindows.Add(inventoryWindow);
+        clickedItem.infoOpened = true;
+    }
+
+    public void CloseItemInfoWindow(InventoryItem item){
+        GameObject saveWindow = null;
+        foreach(GameObject window in openWindows){
+            InventoryWindow windowScript = window.GetComponent<InventoryWindow>();
+            if(windowScript.containerWindow){
+                continue;
+            }
+            saveWindow = window;
+            if(windowScript.item == item){
+                Destroy(window);
+                break;
+            }
+        }
+        item.infoOpened = false;
+        openWindows.Remove(saveWindow);
+    }
+
+    
 
     public void LoadAmmoIntoMagazine(InventoryItem magazine){
         if(magazine.ammoCount == magazine.itemData.magazineSize){
@@ -963,20 +1032,40 @@ public class InventoryController : MonoBehaviour
 
     
 
-    private InventoryItem FindAmmo(string weaponType){
+    public InventoryItem FindAmmo(string weaponType, bool quickReload = false){
+
         ItemGrid currentGrid = null;
         InventoryItem ammo = null;
-        for(int i = 0; i < inventoryContent.transform.childCount; i++){
-            Transform child = inventoryContent.transform.GetChild(i);
-            GameObject grids = child.Find("Grid").gameObject;
+
+
+        foreach(KeyValuePair<string, InventoryItem> item in equippedItems){
+            if(item.Value == null){
+                continue;
+            }
+            if(!item.Value.itemData.container){
+                continue;
+            }
+            if(quickReload){
+                if(item.Value.itemData.equipmentType == 6){
+                    continue;
+                }
+            }
+            GameObject container = inventoryContent.transform.Find(item.Value.itemData.containerPrefab.name).gameObject;
+            GameObject grids = container.transform.Find("Grid").gameObject;
             int childCount = grids.transform.childCount;
-            for(int j = 0; j < childCount; j++){
-                currentGrid = grids.transform.GetChild(j).GetComponent<ItemGrid>();
+            for(int i = 0; i < childCount; i++){
+                Transform child = grids.transform.GetChild(i);
+                currentGrid = child.GetComponent<ItemGrid>();
                 ammo = currentGrid.FindAmmo(weaponType);
                 if(ammo != null){
                     return ammo;
                 }
             }
+        }
+
+        //Skip container/ground as well if this is called during quick reload
+        if(quickReload){
+            return null;
         }
 
         //Check container/ground as well
@@ -987,6 +1076,7 @@ public class InventoryController : MonoBehaviour
         }
 
         return null;
+    
     }
 
 
@@ -1025,10 +1115,14 @@ public class InventoryController : MonoBehaviour
     }
 
     public void AttachMagazine(InventoryItem weapon, bool quickReload){
+        Debug.Log("AttachMagazine");
         InventoryItem magazine = FindMagazine(weapon.itemData.weaponType, quickReload);
         if(magazine == null){
+            Debug.Log("AttachMagazine1");
             return;
         }
+
+        Debug.Log("AttachMagazine2");
 
         weapon.AttachMagazine(magazine);
         Destroy(magazine.gameObject);
@@ -1044,14 +1138,27 @@ public class InventoryController : MonoBehaviour
 
     }
 
+    public bool LoadRound(InventoryItem weapon){
+        InventoryItem ammo = FindAmmo(weapon.itemData.weaponType);
+        if(ammo == null){
+            return false;
+        }
+
+        if(weapon.LoadAmmoIntoInternalMagazine(1) > 0){
+            ammo.RemoveFromStack(1);
+            return true;
+        }else{
+            return false;
+        }
+    }
+
     public void ChamberRound(InventoryItem weapon){
         InventoryItem ammo = FindAmmo(weapon.itemData.weaponType);
         if(ammo == null){
             return;
         }
 
-        bool roundChambered = weapon.ChamberRound();
-        if(roundChambered){
+        if(weapon.ChamberRound()){
             ammo.RemoveFromStack(1);
         }
     }

@@ -157,9 +157,9 @@ public class PlayerControls : MonoBehaviour
 
     }
 
-    private void OnFire()
+    private void OnFire(InputValue value)
     {
-        firearmScript.PressTrigger();
+        firearmScript.PressTrigger(value);
     }
 
     private void OnReload()
