@@ -16,29 +16,34 @@ MonoBehaviour:
   itemName: Assault Rifle Ammo
   width: 1
   height: 1
+  weight: 0.019
+  value: 80
+  description: A 7.62 x 39mm FMJ round with a brass casing used in assault rifles.
   equipment: 0
+  equipmentType: 0
   clothing: 0
-  weapon: 0
-  weaponHUDOutlineSprite: {fileID: 0}
-  firearm: 0
-  ammoBarFullSprite: {fileID: 0}
-  ammoBarEmptySprite: {fileID: 0}
-  manuallyChambered: 0
-  ammo: 1
-  weaponType: AssaultRifle
+  outlineSprite: {fileID: 0}
   container: 0
   gridAmount: 0
+  containerPrefab: {fileID: 0}
   gridData: []
+  weapon: 0
+  firearm: 0
+  manuallyChambered: 0
+  usesMagazines: 0
+  internalMagSize: 0
+  weaponType: AssaultRifle
+  weaponHUDOutlineSprite: {fileID: 0}
+  ammoBarFullSprite: {fileID: 0}
+  ammoBarEmptySprite: {fileID: 0}
+  ammoItemData: {fileID: 0}
+  magazineItemData: {fileID: 0}
+  ammo: 1
+  magazine: 0
+  magazineSize: 0
+  usable: 0
   stackable: 1
   maxStack: 60
   itemSubtextPrefab: {fileID: 7965834515029828087, guid: 9b695b4cc89c56f4292c39b2d0d38a68, type: 3}
-  magazine: 0
-  magazineSize: 0
-  ammoItemData: {fileID: 0}
-  magazineItemData: {fileID: 0}
-  usable: 0
-  equipmentType: 0
-  containerPrefab: {fileID: 0}
-  outlineSprite: {fileID: 0}
   inventorySprite: {fileID: 21300000, guid: dfaf4eb310d7ea64d91f614eb2cbec8d, type: 3}
   inventorySpriteSecondary: {fileID: 0}

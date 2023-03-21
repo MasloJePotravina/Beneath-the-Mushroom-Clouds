@@ -115,7 +115,7 @@ public class FirearmScript: MonoBehaviour
             }else{
                 if(WeaponCycled()){
                     if(autoChamber){
-                        selectedFirearm.ChamberFromMagazine();
+                        inventoryController.ChamberFromMagazine();
                         autoChamber = false;
                     }else if(!racking){
                         rackCoroutine =  StartCoroutine(RackFirearm());
@@ -131,7 +131,7 @@ public class FirearmScript: MonoBehaviour
             return;
 
         
-        if(!selectedFirearm.FireRound()){
+        if(!inventoryController.FireRound()){
             return;
         }
 
@@ -351,7 +351,6 @@ public class FirearmScript: MonoBehaviour
             float hitChance = ApplyCoverToEnemy(halfWallDistance, hit);
             if (hit.distance <= 50.0f) //A crouched enemy will be hit 100% of the time from distance < 5m
             {
-                Debug.Log(hitChance);
                 if (Random.value < hitChance)
                     return true;
                 else
@@ -366,7 +365,6 @@ public class FirearmScript: MonoBehaviour
             }
             else //linear dropoff between 5 metres and 15 metres (from 100% to 80%)
             {
-                Debug.Log(hitChance);
                 if (Random.value < (1 - (hit.distance - 50.0f) * 0.002) * hitChance)
                     return true;
                 else
@@ -442,14 +440,16 @@ public class FirearmScript: MonoBehaviour
                 break;
         }
 
-        Debug.Log("Selected firearm: " + firearmMode);
-
         
     }
 
     public void ReloadButtonPressed(){
         
         if(selectedFirearm == null){
+            return;
+        }
+
+        if(reloading){
             return;
         }
 
@@ -465,9 +465,7 @@ public class FirearmScript: MonoBehaviour
 
         
 
-        if(reloading){
-            return;
-        }
+        
 
         reloadCoroutine = StartCoroutine(Reload());
     }

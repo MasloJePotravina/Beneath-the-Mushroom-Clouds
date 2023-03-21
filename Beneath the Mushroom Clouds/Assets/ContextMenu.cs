@@ -9,7 +9,7 @@ public class ContextMenu : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     public InventoryItem item;
     public ItemGrid selectedGrid;
     public ItemSlot selectedSlot;
-    InventoryController inventoryController;
+    public InventoryController inventoryController;
     private Dictionary<string, bool> menuOptions = new Dictionary<string, bool>{
         {"Info", false},
         {"Equip", false},
@@ -28,9 +28,18 @@ public class ContextMenu : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         {"Destroy", true}
     };
 
-    private void Awake()
-    {
-        inventoryController = FindObjectOfType<InventoryController>();
+    private Dictionary<string,GameObject> buttons = new Dictionary<string, GameObject>();
+
+   
+
+
+    public void Init(InventoryItem item, ItemGrid selectedGrid, ItemSlot selectedSlot, InventoryController inventoryController){
+        this.item = item;
+        this.selectedGrid = selectedGrid;
+        this.selectedSlot = selectedSlot;
+        this.inventoryController = inventoryController;
+        GetButtons();
+        MenuSetup();
     }
 
 
@@ -44,7 +53,16 @@ public class ContextMenu : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         inventoryController.mouseOverContextMenu = false;
     }
 
+    private void GetButtons(){
+        //for each key in menu options find child
+        foreach(KeyValuePair<string, bool> option in menuOptions){
+            buttons[option.Key] = transform.Find(option.Key + "Button").gameObject;
+        }
+    }
+
+
     public void MenuSetup(){
+        
         if(!item.infoOpened){
             menuOptions["Info"] = true;
         } else {
@@ -109,14 +127,39 @@ public class ContextMenu : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             }
         }
 
+
+
         SetupMenuOptions();
+
+        StartCoroutine(AdjustPosition());
     }
 
     private void SetupMenuOptions(){
         foreach (KeyValuePair<string, bool> option in menuOptions)
         {
-            GameObject.Find(option.Key + "Button").SetActive(option.Value);
+            buttons[option.Key].SetActive(option.Value);
         }
+
+
+    }
+
+    //Coroutine adjust the position of the menu if it goes off screen
+    //It has to be a coroutine because the height and width of the menu are not set until the next frame (layout group)
+    IEnumerator AdjustPosition(){
+        yield return new WaitForSeconds(0);
+        RectTransform rectTransform = GetComponent<RectTransform>();
+        float newXPos = rectTransform.position.x;
+        float newYPos = rectTransform.position.y;
+        if(rectTransform.position.x + rectTransform.rect.width > Screen.width){
+            newXPos = Screen.width - rectTransform.rect.width;
+        }
+        if(rectTransform.position.y - rectTransform.rect.height < 0){
+            
+            newYPos = rectTransform.rect.height;
+        }
+
+        rectTransform.position = new Vector3(newXPos, newYPos, rectTransform.position.z);
+
     }
 
     public void InfoButton()
@@ -213,21 +256,7 @@ public class ContextMenu : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public void DestroyButton()
     {
-        if(item.isEquipped){
-            inventoryController.ToggleContainerGrid(item, false);
-            inventoryController.RemoveOutlineSprite(item);
-            bool wasWeapon = item.itemData.weapon;
-            if(wasWeapon){
-                inventoryController.WeaponSelectUpdate();
-            }
-
-        }
-        Destroy(item.gameObject);
-        if(item.isOpened){
-            inventoryController.CloseContainerItemWindow(item);
-        }
-        inventoryController.CloseItemInfoWindow(item);
-        inventoryController.CloseContextMenu();
+       inventoryController.DestroyItem(item);
     }
 
 }

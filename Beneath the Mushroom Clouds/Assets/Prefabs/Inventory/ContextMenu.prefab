@@ -3635,6 +3635,7 @@ MonoBehaviour:
   item: {fileID: 0}
   selectedGrid: {fileID: 0}
   selectedSlot: {fileID: 0}
+  inventoryController: {fileID: 0}
 --- !u!1 &6506180907062960955
 GameObject:
   m_ObjectHideFlags: 0

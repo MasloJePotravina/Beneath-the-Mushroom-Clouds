@@ -18,9 +18,9 @@ MonoBehaviour:
   height: 2
   weight: 3.8
   value: 10000
-  description: 'An old assault rifle created shortly after WWII. It was used by militaries
-    around the world before the bombs fell and is used by survivors today. Truly
-    a testament to it''s timelessness and reliability. '
+  description: 'An old assault rifle designed shortly after WWII. It was used by
+    militaries around the world before the bombs fell and is still widely used today.
+    Truly a testament to its reliability and timelessness. '
   equipment: 1
   equipmentType: 11
   clothing: 0

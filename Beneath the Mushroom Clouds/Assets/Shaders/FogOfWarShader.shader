@@ -73,14 +73,14 @@ Shader "Hidden/FogOfWarShader"
                 
 
 
-                //Currently averaged pixel
+                /*//Currently averaged pixel
                 float3 originalSampleMainTex = tex2D(_MainTex, i.uv);
-                float3 originalSampleSecondaryTex = tex2D(_SecondaryTex, i.uv);
+                float3 originalSampleSecondaryTex = tex2D(_SecondaryTex, i.uv);*/
 
                 //4 pixels both vertically and horizontally from the current pixel
 
-                fixed4 blurSampleMainTex;
-                fixed4 blurSampleSecondaryTex;
+                fixed4 blurSampleMainTex = tex2D(_MainTex, i.uv);
+                fixed4 blurSampleSecondaryTex = tex2D(_SecondaryTex, i.uv);
 
                 for(int j = 1; j < 5; j++){
                     blurSampleMainTex += tex2D(_MainTex, i.uv + _MainTex_TexelSize.xy * float2(-j, -j)) +
@@ -107,19 +107,22 @@ Shader "Hidden/FogOfWarShader"
 
                 }
 
-                //Since we're adding values of 32 pixels we need to devide by 32 to avoid high brightness
-                blurSampleMainTex /=32;
-                blurSampleSecondaryTex /=32;
+                //Since we're adding values of 33 pixels we need to devide by 33 to avoid high brightness
+                blurSampleMainTex /=33;
+                blurSampleSecondaryTex /=33;
 
                 
-                float brightness = originalSampleMainTex.g; 
+                /*float brightness = originalSampleMainTex.g; 
                 blurredMainTex = fixed4((brightness * originalSampleMainTex + (1-brightness) * blurSampleMainTex), 1);
 
                 brightness = originalSampleSecondaryTex.r;
                 blurredSecondaryTex = fixed4((brightness * originalSampleSecondaryTex + (1-brightness) * blurSampleSecondaryTex), 1);
-
+                */
                 //Overlay the textures -> causes discovered areas to be red (1,0,0,1) and areas currently seen to be yellow (1,1,0,1)
-                fixed4 col = blurredMainTex + blurredSecondaryTex;
+                blurSampleSecondaryTex.g = blurSampleSecondaryTex.r;
+                blurSampleSecondaryTex.r = 0;
+                
+                fixed4 col = blurSampleMainTex + blurSampleSecondaryTex;
 
                 //Use this formula to calculate alpha of the final texture that will be displayed on the FOW Raw Image
                 //Examples:

@@ -26,6 +26,7 @@ public class PlayerControls : MonoBehaviour
 
     public GameObject playerTorso;
     public GameObject playerLegs;
+    public GameObject playerHead;
     public GameObject playerHeadPivot;
     public GameObject playerWeapon;
 
@@ -34,6 +35,7 @@ public class PlayerControls : MonoBehaviour
 
     private Animator torsoAnimator;
     private Animator legsAnimator;
+    private Animator headAnimator;
     private Quaternion prevTorsoRotation;
     private FirearmScript firearmScript;
     private PlayerInput playerInput;
@@ -56,6 +58,7 @@ public class PlayerControls : MonoBehaviour
         prevTorsoRotation = playerTorso.transform.rotation;
         torsoAnimator = playerTorso.GetComponent<Animator>();
         legsAnimator = playerLegs.GetComponent<Animator>();
+        headAnimator = playerHead.GetComponent<Animator>();
         firearmScript = playerWeapon.GetComponent<FirearmScript>();
 
         inventoryController = mainCamera.GetComponent<InventoryController>();
@@ -169,17 +172,46 @@ public class PlayerControls : MonoBehaviour
 
     private void OnCycleWeapon(InputValue value)
     { 
-        inventoryController.CycleWeapon(value);
+        //Mouse scroll is called twice when scrolling, once with 0.0f and once with the actual value
+        if(value.Get<float>() == 0.0f)
+            return;
+
+
+        status.selectedWeapon = inventoryController.CycleWeapon(value);
+        weaponEquipAnimation();
+        
     }
 
     private void OnPrimaryWeapon()
     {
-        inventoryController.SelectWeapon(1);
+        status.selectedWeapon = inventoryController.SelectWeapon(1);
+        weaponEquipAnimation();
     }
 
     private void OnSecondaryWeapon()
     {
-        inventoryController.SelectWeapon(2);
+        status.selectedWeapon = inventoryController.SelectWeapon(2);
+        weaponEquipAnimation();
+    }
+
+    void weaponEquipAnimation()
+    {
+        if(status.selectedWeapon != null){
+            resetTorsoRotation();
+            torsoAnimator.ResetTrigger("longWeaponUnequipped");
+            torsoAnimator.SetTrigger("longWeaponEquipped");
+            playerLegs.transform.localPosition = new Vector3(-0.17f, 0, 0);
+            headAnimator.ResetTrigger("longWeaponUnequipped");
+            headAnimator.SetTrigger("longWeaponEquipped");
+
+        }else{
+            torsoAnimator.ResetTrigger("longWeaponEquipped");
+            torsoAnimator.SetTrigger("longWeaponUnequipped");
+            playerLegs.transform.localPosition = new Vector3(0, 0, 0);
+            headAnimator.ResetTrigger("longWeaponEquipped");
+            headAnimator.SetTrigger("longWeaponUnequipped");
+
+        }
     }
 
     void setAnimatorBools(Animator animator)
@@ -217,26 +249,29 @@ public class PlayerControls : MonoBehaviour
     //only after a few degrees will start to rotate their torso
     void animateTorso(GameObject torso)
     {
-        float localZRotation = torso.transform.localRotation.eulerAngles.z;
-        //If the torso is less than 30 degrees misaligned either way, do not rotate it (keep postion from previous frame)
-        //If more then set the local position of the torso to either +30 or -30 (330) degrees
-        if (localZRotation <= 30.0f && localZRotation >= 0.0f || localZRotation >= 330.0f && localZRotation <= 360.0f)
-        {
-            torso.transform.rotation = prevTorsoRotation;
-        }
-        else
-        {
-            if (localZRotation >= 30.0f && localZRotation <= 180.0f)
+        if(status.selectedWeapon == null){
+            float localZRotation = torso.transform.localRotation.eulerAngles.z;
+            //If the torso is less than 30 degrees misaligned either way, do not rotate it (keep postion from previous frame)
+            //If more then set the local position of the torso to either +30 or -30 (330) degrees
+            if (localZRotation <= 30.0f && localZRotation >= 0.0f || localZRotation >= 330.0f && localZRotation <= 360.0f)
             {
-                torso.transform.localRotation = Quaternion.Euler(0, 0, 29.99f); //Sliglthly lower to ensure the head does not get stuck
+                torso.transform.rotation = prevTorsoRotation;
             }
             else
             {
-                torso.transform.localRotation = Quaternion.Euler(0, 0, 330.01f); //Same as above
+                if (localZRotation >= 30.0f && localZRotation <= 180.0f)
+                {
+                    torso.transform.localRotation = Quaternion.Euler(0, 0, 29.99f); //Sliglthly lower to ensure the head does not get stuck
+                }
+                else
+                {
+                    torso.transform.localRotation = Quaternion.Euler(0, 0, 330.01f); //Same as above
+                }
             }
+            //Save current torso rotation for the next frame
+            prevTorsoRotation = torso.transform.rotation;
         }
-        //Save current torso rotation for the next frame
-        prevTorsoRotation = torso.transform.rotation;
+        
 
         setAnimatorBools(torsoAnimator);
         
@@ -254,6 +289,11 @@ public class PlayerControls : MonoBehaviour
             legs.transform.up = movementInput;
         }    
         setAnimatorBools(legsAnimator);
+    }
+
+    void resetTorsoRotation()
+    {
+        playerTorso.transform.localRotation = Quaternion.Euler(0, 0, 0);
     }
 
     

@@ -362,12 +362,14 @@ public class InventoryController : MonoBehaviour
             if(selectedItem.itemData.weapon){
                 WeaponSelectUpdate();
             }
+
             selectedItem = null;
             HighlightSlot(false);
 
-
         }
-        
+
+        hudController.UpdateWeaponHUD(GetSelectedWeapon());
+          
     }
 
     private void GrabItemFromGrid(InputValue value, int posX, int posY){
@@ -626,10 +628,7 @@ public class InventoryController : MonoBehaviour
         contextMenu = Instantiate(contextMenuPrefab, canvasTransform);
         contextMenu.transform.position = Input.mousePosition;
         ContextMenu contextMenuComponent = contextMenu.GetComponent<ContextMenu>();
-        contextMenuComponent.item = clickedItem;
-        contextMenuComponent.selectedGrid = selectedGrid;
-        contextMenuComponent.selectedSlot = selectedSlot;
-        contextMenuComponent.MenuSetup();
+        contextMenuComponent.Init(clickedItem, selectedGrid, selectedSlot, this);
         contextMenuOpen = true;
     }
 
@@ -939,6 +938,10 @@ public class InventoryController : MonoBehaviour
         InventoryItem ammo = SpawnItem(firearm.itemData.ammoItemData);
         ammo.SetStack(removedAmount);
 
+        if(firearm.isEquipped && firearm.isSelectedWeapon){
+            hudController.UpdateWeaponHUD(firearm);
+        }
+
     }
 
     public void LoadAmmoIntoFirearm(InventoryItem firearm){
@@ -964,7 +967,10 @@ public class InventoryController : MonoBehaviour
 
             firearm.LoadAmmoIntoInternalMagazine(addedAmount);
             ammo.RemoveFromStack(addedAmount);
+        }
 
+        if(firearm.isEquipped && firearm.isSelectedWeapon){
+            hudController.UpdateWeaponHUD(firearm);
         }
     }
 
@@ -1101,22 +1107,26 @@ public class InventoryController : MonoBehaviour
     }
 
 
-    public void ReloadRemoveMagazine(InventoryItem weapon){
-        int ammoCount = weapon.RemoveMagazine();
-        InventoryItem magazine = SpawnItem(weapon.itemData.magazineItemData);
+    public void ReloadRemoveMagazine(InventoryItem firearm){
+        int ammoCount = firearm.RemoveMagazine();
+        InventoryItem magazine = SpawnItem(firearm.itemData.magazineItemData);
         //In this case the removed magazine should not be the selected item but should be automatically transfered to pockets
         selectedItem = null;
         magazine.AddToMagazine(ammoCount);
 
-        if(AttemptMagPlaceToInventory(magazine)){
-            return;
+        if(!AttemptMagPlaceToInventory(magazine)){
+            AttemptTransferToContainer(magazine, null, null, false);
         }
-        AttemptTransferToContainer(magazine, null, null, false);
+
+        if(firearm.isEquipped && firearm.isSelectedWeapon){
+            hudController.UpdateWeaponHUD(firearm);
+        }
+        
     }
 
-    public void AttachMagazine(InventoryItem weapon, bool quickReload){
+    public void AttachMagazine(InventoryItem firearm, bool quickReload){
         Debug.Log("AttachMagazine");
-        InventoryItem magazine = FindMagazine(weapon.itemData.weaponType, quickReload);
+        InventoryItem magazine = FindMagazine(firearm.itemData.weaponType, quickReload);
         if(magazine == null){
             Debug.Log("AttachMagazine1");
             return;
@@ -1124,56 +1134,79 @@ public class InventoryController : MonoBehaviour
 
         Debug.Log("AttachMagazine2");
 
-        weapon.AttachMagazine(magazine);
+        firearm.AttachMagazine(magazine);
         Destroy(magazine.gameObject);
+
+        if(firearm.isEquipped && firearm.isSelectedWeapon){
+            hudController.UpdateWeaponHUD(firearm);
+        }
         
     }
 
     
 
-    public void RemoveMagazine(InventoryItem weapon){
-        int ammoCount = weapon.RemoveMagazine();
-        InventoryItem magazine = SpawnItem(weapon.itemData.magazineItemData);
+    public void RemoveMagazine(InventoryItem firearm){
+        int ammoCount = firearm.RemoveMagazine();
+        InventoryItem magazine = SpawnItem(firearm.itemData.magazineItemData);
         magazine.AddToMagazine(ammoCount);
+
+        if(firearm.isEquipped && firearm.isSelectedWeapon){
+            hudController.UpdateWeaponHUD(firearm);
+        }
 
     }
 
-    public bool LoadRound(InventoryItem weapon){
-        InventoryItem ammo = FindAmmo(weapon.itemData.weaponType);
+    public bool LoadRound(InventoryItem firearm){
+        InventoryItem ammo = FindAmmo(firearm.itemData.weaponType);
         if(ammo == null){
             return false;
         }
 
-        if(weapon.LoadAmmoIntoInternalMagazine(1) > 0){
+        if(firearm.LoadAmmoIntoInternalMagazine(1) > 0){
             ammo.RemoveFromStack(1);
+            if(firearm.isEquipped && firearm.isSelectedWeapon){
+                hudController.UpdateWeaponHUD(firearm);
+            }
             return true;
         }else{
             return false;
         }
+
+        
     }
 
-    public void ChamberRound(InventoryItem weapon){
-        InventoryItem ammo = FindAmmo(weapon.itemData.weaponType);
+    public void ChamberRound(InventoryItem firearm){
+        InventoryItem ammo = FindAmmo(firearm.itemData.weaponType);
         if(ammo == null){
             return;
         }
 
-        if(weapon.ChamberRound()){
+        if(firearm.ChamberRound()){
             ammo.RemoveFromStack(1);
+        }
+
+        if(firearm.isEquipped && firearm.isSelectedWeapon){
+            hudController.UpdateWeaponHUD(firearm);
         }
     }
 
-    public void ClearChamber(InventoryItem weapon){
-        weapon.ClearChamber();
-        InventoryItem ammo = SpawnItem(weapon.itemData.ammoItemData);
+    public void ClearChamber(InventoryItem firearm){
+        firearm.ClearChamber();
+        InventoryItem ammo = SpawnItem(firearm.itemData.ammoItemData);
         ammo.SetStack(1);
     }
 
-    public void RackFirearm(InventoryItem weapon){
-        if(weapon == null){
+    public void RackFirearm(InventoryItem firearm){
+        if(firearm == null){
             return;
         }
-        weapon.RackFirearm();
+        firearm.RackFirearm();
+
+        
+
+        if(firearm.isEquipped && firearm.isSelectedWeapon){
+            hudController.UpdateWeaponHUD(firearm);
+        }
     }
 
     public InventoryItem GetSelectedWeapon(){
@@ -1231,7 +1264,7 @@ public class InventoryController : MonoBehaviour
 
     }
 
-    public void CycleWeapon(InputValue value){
+    public InventoryItem CycleWeapon(InputValue value){
         float input = value.Get<float>();
         if(selectedWeaponSlot == 0){
             if(input > 0){
@@ -1255,10 +1288,12 @@ public class InventoryController : MonoBehaviour
 
         WeaponSelectUpdate();
 
+        return GetSelectedWeapon();
+
         
     }
 
-    public void SelectWeapon(int value){
+    public InventoryItem SelectWeapon(int value){
         if(selectedWeaponSlot == 0){
             selectedWeaponSlot = value;
         }else if(selectedWeaponSlot == 1){
@@ -1276,6 +1311,53 @@ public class InventoryController : MonoBehaviour
         }
 
         WeaponSelectUpdate();
+
+        return GetSelectedWeapon();
         
+    }
+
+    public bool FireRound(){
+        InventoryItem selectedWeapon = GetSelectedWeapon();
+        if(selectedWeapon == null){
+            return false;
+        }
+
+        if(selectedWeapon.FireRound()){
+            if(selectedWeapon.isEquipped && selectedWeapon.isSelectedWeapon){
+                hudController.UpdateWeaponHUD(selectedWeapon);
+            }
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    public void ChamberFromMagazine(){
+        InventoryItem selectedWeapon = GetSelectedWeapon();
+        if(selectedWeapon == null){
+            return;
+        }
+
+        selectedWeapon.ChamberFromMagazine();
+        if(selectedWeapon.isEquipped && selectedWeapon.isSelectedWeapon){
+            hudController.UpdateWeaponHUD(selectedWeapon);
+        }
+    }
+
+    public void DestroyItem(InventoryItem item){
+         if(item.isEquipped){
+            ToggleContainerGrid(item, false);
+            RemoveOutlineSprite(item);
+            if(item.itemData.weapon){
+                WeaponSelectUpdate();
+            }
+
+        }
+        Destroy(item.gameObject);
+        if(item.isOpened){
+            CloseContainerItemWindow(item);
+        }
+        CloseItemInfoWindow(item);
+        CloseContextMenu();
     }
 }

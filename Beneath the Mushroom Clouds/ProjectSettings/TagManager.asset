@@ -16,8 +16,8 @@ TagManager:
   - 
   - Water
   - UI
-  - FOVTrail
-  - FOVBrush
+  - 
+  - FOV
   - Enemy
   - FullObstacle
   - HalfObstacle

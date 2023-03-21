@@ -12,11 +12,6 @@ public class FieldOfView : MonoBehaviour
     public GameObject player;
     private PlayerStatus playerStatus;
 
-    //This is an identical game object of a different color used in creating the "discovered" texture in Fog of War
-    public GameObject fovTrail;
-    //The script of the FOV Trail
-    private FOVTrail fovTrailScript;
-
     //Mesh of the FOV object
     private Mesh mesh;
 
@@ -46,7 +41,6 @@ public class FieldOfView : MonoBehaviour
 
         mesh = new Mesh();
         GetComponent<MeshFilter>().mesh = mesh;
-        fovTrailScript = fovTrail.GetComponent<FOVTrail>();
         playerStatus = player.GetComponent<PlayerStatus>();
         fovAngle = fovAngleStandard;
         fovDistance = fovDistanceStandard;
@@ -104,8 +98,6 @@ public class FieldOfView : MonoBehaviour
         mesh.vertices = vertices;
         mesh.uv = uv;
         mesh.triangles = triangles;
-
-        fovTrailScript.updateFOVShape(vertices, uv, triangles);
 
     }
 

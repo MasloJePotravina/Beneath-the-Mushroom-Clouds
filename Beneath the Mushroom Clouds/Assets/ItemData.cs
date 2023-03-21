@@ -27,7 +27,7 @@ public class ItemData : ScriptableObject
     public int height;
     public float weight;
     public float value;
-    public string description;
+    [TextAreaAttribute] public string description;
 
     [Header("Equipment")]
     public bool equipment;

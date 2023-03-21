@@ -43,6 +43,8 @@ public class PlayerStatus : MonoBehaviour
 
     private bool staminaDepleted = false;
 
+    public InventoryItem selectedWeapon;
+
     private HUDController HUD;
 
 

@@ -7,8 +7,6 @@ using TMPro;
 public class InventoryItem : MonoBehaviour
 {
 
-    private GameObject HUDCanvas;
-    private HUDController hudController;
 
     public ItemData itemData;
 
@@ -70,9 +68,6 @@ public class InventoryItem : MonoBehaviour
 
         rectTransform.sizeDelta = new Vector2(Width * ItemGrid.tileDimension, Height * ItemGrid.tileDimension);
         rectTransform.localScale = Vector2.one;
-
-        HUDCanvas = GameObject.Find("HUD");
-        hudController = HUDCanvas.GetComponent<HUDController>();
 
         if(itemData.firearm){
             if(!itemData.usesMagazines){
@@ -172,9 +167,6 @@ public class InventoryItem : MonoBehaviour
             ammoLoaded =  count;
         }
 
-        if(isEquipped && isSelectedWeapon){
-            hudController.UpdateWeaponHUD(this);
-        }
 
         return ammoLoaded;
 
@@ -185,9 +177,6 @@ public class InventoryItem : MonoBehaviour
         int ammoUnloaded = ammoCount;
         ammoCount = 0;
         UpdateFirearmText();
-        if(isEquipped && isSelectedWeapon){
-            hudController.UpdateWeaponHUD(this);
-        }
         return ammoUnloaded;
     }
 
@@ -252,8 +241,6 @@ public class InventoryItem : MonoBehaviour
         currentMagazineSize = magazine.itemData.magazineSize;
         UpdateFirearmText();
         SelectSprite(1);
-        if(isEquipped && isSelectedWeapon)
-            hudController.UpdateWeaponHUD(this);
     }
 
     public int RemoveMagazine(){
@@ -263,8 +250,6 @@ public class InventoryItem : MonoBehaviour
         currentMagazineSize = 0;
         UpdateFirearmText();
         SelectSprite(0);
-        if(isEquipped && isSelectedWeapon)
-            hudController.UpdateWeaponHUD(this);
         return count;
     }
 
@@ -274,8 +259,6 @@ public class InventoryItem : MonoBehaviour
         }
         isChambered = true;
         UpdateFirearmText();
-        if(isEquipped && isSelectedWeapon)
-            hudController.UpdateWeaponHUD(this);
         return true;
     }
 
@@ -285,8 +268,6 @@ public class InventoryItem : MonoBehaviour
         }
         isChambered = false;
         UpdateFirearmText();
-        if(isEquipped && isSelectedWeapon)
-            hudController.UpdateWeaponHUD(this);
         return true;
     }
 
@@ -297,8 +278,6 @@ public class InventoryItem : MonoBehaviour
         isChambered = true;
         ammoCount--;
         UpdateFirearmText();
-        if(isEquipped && isSelectedWeapon)
-            hudController.UpdateWeaponHUD(this);
         return true;
     }
 
@@ -308,8 +287,6 @@ public class InventoryItem : MonoBehaviour
         }
         isChambered = false;
         UpdateFirearmText();
-        if(isEquipped && isSelectedWeapon)
-            hudController.UpdateWeaponHUD(this);
         return true;
     }
 
@@ -320,8 +297,6 @@ public class InventoryItem : MonoBehaviour
         isChambered = true;
         ammoCount--;
         UpdateFirearmText();
-        if(isEquipped && isSelectedWeapon)
-            hudController.UpdateWeaponHUD(this);
         return true;
     }
 

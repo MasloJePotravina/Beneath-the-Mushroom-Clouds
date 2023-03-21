@@ -65,10 +65,7 @@ public class ItemGrid : MonoBehaviour
 
         //The game is designed to be played in 1920x1080 resolution
         //If the resolution is different, the calculations for tiles in the grid will not work properly due to different mouse and grid positions and have to be normalized
-        //This is MUCH less efficient and therefore the 1920x1080 resolution is HIGHLY recommended
-        //1920x1080: ~290FPS, different resolution: ~250FPS => ~40FPS difference 
-
-
+        //This is less efficient and therefore the 1920x1080 resolution is recommended
 
         if(Screen.width == 1920 && Screen.height == 1080){
             positionOnGrid.x = mousePosition.x - rectTransform.position.x;
@@ -333,7 +330,7 @@ public class ItemGrid : MonoBehaviour
                     //While all stackable items are destroyed immediately on empty stack and
                     //this condition seems futile it is actually very important
                     //Since Destroy() is called at the end of the frame, but this function is called
-                    //in a loop (which executes multiple times per frame), this fnction would return a reference 
+                    //in a loop (which executes multiple times per frame), this function would return a reference 
                     //to an empty stack and cause a never ending loop and crash (2 hours of debugging btw) 
                     if(item.currentStack > 0)
                         return item;
