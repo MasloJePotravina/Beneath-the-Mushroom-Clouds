@@ -35,9 +35,11 @@ MonoBehaviour:
   usesMagazines: 1
   internalMagSize: 0
   weaponType: AssaultRifle
+  weaponLength: 1
   weaponHUDOutlineSprite: {fileID: 21300000, guid: 862c433fa65750148b3f0206497e9c17, type: 3}
   ammoBarFullSprite: {fileID: 21300000, guid: 0ebbb0b5192e58d48a68d2223ff6e2a5, type: 3}
   ammoBarEmptySprite: {fileID: 21300000, guid: b8657929dd0271743835d4f809b7e779, type: 3}
+  weaponAnimationController: {fileID: 22100000, guid: 973fe532c96779e4faf01b28f00611b3, type: 2}
   ammoItemData: {fileID: 11400000, guid: 031552737fb8c574998a810c1499ef8a, type: 2}
   magazineItemData: {fileID: 11400000, guid: fa222425a6c3d6d4199bc764597e7bf0, type: 2}
   ammo: 0

@@ -36,6 +36,10 @@ public class PlayerControls : MonoBehaviour
     private Animator torsoAnimator;
     private Animator legsAnimator;
     private Animator headAnimator;
+
+    public GameObject firearmSprite;
+    private Animator firearmAnimator;
+
     private Quaternion prevTorsoRotation;
     private FirearmScript firearmScript;
     private PlayerInput playerInput;
@@ -59,6 +63,7 @@ public class PlayerControls : MonoBehaviour
         torsoAnimator = playerTorso.GetComponent<Animator>();
         legsAnimator = playerLegs.GetComponent<Animator>();
         headAnimator = playerHead.GetComponent<Animator>();
+        firearmAnimator = firearmSprite.GetComponent<Animator>();
         firearmScript = playerWeapon.GetComponent<FirearmScript>();
 
         inventoryController = mainCamera.GetComponent<InventoryController>();
@@ -66,8 +71,7 @@ public class PlayerControls : MonoBehaviour
 
     void Update()
     {
-        animateTorso(playerTorso);
-        animateLegs(playerLegs);
+        
     }
 
     // Update is called once per frame
@@ -88,6 +92,10 @@ public class PlayerControls : MonoBehaviour
         playerHeadPivot.transform.rotation = Quaternion.LookRotation(Vector3.forward, direction);
         //Change the velocity of the player according to movement
         playerRigidbody.MovePosition(playerRigidbody.position + status.playerSpeed * Time.deltaTime * movementInput);
+
+        animateTorso(playerTorso);
+        animateLegs(playerLegs);
+        setFirearmAnimatorBools();
     }
 
     private void OnMove(InputValue value)
@@ -197,19 +205,32 @@ public class PlayerControls : MonoBehaviour
     void weaponEquipAnimation()
     {
         if(status.selectedWeapon != null){
+            firearmAnimator.runtimeAnimatorController = status.selectedWeapon.itemData.weaponAnimationController; 
             resetTorsoRotation();
-            torsoAnimator.ResetTrigger("longWeaponUnequipped");
-            torsoAnimator.SetTrigger("longWeaponEquipped");
-            playerLegs.transform.localPosition = new Vector3(-0.17f, 0, 0);
-            headAnimator.ResetTrigger("longWeaponUnequipped");
-            headAnimator.SetTrigger("longWeaponEquipped");
-
+            if(status.selectedWeapon.itemData.weaponLength == 0){
+                torsoAnimator.ResetTrigger("weaponUnequipped");
+                torsoAnimator.SetTrigger("shortWeaponEquipped");
+                headAnimator.ResetTrigger("longWeaponEquipped");
+                headAnimator.SetTrigger("weaponUnequipped");
+            }else if(status.selectedWeapon.itemData.weaponLength == 1){
+                torsoAnimator.ResetTrigger("weaponUnequipped");
+                torsoAnimator.SetTrigger("longWeaponEquipped");
+                headAnimator.ResetTrigger("weaponUnequipped");
+                headAnimator.SetTrigger("longWeaponEquipped");
+            }
+            firearmAnimator.ResetTrigger("weaponUnequipped");
+            firearmAnimator.SetTrigger("weaponEquipped");
         }else{
             torsoAnimator.ResetTrigger("longWeaponEquipped");
-            torsoAnimator.SetTrigger("longWeaponUnequipped");
-            playerLegs.transform.localPosition = new Vector3(0, 0, 0);
+            torsoAnimator.ResetTrigger("shortWeaponEquipped");
+            torsoAnimator.SetTrigger("weaponUnequipped");
+
+            firearmAnimator.ResetTrigger("weaponEquipped");
+            firearmAnimator.SetTrigger("weaponUnequipped");
+
             headAnimator.ResetTrigger("longWeaponEquipped");
-            headAnimator.SetTrigger("longWeaponUnequipped");
+            headAnimator.SetTrigger("weaponUnequipped");
+            
 
         }
     }
@@ -294,6 +315,18 @@ public class PlayerControls : MonoBehaviour
     void resetTorsoRotation()
     {
         playerTorso.transform.localRotation = Quaternion.Euler(0, 0, 0);
+    }
+
+    void setFirearmAnimatorBools(){
+        //PlayerCrouching
+        if (status.playerCrouched)
+        {
+            firearmAnimator.SetBool("isCrouching", true);
+        }
+        else
+        {
+            firearmAnimator.SetBool("isCrouching", false);
+        }
     }
 
     

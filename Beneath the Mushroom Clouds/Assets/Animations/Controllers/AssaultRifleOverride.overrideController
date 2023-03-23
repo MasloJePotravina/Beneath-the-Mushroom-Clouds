@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!221 &22100000
+AnimatorOverrideController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: AssaultRifleOverride
+  m_Controller: {fileID: 9100000, guid: f0d4c4fa5ea5a864ebaeba236ceef842, type: 2}
+  m_Clips:
+  - m_OriginalClip: {fileID: 7400000, guid: 0175a73b16a52414fbce73f719463a32, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 0175a73b16a52414fbce73f719463a32, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 44427d4e56be743468f923374d05abca, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 44427d4e56be743468f923374d05abca, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 88ef857fc9033674dacdfa6824f1d3aa, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 88ef857fc9033674dacdfa6824f1d3aa, type: 2}

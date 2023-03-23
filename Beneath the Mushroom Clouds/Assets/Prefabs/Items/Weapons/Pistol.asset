@@ -16,6 +16,9 @@ MonoBehaviour:
   itemName: Pistol
   width: 2
   height: 1
+  weight: 0
+  value: 0
+  description: 
   equipment: 1
   equipmentType: 12
   clothing: 0
@@ -30,9 +33,11 @@ MonoBehaviour:
   usesMagazines: 1
   internalMagSize: 0
   weaponType: Pistol
+  weaponLength: 0
   weaponHUDOutlineSprite: {fileID: 21300000, guid: fc5e31411bf02dc4a87e40e21035794b, type: 3}
   ammoBarFullSprite: {fileID: 21300000, guid: 05850aefd494e7a458fb4d7728e62a76, type: 3}
   ammoBarEmptySprite: {fileID: 21300000, guid: c98fa83dae3a94c4ba2b15e42e42d2db, type: 3}
+  weaponAnimationController: {fileID: 22100000, guid: 63fab738a9961fe40b6cf2d0435be56b, type: 2}
   ammoItemData: {fileID: 11400000, guid: d2354e761d1b3c74799dca1da466979a, type: 2}
   magazineItemData: {fileID: 11400000, guid: b301caf587907134191a67bccc9f0761, type: 2}
   ammo: 0

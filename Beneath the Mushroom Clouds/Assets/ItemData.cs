@@ -73,9 +73,11 @@ public class ItemData : ScriptableObject
     public int internalMagSize;
     //Used for ammo, magazihnes and weapons for compatibility checks
     public string weaponType;
+    public int weaponLength; // 0-short, 1 - long
     public Sprite weaponHUDOutlineSprite;
     public Sprite ammoBarFullSprite;
     public Sprite ammoBarEmptySprite;
+    public AnimatorOverrideController weaponAnimationController;
 
     public ItemData ammoItemData;
     //Item data for the magazine is needed to spawn the appropriate magazine type when the magazine is removed from weapon
