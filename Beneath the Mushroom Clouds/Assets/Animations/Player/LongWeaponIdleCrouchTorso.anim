@@ -57,6 +57,13 @@ AnimationClip:
     path: 
     classID: 212
     script: {fileID: 0}
+  - curve:
+    - time: 0
+      value: {fileID: -125758826, guid: 5ee81392a54aa9c4dbf7bf00b9a9aafb, type: 3}
+    attribute: m_Sprite
+    path: HeadPivot/Head
+    classID: 212
+    script: {fileID: 0}
   m_SampleRate: 60
   m_WrapMode: 0
   m_Bounds:
@@ -66,6 +73,13 @@ AnimationClip:
     genericBindings:
     - serializedVersion: 2
       path: 0
+      attribute: 0
+      script: {fileID: 0}
+      typeID: 212
+      customType: 23
+      isPPtrCurve: 1
+    - serializedVersion: 2
+      path: 1221548160
       attribute: 0
       script: {fileID: 0}
       typeID: 212
@@ -87,6 +101,7 @@ AnimationClip:
       isPPtrCurve: 0
     pptrCurveMapping:
     - {fileID: -1224247280, guid: 32ff075e265134c44aaecec77107be8c, type: 3}
+    - {fileID: -125758826, guid: 5ee81392a54aa9c4dbf7bf00b9a9aafb, type: 3}
   m_AnimationClipSettings:
     serializedVersion: 2
     m_AdditiveReferencePoseClip: {fileID: 0}

@@ -32,6 +32,9 @@ MonoBehaviour:
   weapon: 1
   firearm: 1
   manuallyChambered: 0
+  fireModes:
+  - automatic
+  - semi-auto
   usesMagazines: 1
   internalMagSize: 0
   weaponType: AssaultRifle

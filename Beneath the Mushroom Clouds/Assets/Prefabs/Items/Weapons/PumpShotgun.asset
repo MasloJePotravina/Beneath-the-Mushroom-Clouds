@@ -30,6 +30,8 @@ MonoBehaviour:
   weapon: 1
   firearm: 1
   manuallyChambered: 1
+  fireModes:
+  - pump-action
   usesMagazines: 0
   internalMagSize: 6
   weaponType: Shotgun

@@ -1,5 +1,9 @@
 //Post Effects Controller for Box Blurring attached to FOW cameras
 //Based on: https://www.youtube.com/watch?v=ahplcYCmfG0
+/*
+NOTE:
+Unused in the current version of the game. Ommited from the documentation.
+*/
 using UnityEngine;
 
 

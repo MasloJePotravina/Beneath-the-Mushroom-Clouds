@@ -1,55 +1,123 @@
 //Based on: https://www.youtube.com/watch?v=CSeUMTaNFYk
 using UnityEngine;
-
+/// <summary>
+/// Implements the behaviour of the field of view.
+/// </summary>
 public class FieldOfView : MonoBehaviour
 {
     //Which layers do raycasts collide with
-    public LayerMask layerMaskStandard;
-    public LayerMask layerMaskCrouched;
+    /// <summary>
+    /// Layer mask containing the layers that the field of view raycasts collide with when the player is standing.
+    /// </summary>
+    [SerializeField] private LayerMask layerMaskStanding;
+
+    /// <summary>
+    /// Layer mask containing the layers that the field of view raycasts collide with when the player is crouched.
+    /// </summary>
+    [SerializeField] private LayerMask layerMaskCrouched;
+
+    /// <summary>
+    /// Current layer mask containing the layers that the field of view raycasts collide with.
+    /// </summary>
     private LayerMask layerMask;
-    //Which layers do raycasts collide with after colliding with an NPC
-    //This solves a problem in which the player could see thgrough walls if they looked "through" an NPC
+
+    /// <summary>
+    /// Reference to the player game object.
+    /// </summary>
     public GameObject player;
+
+    /// <summary>
+    /// Reference to the Player Status script.
+    /// </summary>
     private PlayerStatus playerStatus;
 
-    //Mesh of the FOV object
+    /// <summary>
+    /// Mesh of the field of view. This is used to draw the field of view based on raycast hits.
+    /// </summary>
     private Mesh mesh;
 
+    /// <summary>
+    /// Standard angle of the FOV (not aiming).
+    /// </summary>
     public float fovAngleStandard;
+
+    /// <summary>
+    /// Aiming angle of the FOV when the player is aiming.
+    /// </summary>
     public float fovAngleAiming;
+
+    /// <summary>
+    /// Current angle of the FOV.
+    /// </summary>
     private float fovAngle;
 
+    /// <summary>
+    /// Standard distance of the FOV (not aiming).
+    /// </summary>
     public float fovDistanceStandard;
+
+    /// <summary>
+    /// Distance of the FOV when the player is aiming.
+    /// </summary>
     public float fovDistanceAiming;
+
+    /// <summary>
+    /// Current distance of the FOV.
+    /// </summary>
     private float fovDistance;
 
-
+    /// <summary>
+    /// Amount of rays used to draw the FOV (angle which the player character sees).
+    /// </summary>
     public int fovRayCount = 50;
+
+    /// <summary>
+    /// Angle of the currently drawn raycast.
+    /// </summary>
     private float angle = 0f;
+
+    /// <summary>
+    /// By how much does the angle increase with each raycast (Depends on the amount of rays).
+    /// </summary>
     private float angleIncrease;
     
-
+    /// <summary>
+    /// Angle of the field of perception (angle behind the player, which they technically do not see but are aware of).
+    /// </summary>
     private float fop;
+
+    /// <summary>
+    /// Amount of rays used to draw the FOP (angle which the player character is aware of).
+    /// </summary>
     public int fopRayCount = 50;
+
+    /// <summary>
+    /// Distance of the field of perception (distance behind the player, which they technically do not see but are aware of).
+    /// </summary>
     public float fopDistance = 10f;
 
 
 
-    // Start is called before the first frame update
+    /// <summary>
+    /// Initialize the FOV values on start.
+    /// </summary>
     void Start()
     {
-
         mesh = new Mesh();
         GetComponent<MeshFilter>().mesh = mesh;
         playerStatus = player.GetComponent<PlayerStatus>();
         fovAngle = fovAngleStandard;
         fovDistance = fovDistanceStandard;
-        layerMask = layerMaskStandard;
+        layerMask = layerMaskStanding;
 
     }
 
+    /// <summary>
+    /// Each frame, calculate and draw the FOV mesh.
+    /// </summary>
     private void Update()
     {
+        //Determine the angle and distance of the fov raycasts based on whether the player is aiming or not
         if (playerStatus.playerAiming)
         {
             fovAngle = fovAngleAiming;
@@ -61,32 +129,40 @@ public class FieldOfView : MonoBehaviour
             fovDistance = fovDistanceStandard;
         }
 
+        //Determine the layer mask based on whether the player is crouched or not
         if (playerStatus.playerCrouched)
             layerMask = layerMaskCrouched;
         else
-            layerMask = layerMaskStandard;
+            layerMask = layerMaskStanding;
 
 
+        //Set the origin of raycasts and the angle of aiming
         Vector3 origin = player.transform.position;
-
         Vector2 aimAngle = player.transform.up;
+
+        //Swap the x and y coordinates of the aiming angle (as player.transform.up is not the real aiming angle, just a reference point)
         float tmpXCoord = aimAngle.x;
         aimAngle.x = -aimAngle.y;
         aimAngle.y = tmpXCoord;
 
+        //Calculate the angle of the first raycast (first raycast is the leftmost raycast of FOV angle)
         angle = Vector3.SignedAngle(Vector2.up, aimAngle, Vector3.forward) + fovAngle / 2;
 
+        //Vaiables for the mesh
         Vector3[] vertices = new Vector3[fovRayCount + 2 + fopRayCount + 1]; //FOV Rays + origin point + the "zero" ray (FOV) + FOP Rays + the "zero" ray(FOP)
         Vector2[] uv = new Vector2[vertices.Length];
         int[] triangles = new int[(fovRayCount + fopRayCount) * 3];
 
-        vertices[0] = origin; //The first vertex is on the player
+         //The first vertex is on the player's position
+        vertices[0] = origin;
 
+        //Calculate mesh for FOV
         int vertexIndex = 1;
         int triangleIndex = 0;
         angleIncrease = fovAngle / fovRayCount;
         CalculateMesh(true, ref origin, ref vertices, ref triangles, ref vertexIndex, ref triangleIndex);
 
+        //Calculate mesh for FOP
         fop = 360.0f - fovAngle;
         angleIncrease = fop / fopRayCount;
         CalculateMesh(false, ref origin, ref vertices, ref triangles, ref vertexIndex, ref triangleIndex);
@@ -104,6 +180,15 @@ public class FieldOfView : MonoBehaviour
     //Calculate mesh for Field Of Vision and Field Of Perception
     //fov == 1 -> calculating FOV
     //fov == 0 -> calculating FOP
+    /// <summary>
+    /// Calculate the mesh for the FOV or FOP.
+    /// </summary>
+    /// <param name="fov">True if calculating FOV, false if calculating FOP.</param>
+    /// <param name="origin">Origin of the raycasts (player's position).</param>
+    /// <param name="vertices">Array of vertices of the calculated mesh (set in this function by reference).</param>
+    /// <param name="triangles">Array of triangles of the calculated mesh (set in this function by reference).</param>
+    /// <param name="vertexIndex">Vertex index of the last calculated vertex (set in this function by reference). Used so that the FOP calculation starts off where the FOV calculation ended.</param>
+    /// <param name="triangleIndex">Triangle index of the last calculated triangle (set in this function by reference). Used so that the FOP calculation starts off where the FOV calculation ended.</param>
     private void CalculateMesh(bool fov, ref Vector3 origin, ref Vector3[] vertices, ref int[] triangles, ref int vertexIndex, ref int triangleIndex)
     {
         int rayCount;

@@ -10,8 +10,9 @@ public class FirearmScript: MonoBehaviour
     //(current selected firearm is not the same as the one that was reloaded)
     private InventoryItem reloadedFirearm;
 
-    [SerializeField] private GameObject mainCamera;
+    [SerializeField] private GameObject inventoryScreen;
     private InventoryController inventoryController;
+    private PlayerAnimationController playerAnimationController;
 
     public GameObject muzzle;
     public GameObject player;
@@ -21,6 +22,7 @@ public class FirearmScript: MonoBehaviour
 
     private bool reloading = false;
     private bool racking = false;
+    private bool triggerEnabled = true;
 
 
     public float initialDeviation; //Worst case initial bullet deviaiton (degrees)
@@ -35,7 +37,8 @@ public class FirearmScript: MonoBehaviour
     private PlayerStatus playerStatus;
 
     private bool firearmActive;
-    private int firearmMode;
+    private string weaponType;
+    private string fireMode;
 
 
     private float fireRate = 10.0f; //Rounds per second
@@ -43,7 +46,7 @@ public class FirearmScript: MonoBehaviour
     private float lastShot;
     private int consecShots = 0;
     private bool triggerPressed = false; //Is the trigger pressed
-    private bool semiBlock = false; //Has a semi/pump/bolt-action fired already on this press
+    private bool semiBlock = false; //Has a round been fired on this trigger press
     private bool autoChamber = false; //Whether the firearm should be chambering a round by itself 
                                       //(e.g. the pistol chambers rounds by itself but shouldn't automatically chamber a round after reload) 
 
@@ -54,8 +57,9 @@ public class FirearmScript: MonoBehaviour
 
     private float shotgunSpread = 5.0f;
 
-    private float magSwapSpeed = 2.5f;
+    private float magLoadSpeed = 1.25f;
     private float rackWeaponSpeed = 1f;
+    private float loadRoundSpeed = 1f;
 
     private RaycastHit2D[] hits; //Field of hit objects
 
@@ -66,7 +70,8 @@ public class FirearmScript: MonoBehaviour
         playerStatus = player.GetComponent<PlayerStatus>();
         shooterAbility = playerStatus.shooterAbility;
         UpdateConeLines(shooterAbility * (initialDeviation/2));
-        inventoryController = mainCamera.GetComponent<InventoryController>();
+        inventoryController = inventoryScreen.GetComponent<InventoryController>();
+        playerAnimationController = player.GetComponent<PlayerAnimationController>();
 
     }
 
@@ -75,10 +80,10 @@ public class FirearmScript: MonoBehaviour
     {
         if(reloading || racking){
             if(selectedFirearm == null || selectedFirearm != reloadedFirearm){
-                Debug.Log(selectedFirearm   + " " + reloadedFirearm);
                 reloading = false;
                 racking = false;
                 reloadedFirearm = null;
+                triggerEnabled = true;
                 if(reloadCoroutine != null)
                     StopCoroutine(reloadCoroutine);
                 if(rackCoroutine != null)
@@ -113,9 +118,10 @@ public class FirearmScript: MonoBehaviour
             if(selectedFirearm.itemData.manuallyChambered && !racking){
                 rackCoroutine =  StartCoroutine(RackFirearm());
             }else{
-                if(WeaponCycled()){
+                if(FireRateCheck()){
                     if(autoChamber){
-                        inventoryController.ChamberFromMagazine();
+                        //NOTE: To clarify, this instantly chambers a round without any animation (the firearm racks itself as automatic and semi-auto weapons do)
+                        inventoryController.RackFirearm(selectedFirearm);
                         autoChamber = false;
                     }else if(!racking){
                         rackCoroutine =  StartCoroutine(RackFirearm());
@@ -127,7 +133,7 @@ public class FirearmScript: MonoBehaviour
         if (!triggerPressed)
             return;
 
-        if (semiBlock)
+        if(semiBlock)
             return;
 
         
@@ -137,63 +143,53 @@ public class FirearmScript: MonoBehaviour
 
         //Trigger is pressed
         Vector2 BulletDeviation = ApplyAimErrorToRaycast(transform.parent.transform.up, CalcAimCone());
-        switch (firearmMode)
-        {
-            case 0://Assault Rifle Mode   
-                Shoot(BulletDeviation);
-                lastShot = Time.time;
-                if (consecShots < 10)
-                    consecShots += 1;
-                cooldownStartTimer = 0.0f;
-                UpdateConeLines(CalcAimCone());
-                break;
-            case 1://Pistol Mode
-                
-                Shoot(BulletDeviation);
-                semiBlock = true;
-                if (consecShots < 5)
-                    consecShots += 1;
-                cooldownStartTimer = 0.0f;
-                fireRateTimer = 0.15f;
-                UpdateConeLines(CalcAimCone());
-                break;
-            case 2://Shotgun Mode
-                
-                for (int i = 0; i < 8; i++)
-                {
-                    Vector2 pelletBulletDeviation = ApplyAimErrorToRaycast(BulletDeviation, shotgunSpread / 2);
-                    Shoot(pelletBulletDeviation);
-                }
-                semiBlock = true;
-                fireRateTimer = 1.5f;
-                UpdateConeLines(CalcAimCone());
-                break;
-            case 3://Bolt-Action Mode
-                
-                Shoot(BulletDeviation);
-                semiBlock = true;
-                fireRateTimer = 1.5f;
-                UpdateConeLines(CalcAimCone());
-                break;
+        if(weaponType == "Shotgun"){
+            for (int i = 0; i < 8; i++)
+            {
+                Vector2 pelletBulletDeviation = ApplyAimErrorToRaycast(BulletDeviation, shotgunSpread / 2);
+                Shoot(pelletBulletDeviation);
+            }
+        }else{
+            Shoot(BulletDeviation);
         }
+        UpdateConeLines(CalcAimCone());
+
+        if(fireMode == "automatic"){
+            lastShot = Time.time;
+            if (consecShots < 10)
+                consecShots += 1;
+            cooldownStartTimer = 0.0f;
+        }else if(fireMode == "semi-auto"){
+            if (consecShots < 5)
+                consecShots += 1;
+            cooldownStartTimer = 0.0f;
+            semiBlock = true;
+            fireRateTimer = 0.15f;
+        }
+
 
         autoChamber = true;
     }
 
-    private bool WeaponCycled()
-    {
 
-        if(firearmMode == 0){
-            if(Time.time - lastShot > 1 / fireRate)
-            {
-                return true;
-            }
-        }else{
-            if(fireRateTimer <= 0)
-            {
-                return true;
-            }
+    //Adjusts the rate of fire for weapons that cycle automatically (automatic and semi-automatic)
+    private bool FireRateCheck()
+    {
+        switch(fireMode){
+            case "automatic":
+                if(Time.time - lastShot > 1 / fireRate)
+                {
+                    return true;
+                }
+                break;
+            case "semi-auto":
+                if(fireRateTimer <= 0)
+                {
+                    return true;
+                }
+                break;
         }
+
         return false;
     }
 
@@ -204,22 +200,15 @@ public class FirearmScript: MonoBehaviour
         firearmActive = active;
     }
 
-    //Sets the mode of the firearm
-    //Modes:
-    // 0 - Auto
-    // 1 - Semi
-    // 2 - Shotgun
-    // 3 - Bolt Action
-    public void SetFirearmMode(int mode)
-    {
-        firearmMode = mode;
-    }
 
     public void PressTrigger(InputValue value)
     {
 
+
         if (value.isPressed)
         {
+            if(!triggerEnabled)
+                return;
             triggerPressed = true;
         }
         else
@@ -425,20 +414,17 @@ public class FirearmScript: MonoBehaviour
             return;
         }
         firearmActive = true;
-        switch(firearm.itemData.weaponType){
-            case "AssaultRifle":
-                firearmMode = 0;
-                break;
-            case "Pistol":
-                firearmMode = 1;
-                break;
-            case "Shotgun":
-                firearmMode = 2;
-                break;
-            case "HuntingRifle":
-                firearmMode = 3;
-                break;
+        weaponType = selectedFirearm.itemData.weaponType;
+        fireMode = selectedFirearm.GetFiremode();
+        if(selectedFirearm.itemData.weaponLength == 0){
+            this.transform.localPosition = new Vector3(0, 0.6f, 0);
+        }else if(selectedFirearm.itemData.weaponLength == 1){
+            this.transform.localPosition = new Vector3(0, 0.75f, 0);
+        }else{
+            //Prepared for different weapon lengths
+            this.transform.localPosition = new Vector3(0, 0.75f, 0);
         }
+
 
         
     }
@@ -473,20 +459,24 @@ public class FirearmScript: MonoBehaviour
     private IEnumerator Reload(){
         reloading = true;
         reloadedFirearm = selectedFirearm;
-
+        triggerEnabled = false;
         if(selectedFirearm.itemData.usesMagazines){
             if(selectedFirearm.hasMagazine){
                 inventoryController.ReloadRemoveMagazine(selectedFirearm);
-                yield return new WaitForSeconds(magSwapSpeed);
+                playerAnimationController.UnloadMagAnimation(selectedFirearm);
+                yield return new WaitForSeconds(magLoadSpeed);
+                playerAnimationController.LoadMagAnimation(selectedFirearm);
+                yield return new WaitForSeconds(magLoadSpeed);
                 inventoryController.AttachMagazine(selectedFirearm, true);
             }else{
-                yield return new WaitForSeconds(magSwapSpeed/2);
+                playerAnimationController.LoadMagAnimation(selectedFirearm);
+                yield return new WaitForSeconds(magLoadSpeed);
                 inventoryController.AttachMagazine(selectedFirearm, true);
             }
         }else{
-            Debug.Log("Reloading");
             while(selectedFirearm.ammoCount < selectedFirearm.currentMagazineSize){
-                yield return new WaitForSeconds(1f);
+                playerAnimationController.LoadRoundAnimation(selectedFirearm);
+                yield return new WaitForSeconds(loadRoundSpeed);
                 if(!inventoryController.LoadRound(selectedFirearm)){
                     break;
                 }
@@ -495,25 +485,36 @@ public class FirearmScript: MonoBehaviour
         
         
         if(!selectedFirearm.isChambered){
+            playerAnimationController.RackAnimation(selectedFirearm);
             yield return new WaitForSeconds(rackWeaponSpeed);
             inventoryController.RackFirearm(selectedFirearm);
         }
         reloading = false;
         reloadedFirearm = null;
+        triggerEnabled = true;
 
     }
 
     private IEnumerator RackFirearm(){
         racking = true;
         reloadedFirearm = selectedFirearm;
+        triggerEnabled = false;
+        
+        playerAnimationController.RackAnimation(selectedFirearm);
         yield return new WaitForSeconds(rackWeaponSpeed);
         inventoryController.RackFirearm(selectedFirearm);
         racking = false;
         reloadedFirearm = null;
+        triggerEnabled = true;
     }
+
 
     public void InventoryOpened(){
         triggerPressed = false;
-        
     }
+
+    public void SwitchFiremode(){
+        fireMode = inventoryController.SwitchFiremode(selectedFirearm);
+    }
+
 }

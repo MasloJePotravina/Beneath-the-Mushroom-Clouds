@@ -41,9 +41,12 @@ public class PlayerStatus : MonoBehaviour
     public float baseThirstDrain = 0.166f;      //Depletes completely from full to nothing after roughly 10 minutes of gameplay (10 hours in game)
     public float baseTirednessDrain = 0.0694f;  //Depletes completely from full to nothing after roughly 24 minutes of gameplay (24 hours in game)
 
-    private bool staminaDepleted = false;
+    public float baseHealthDrain = 1.0f;        //While of course, healthy character does not periodically lose health, this is used in the calculation for health drain arrows in the HUD
+                                                //to simulate the rate of potential bleeds
 
-    public InventoryItem selectedWeapon;
+    public float baseHealthRegen = 0.5f;        
+
+    private bool staminaDepleted = false;
 
     private HUDController HUD;
 
