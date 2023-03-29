@@ -48,10 +48,10 @@ public class UIControls : MonoBehaviour
     /// <summary>
     /// Method called by the InputSystem when the player attempts to open the inventory.
     /// </summary>
-    void OnOpenInventory()
+    public void OnOpenInventory()
     {
         playerInput.SwitchCurrentActionMap("UI");
-        inventoryController.OpenInventory(true);
+        inventoryController.OpenInventory();
         firearmScript.InventoryOpened();
         playerAnimationController.DisableMovementBools();
              
@@ -63,7 +63,7 @@ public class UIControls : MonoBehaviour
     void OnCloseInventory()
     {
         playerInput.SwitchCurrentActionMap("Player");
-        inventoryController.OpenInventory(false);
+        inventoryController.CloseInventory();
         playerAnimationController.ResetQuickWeaponChangeTriggers();
     }
 

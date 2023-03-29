@@ -19,6 +19,8 @@ MonoBehaviour:
   weight: 0.019
   value: 80
   description: A 7.62 x 39mm FMJ round with a brass casing used in assault rifles.
+  visibleOnDrop: 0
+  dropSizeMultiplier: 0
   equipment: 0
   equipmentType: 0
   clothing: 0
@@ -30,12 +32,15 @@ MonoBehaviour:
   weapon: 0
   firearm: 0
   manuallyChambered: 0
+  fireModes: []
   usesMagazines: 0
   internalMagSize: 0
   weaponType: AssaultRifle
+  weaponLength: 0
   weaponHUDOutlineSprite: {fileID: 0}
   ammoBarFullSprite: {fileID: 0}
   ammoBarEmptySprite: {fileID: 0}
+  weaponAnimationController: {fileID: 0}
   ammoItemData: {fileID: 0}
   magazineItemData: {fileID: 0}
   ammo: 1

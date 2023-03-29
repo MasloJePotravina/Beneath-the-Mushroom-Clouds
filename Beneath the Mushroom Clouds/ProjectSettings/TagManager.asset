@@ -9,6 +9,8 @@ TagManager:
   - Weapon
   - NPC
   - FOV
+  - Interactable
+  - LooseItem
   layers:
   - Default
   - TransparentFX

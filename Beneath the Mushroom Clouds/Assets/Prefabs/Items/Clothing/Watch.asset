@@ -16,17 +16,39 @@ MonoBehaviour:
   itemName: Watch
   width: 1
   height: 1
+  weight: 0
+  value: 0
+  description: 
+  visibleOnDrop: 0
+  dropSizeMultiplier: 0
   equipment: 1
+  equipmentType: 13
   clothing: 0
-  weapon: 0
+  outlineSprite: {fileID: 0}
   container: 0
   gridAmount: 0
+  containerPrefab: {fileID: 0}
   gridData: []
+  weapon: 0
+  firearm: 0
+  manuallyChambered: 0
+  fireModes: []
+  usesMagazines: 0
+  internalMagSize: 0
+  weaponType: 
+  weaponLength: 0
+  weaponHUDOutlineSprite: {fileID: 0}
+  ammoBarFullSprite: {fileID: 0}
+  ammoBarEmptySprite: {fileID: 0}
+  weaponAnimationController: {fileID: 0}
+  ammoItemData: {fileID: 0}
+  magazineItemData: {fileID: 0}
+  ammo: 0
+  magazine: 0
+  magazineSize: 0
+  usable: 0
   stackable: 0
   maxStack: 0
-  currentStackTextPrefab: {fileID: 0}
-  usable: 0
-  equipmentType: 13
-  containerPrefab: {fileID: 0}
-  outlineSprite: {fileID: 0}
+  itemSubtextPrefab: {fileID: 0}
   inventorySprite: {fileID: 21300000, guid: d086fd7a079fd1a418a66bc0f6dc37a3, type: 3}
+  inventorySpriteSecondary: {fileID: 0}

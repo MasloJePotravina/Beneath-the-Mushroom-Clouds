@@ -16,20 +16,42 @@ MonoBehaviour:
   itemName: NiceBrandBackpack
   width: 5
   height: 6
+  weight: 0
+  value: 0
+  description: 
+  visibleOnDrop: 1
+  dropSizeMultiplier: 2
   equipment: 1
+  equipmentType: 6
   clothing: 1
-  weapon: 0
+  outlineSprite: {fileID: 21300000, guid: 9e17f50b02e36c4429f15b2f85bfeffa, type: 3}
   container: 1
   gridAmount: 1
+  containerPrefab: {fileID: 5079308047634906712, guid: b88b83ba0ffdd4441a2864222552b1d8, type: 3}
   gridData:
   - gridID: 0
     width: 5
     height: 6
+  weapon: 0
+  firearm: 0
+  manuallyChambered: 0
+  fireModes: []
+  usesMagazines: 0
+  internalMagSize: 0
+  weaponType: 
+  weaponLength: 0
+  weaponHUDOutlineSprite: {fileID: 0}
+  ammoBarFullSprite: {fileID: 0}
+  ammoBarEmptySprite: {fileID: 0}
+  weaponAnimationController: {fileID: 0}
+  ammoItemData: {fileID: 0}
+  magazineItemData: {fileID: 0}
+  ammo: 0
+  magazine: 0
+  magazineSize: 0
+  usable: 0
   stackable: 0
   maxStack: 0
-  stackCountTextPrefab: {fileID: 0}
-  usable: 0
-  equipmentType: 6
-  containerPrefab: {fileID: 5079308047634906712, guid: b88b83ba0ffdd4441a2864222552b1d8, type: 3}
-  outlineSprite: {fileID: 21300000, guid: 9e17f50b02e36c4429f15b2f85bfeffa, type: 3}
+  itemSubtextPrefab: {fileID: 0}
   inventorySprite: {fileID: 21300000, guid: fa7c095ad93afd4488588052a39970cd, type: 3}
+  inventorySpriteSecondary: {fileID: 0}

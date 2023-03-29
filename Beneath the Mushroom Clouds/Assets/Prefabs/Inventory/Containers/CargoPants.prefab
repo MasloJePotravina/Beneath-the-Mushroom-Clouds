@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 7647818069011044833}
   - component: {fileID: 7647818069011044834}
   - component: {fileID: 7647818069011044835}
-  - component: {fileID: 7647818069011044860}
   m_Layer: 5
   m_Name: ItemGrid (1)
   m_TagString: Untagged
@@ -94,18 +93,6 @@ MonoBehaviour:
   rectTransform: {fileID: 0}
   gridWidth: 2
   gridHeight: 2
---- !u!114 &7647818069011044860
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7647818069011044862}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 24de972acadcd984ca3013ca8ade2b19, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &7647818069019350445
 GameObject:
   m_ObjectHideFlags: 0
@@ -253,7 +240,6 @@ GameObject:
   - component: {fileID: 7647818070005233490}
   - component: {fileID: 7647818070005233491}
   - component: {fileID: 7647818070005233516}
-  - component: {fileID: 7647818070005233517}
   m_Layer: 5
   m_Name: ItemGrid
   m_TagString: Untagged
@@ -335,18 +321,6 @@ MonoBehaviour:
   rectTransform: {fileID: 0}
   gridWidth: 2
   gridHeight: 2
---- !u!114 &7647818070005233517
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7647818070005233519}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 24de972acadcd984ca3013ca8ade2b19, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &7647818070031790407
 GameObject:
   m_ObjectHideFlags: 0

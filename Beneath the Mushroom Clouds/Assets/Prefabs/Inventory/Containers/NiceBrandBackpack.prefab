@@ -114,7 +114,6 @@ GameObject:
   - component: {fileID: 5079308049548558602}
   - component: {fileID: 5079308049548558605}
   - component: {fileID: 5079308049548558604}
-  - component: {fileID: 5079308049548558607}
   m_Layer: 5
   m_Name: Grid
   m_TagString: Untagged
@@ -196,18 +195,6 @@ MonoBehaviour:
   rectTransform: {fileID: 0}
   gridWidth: 5
   gridHeight: 6
---- !u!114 &5079308049548558607
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5079308047903009484}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 24de972acadcd984ca3013ca8ade2b19, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &5079308048455083751
 GameObject:
   m_ObjectHideFlags: 0

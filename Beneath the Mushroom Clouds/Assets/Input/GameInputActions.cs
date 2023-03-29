@@ -134,6 +134,15 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Interact"",
+                    ""type"": ""Button"",
+                    ""id"": ""4c4aec1a-c5c3-4b15-8019-3d17d1896653"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -310,6 +319,17 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""SwitchFiremode"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e2761d93-d3a1-4e3f-b6c8-bd7e1ee86418"",
+                    ""path"": ""<Keyboard>/e"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Interact"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -500,6 +520,7 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
         m_Player_SecondaryWeapon = m_Player.FindAction("SecondaryWeapon", throwIfNotFound: true);
         m_Player_CycleWeapon = m_Player.FindAction("CycleWeapon", throwIfNotFound: true);
         m_Player_SwitchFiremode = m_Player.FindAction("SwitchFiremode", throwIfNotFound: true);
+        m_Player_Interact = m_Player.FindAction("Interact", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_CloseInventory = m_UI.FindAction("CloseInventory", throwIfNotFound: true);
@@ -581,6 +602,7 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_SecondaryWeapon;
     private readonly InputAction m_Player_CycleWeapon;
     private readonly InputAction m_Player_SwitchFiremode;
+    private readonly InputAction m_Player_Interact;
     public struct PlayerActions
     {
         private @GameInputActions m_Wrapper;
@@ -597,6 +619,7 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
         public InputAction @SecondaryWeapon => m_Wrapper.m_Player_SecondaryWeapon;
         public InputAction @CycleWeapon => m_Wrapper.m_Player_CycleWeapon;
         public InputAction @SwitchFiremode => m_Wrapper.m_Player_SwitchFiremode;
+        public InputAction @Interact => m_Wrapper.m_Player_Interact;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -642,6 +665,9 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
                 @SwitchFiremode.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnSwitchFiremode;
                 @SwitchFiremode.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnSwitchFiremode;
                 @SwitchFiremode.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnSwitchFiremode;
+                @Interact.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnInteract;
+                @Interact.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnInteract;
+                @Interact.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnInteract;
             }
             m_Wrapper.m_PlayerActionsCallbackInterface = instance;
             if (instance != null)
@@ -682,6 +708,9 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
                 @SwitchFiremode.started += instance.OnSwitchFiremode;
                 @SwitchFiremode.performed += instance.OnSwitchFiremode;
                 @SwitchFiremode.canceled += instance.OnSwitchFiremode;
+                @Interact.started += instance.OnInteract;
+                @Interact.performed += instance.OnInteract;
+                @Interact.canceled += instance.OnInteract;
             }
         }
     }
@@ -789,6 +818,7 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
         void OnSecondaryWeapon(InputAction.CallbackContext context);
         void OnCycleWeapon(InputAction.CallbackContext context);
         void OnSwitchFiremode(InputAction.CallbackContext context);
+        void OnInteract(InputAction.CallbackContext context);
     }
     public interface IUIActions
     {

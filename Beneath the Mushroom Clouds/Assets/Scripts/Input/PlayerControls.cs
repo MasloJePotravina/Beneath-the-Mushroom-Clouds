@@ -109,6 +109,15 @@ public class PlayerControls : MonoBehaviour
     public bool crouchEnabled;
 
     /// <summary>
+    /// Reference to the HUD Controller script.
+    /// </summary>
+    [SerializeField] private HUDController hudController;
+
+    [SerializeField] private GameObject interactRange;
+
+    private PlayerInteract playerInteract;
+
+    /// <summary>
     /// At Start initializes all og the needed references.
     /// </summary>
     void Start()
@@ -116,6 +125,8 @@ public class PlayerControls : MonoBehaviour
         player = this.gameObject;
         playerInput = GetComponent<PlayerInput>();
         playerAnimationController = player.GetComponent<PlayerAnimationController>();
+
+        playerInteract = interactRange.GetComponent<PlayerInteract>();
 
 
         cameraMovement = mainCamera.GetComponent<CameraMovement>();
@@ -214,8 +225,9 @@ public class PlayerControls : MonoBehaviour
             status.playerCrouched = true;
             status.playerSpeed = status.crouchSpeed;
             playerAnimationController.CrouchDownAnimation();
+            hudController.StanceCrouch();
         }
-        else if(crouchEnabled)
+        else if(status.playerCrouched && crouchEnabled)
         {
             status.playerCrouched = false;
             playerAnimationController.StandUpAnimation();
@@ -224,6 +236,8 @@ public class PlayerControls : MonoBehaviour
                 status.playerSpeed = status.sprintSpeed;
             else
                 status.playerSpeed = status.walkSpeed;
+
+            hudController.StanceStand();
         }
     }
 
@@ -348,6 +362,15 @@ public class PlayerControls : MonoBehaviour
         if(firearmScript.selectedFirearm != null)
             firearmScript.SetFirearmActive(true);
         weaponChangeEnabled = true;
+    }
+
+
+    public void OnInteract(InputValue value)
+    {
+        if(value.isPressed)
+        {
+            playerInteract.Interact();
+        }
     }
 
 }

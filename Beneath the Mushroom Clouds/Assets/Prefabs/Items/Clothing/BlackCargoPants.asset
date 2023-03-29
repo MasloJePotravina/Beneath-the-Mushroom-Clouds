@@ -16,11 +16,18 @@ MonoBehaviour:
   itemName: BlackCargoPants
   width: 1
   height: 2
+  weight: 0
+  value: 0
+  description: 
+  visibleOnDrop: 1
+  dropSizeMultiplier: 4
   equipment: 1
+  equipmentType: 8
   clothing: 1
-  weapon: 0
+  outlineSprite: {fileID: 21300000, guid: 4701af992eca0ee499908b97881dc6bc, type: 3}
   container: 1
   gridAmount: 2
+  containerPrefab: {fileID: 7647818070181531962, guid: de618c90192168a4d8579c3b27203173, type: 3}
   gridData:
   - gridID: 0
     width: 2
@@ -28,11 +35,26 @@ MonoBehaviour:
   - gridID: 1
     width: 2
     height: 2
+  weapon: 0
+  firearm: 0
+  manuallyChambered: 0
+  fireModes: []
+  usesMagazines: 0
+  internalMagSize: 0
+  weaponType: 
+  weaponLength: 0
+  weaponHUDOutlineSprite: {fileID: 0}
+  ammoBarFullSprite: {fileID: 0}
+  ammoBarEmptySprite: {fileID: 0}
+  weaponAnimationController: {fileID: 0}
+  ammoItemData: {fileID: 0}
+  magazineItemData: {fileID: 0}
+  ammo: 0
+  magazine: 0
+  magazineSize: 0
+  usable: 0
   stackable: 0
   maxStack: 0
-  stackCountTextPrefab: {fileID: 0}
-  usable: 0
-  equipmentType: 8
-  containerPrefab: {fileID: 7647818070181531962, guid: de618c90192168a4d8579c3b27203173, type: 3}
-  outlineSprite: {fileID: 21300000, guid: 4701af992eca0ee499908b97881dc6bc, type: 3}
+  itemSubtextPrefab: {fileID: 0}
   inventorySprite: {fileID: 21300000, guid: 2681967168d5aca4895b893c6c020817, type: 3}
+  inventorySpriteSecondary: {fileID: 0}

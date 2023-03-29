@@ -19,6 +19,8 @@ MonoBehaviour:
   weight: 0
   value: 0
   description: 
+  visibleOnDrop: 1
+  dropSizeMultiplier: 4
   equipment: 1
   equipmentType: 12
   clothing: 0

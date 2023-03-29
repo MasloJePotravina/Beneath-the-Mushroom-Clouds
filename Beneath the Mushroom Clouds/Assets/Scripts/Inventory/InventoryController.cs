@@ -266,6 +266,18 @@ public class InventoryController : MonoBehaviour
     /// </summary>
     private InventoryHighlight highlighter;
 
+    private ContainerObject containerObject = null;
+
+    private ItemGrid previousGrid = null;
+    private ItemSlot previousSlot = null;
+    private Vector2Int previousGridPosition = new Vector2Int(0, 0);
+
+    [SerializeField] private GameObject looseItemPrefab;
+
+    private GameObject interactRange;
+
+    private ItemPickUp itemPickUp;
+
     
 
     /// <summary>
@@ -277,6 +289,8 @@ public class InventoryController : MonoBehaviour
         hudController = hudCanvas.GetComponent<HUDController>();
         playerAnimationController = player.GetComponent<PlayerAnimationController>();
         debugSpawnerDropdown = debugSpawner.GetComponent<TMP_Dropdown>();
+        interactRange = player.transform.Find("InteractRange").gameObject;
+        itemPickUp = interactRange.GetComponent<ItemPickUp>();
         SetUpDebugDropdown();
     }
 
@@ -315,12 +329,43 @@ public class InventoryController : MonoBehaviour
     }
 
     /// <summary>
-    /// Opens or closes the inventory.
+    /// Opens the inventory.
     /// </summary>
-    /// <param name="open">True if the inventory should be opened, false if it should be closed.</param>
-    public void OpenInventory(bool open){
-        inventoryOpen = open;
-        this.gameObject.SetActive(open);
+    public void OpenInventory(){
+        inventoryOpen = true;
+        this.gameObject.SetActive(true);
+        containerGrid.Init(9, 14, true);
+        containerGrid.LoadItemsFromGround(itemPickUp);
+    }
+
+    public void CloseInventory(){
+        inventoryOpen = false;
+        this.gameObject.SetActive(false);
+        if(selectedItem != null){
+            ReturnItem(selectedItem);
+            selectedItem = null;
+            HighlightSlot(false);
+        }
+        if(containerObject != null){
+            containerGrid.SaveItemsToContainerObject(containerObject);
+            containerGrid.Init(9, 14, true);
+            containerObject.Close();
+            containerObject = null;
+        }else{
+            containerGrid.DisableItemsInGrid();
+        }
+        
+        //Close all open windows
+        int openWindowCnt = openWindows.Count;
+        for(int i = openWindowCnt - 1; i >= 0; i--){
+            openWindows[i].GetComponent<InventoryWindow>().CloseWindow();
+        }
+    }
+
+    public void OpenContainer(ContainerObject container){
+        containerObject = container;
+        containerGrid.Init(container.gridWidth, container.gridHeight);
+        containerGrid.LoadItemsFromContainerObject(container);
     }
 
     /// <summary>
@@ -466,6 +511,7 @@ public class InventoryController : MonoBehaviour
                 }
                 //If the player is not attempting any quick actions, grab the item from the grid
                 GrabItemFromGrid(value, tilePosition.x, tilePosition.y);
+
             }else{
                 //If an item was selected and mouse was either pressed or released, place the item in the grid
                 PlaceItemToGrid(tilePosition.x, tilePosition.y);  
@@ -635,6 +681,11 @@ public class InventoryController : MonoBehaviour
                 if(selectedItem.isOpened){
                     CloseContainerItemWindow(selectedItem);
                 }
+
+                previousGrid = selectedGrid;
+                previousGridPosition = new Vector2Int(selectedItem.gridPositionX, selectedItem.gridPositionY);
+
+                
             }
         }
         //Potentially highlight an equipment slot
@@ -943,11 +994,12 @@ public class InventoryController : MonoBehaviour
     }
 
     /// <summary>
-    /// Closes context menu.
+    /// Closes context menu. Resets the cursor to the default cursor.
     /// </summary>
     public void CloseContextMenu(){
         Destroy(contextMenu);
         contextMenuOpen = false;
+        Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
     }
 
 
@@ -956,13 +1008,9 @@ public class InventoryController : MonoBehaviour
     /// </summary>
     /// <param name="item">Reference to the item being split</param>
     public void SplitStack(InventoryItem item){
-        InventoryItem newItem = Instantiate(itemPrefab).GetComponent<InventoryItem>();
-        newItem.Set(item.itemData);
+        InventoryItem newItem = SpawnItem(item.itemData);
         newItem.SetStack(item.currentStack/2);
         item.RemoveFromStack(newItem.currentStack);
-        selectedItem = newItem;
-        selectedItemRectTransform = selectedItem.GetComponent<RectTransform>();
-        selectedItemRectTransform.SetAsLastSibling();
     }
 
     //
@@ -1318,6 +1366,10 @@ public class InventoryController : MonoBehaviour
 
             magazine.AddToMagazine(addedAmount);
             ammo.RemoveFromStack(addedAmount);
+            if(ammo.currentStack == 0){
+                if(containerObject == null)
+                    itemPickUp.DestroyItemObject(ammo);
+            }   
 
         }    
     }
@@ -1389,6 +1441,10 @@ public class InventoryController : MonoBehaviour
 
             firearm.LoadAmmoIntoInternalMagazine(addedAmount);
             ammo.RemoveFromStack(addedAmount);
+            if(ammo.currentStack == 0){
+                if(containerObject == null)
+                    itemPickUp.DestroyItemObject(ammo);
+            }  
         }
 
         //If the firearm is equipped and selected, update the weapon HUD
@@ -1578,6 +1634,11 @@ public class InventoryController : MonoBehaviour
         }
 
         firearm.AttachMagazine(magazine);
+
+        if(containerObject == null){
+            itemPickUp.DestroyItemObject(magazine);
+        }
+
         Destroy(magazine.gameObject);
 
         if(firearm.isEquipped && firearm.isSelectedWeapon){
@@ -1618,6 +1679,10 @@ public class InventoryController : MonoBehaviour
             if(firearm.isEquipped && firearm.isSelectedWeapon){
                 hudController.UpdateWeaponHUD(firearm);
             }
+            if(ammo.currentStack == 0){
+                if(containerObject == null)
+                    itemPickUp.DestroyItemObject(ammo);
+            }  
             return true;
         }else{
             return false;
@@ -1638,6 +1703,14 @@ public class InventoryController : MonoBehaviour
 
         if(firearm.ChamberRound()){
             ammo.RemoveFromStack(1);
+        }
+
+        //Since stacks destroy themselves on count 0, we need to destroy the item object if the stack is 0 in case
+        // the player is chambering the last round from the ground
+        if(ammo.currentStack == 0){
+            if(containerObject == null){
+                itemPickUp.DestroyItemObject(ammo);
+            }
         }
 
         if(firearm.isEquipped && firearm.isSelectedWeapon){
@@ -1828,14 +1901,20 @@ public class InventoryController : MonoBehaviour
     /// </summary>
     /// <param name="item">Item to be destroyed.</param>
     public void DestroyItem(InventoryItem item){
-         if(item.isEquipped){
+        if(item.isEquipped){
             ToggleContainerGrid(item, false);
             RemoveOutlineSprite(item);
+            RemoveEquippedItemFromDict(item);
             if(item.itemData.weapon && item.isSelectedWeapon){
                 WeaponSelectUpdate();
             }
 
         }
+        //Can be safely called without check for containerGrid, if the item was not an item on the ground, nothing happens
+        //This check just saves time looping through items on the ground if a container is opened
+        // (as in that case there is surely nothing being destroyed on the ground)
+        if(containerObject == null)
+            itemPickUp.DestroyItemObject(item);
         Destroy(item.gameObject);
         if(item.isOpened){
             CloseContainerItemWindow(item);
@@ -1859,5 +1938,39 @@ public class InventoryController : MonoBehaviour
             hudController.UpdateWeaponHUD(firearm);
         }
         return firemode;
+    }
+
+
+    private void ReturnItem(InventoryItem item){
+        if(previousGrid != null){
+            previousGrid.PlaceItem(item, previousGridPosition.x, previousGridPosition.y);
+            previousGrid = null;
+            previousGridPosition = Vector2Int.zero;
+            return;
+        }
+        if(previousSlot != null){
+            previousSlot.PlaceItem(item);
+            previousSlot = null;
+            return;
+        }
+
+        DestroyItem(item);
+
+    }
+
+    public void DropItem(InventoryItem item){
+        //Instantiate a loose item gameobject with random rotation and slight position variation from the player
+        //Slight position variation also helps due to the fact that the player can fill the ground grid with items
+        //but when the grid is loaded on inventory open, the items have their rotations and grid positions reset. Therefore
+        //not all items may fit. This way the player can move around a bit have some items appear in the ground grid an some not.
+        GameObject dropedItem = Instantiate(looseItemPrefab, new Vector3(player.transform.position.x + Random.Range(-5f, 5f),
+                                            player.transform.position.y + Random.Range(-5f, 5f), player.transform.position.z),
+                                            Quaternion.Euler(0, 0, Random.Range(0f, 360f)));
+        dropedItem.GetComponent<LooseItem>().Init(item);
+
+    }
+
+    public void PickUpItem(InventoryItem item){
+        itemPickUp.DestroyItemObject(item);
     }
 }

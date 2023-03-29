@@ -16,17 +16,39 @@ MonoBehaviour:
   itemName: WorkBoots
   width: 2
   height: 2
+  weight: 0
+  value: 0
+  description: 
+  visibleOnDrop: 1
+  dropSizeMultiplier: 4
   equipment: 1
+  equipmentType: 10
   clothing: 1
-  weapon: 0
+  outlineSprite: {fileID: 21300000, guid: 510e27d4d01d30f41bb12774be97a922, type: 3}
   container: 0
   gridAmount: 0
+  containerPrefab: {fileID: 0}
   gridData: []
+  weapon: 0
+  firearm: 0
+  manuallyChambered: 0
+  fireModes: []
+  usesMagazines: 0
+  internalMagSize: 0
+  weaponType: 
+  weaponLength: 0
+  weaponHUDOutlineSprite: {fileID: 0}
+  ammoBarFullSprite: {fileID: 0}
+  ammoBarEmptySprite: {fileID: 0}
+  weaponAnimationController: {fileID: 0}
+  ammoItemData: {fileID: 0}
+  magazineItemData: {fileID: 0}
+  ammo: 0
+  magazine: 0
+  magazineSize: 0
+  usable: 0
   stackable: 0
   maxStack: 0
-  stackCountTextPrefab: {fileID: 0}
-  usable: 0
-  equipmentType: 10
-  containerPrefab: {fileID: 0}
-  outlineSprite: {fileID: 21300000, guid: 510e27d4d01d30f41bb12774be97a922, type: 3}
+  itemSubtextPrefab: {fileID: 0}
   inventorySprite: {fileID: 21300000, guid: c08bc3b51846e014fbfcfb1093721833, type: 3}
+  inventorySpriteSecondary: {fileID: 0}

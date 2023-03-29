@@ -1,54 +1,143 @@
-////////////////////////////////////////////
-// File: playerStatusScr.cs               //
-// Project: Beneath the Mushroom Clouds   //
-// Author: Ondrej Kováč                   //
-// Brief: Status of the Player Character  //
-////////////////////////////////////////////
-
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 /// <summary>
-/// This script holds all the variables that affect the status of the player character such as health, stamina, whether the character is crouching and so on.
+/// Implements variables describing the current status of the player and methods to manipulate these variables
 /// </summary>
 public class PlayerStatus : MonoBehaviour
 {
+    /// <summary>
+    /// Health of the player
+    /// </summary>
     public float playerHealth = 0.0f;
+
+    /// <summary>
+    /// Stamina of the player
+    /// </summary>
     public float playerStamina = 0.0f;
+    /// <summary>
+    /// Hunger of the player
+    /// </summary>
     public float playerHunger = 0.0f;
+    /// <summary>
+    /// Thirst of the player
+    /// </summary>
     public float playerThirst = 0.0f;
+
+    /// <summary>
+    /// Body temperature of the player
+    /// </summary>
     public float playerTemp = 0.0f;
+
+    /// <summary>
+    /// Tiredness of the player (or rather the wakefulness of the player as the lower the value, the more tired the player is)
+    /// </summary>
     public float playerTiredness = 0.0f;
 
+
+    /// <summary>
+    /// Current speed of the player
+    /// </summary>
     public float playerSpeed = 50.0f;
+
+    /// <summary>
+    /// Default crouch speed of the player
+    /// </summary>
     public float crouchSpeed = 20.0f;
+
+    /// <summary>
+    /// Default walk speed of the player
+    /// </summary>
     public float walkSpeed = 50.0f;
+
+    /// <summary>
+    /// Default sprint speed of the player
+    /// </summary>
     public float sprintSpeed = 100.0f;
 
+
+    /// <summary>
+    /// Whether the player is currently hypothermic
+    /// </summary>
     public bool playerHypothermia = false;
+
+    /// <summary>
+    /// Whether the player is currently hyperthermic
+    /// </summary>
     public bool playerHyperthermia = false;
+
+    /// <summary>
+    /// Whether the player is currently crouched
+    /// </summary>
     public bool playerCrouched = false;
+
+    /// <summary>
+    /// Whether the player is currently sprinting
+    /// </summary>
     public bool playerSprint = false;
+
+    /// <summary>
+    /// Whether the player is currently aiming
+    /// </summary>
     public bool playerAiming = false;
+
+    /// <summary>
+    /// Whether the player is currently moving
+    /// </summary>
     public bool playerMoving = false;
 
+
+    /// <summary>
+    /// Ability of the player to handle firearms. 0 means the best possible
+    /// </summary>
     public float shooterAbility;
 
+    /// <summary>
+    /// Base stamina drain when running
+    /// </summary>
     public float baseStaminaDrain = 5;
+
+    /// <summary>
+    /// Base stamina regeneration when not running
+    /// </summary>
     public float baseStaminaRegen = 7.5f;
+
+    /// <summary>
+    /// Base hunger drain
+    /// </summary>
     public float baseHungerDrain = 0.111f;      //Depletes completely from full to nothing after roughly 15 minutes of gameplay (15 hours in game)
+
+    /// <summary>
+    /// Base thirst drain
+    /// </summary>
     public float baseThirstDrain = 0.166f;      //Depletes completely from full to nothing after roughly 10 minutes of gameplay (10 hours in game)
+
+    /// <summary>
+    /// Base tiredness drain
+    /// </summary>
     public float baseTirednessDrain = 0.0694f;  //Depletes completely from full to nothing after roughly 24 minutes of gameplay (24 hours in game)
 
+    /// <summary>
+    /// Base health drain, used in the calculation of bleed
+    /// </summary>
     public float baseHealthDrain = 1.0f;        //While of course, healthy character does not periodically lose health, this is used in the calculation for health drain arrows in the HUD
                                                 //to simulate the rate of potential bleeds
 
+    /// <summary>
+    /// Base health regeneration rate
+    /// </summary>
     public float baseHealthRegen = 0.5f;        
 
+    /// <summary>
+    /// Whether the player's stamina is depleted. Used to block sprint after depleting the stamina and unlocking it again after regenerating it back to 20%
+    /// </summary>
     private bool staminaDepleted = false;
 
-    private HUDController HUD;
+    /// <summary>
+    /// Reference to the HUD controller
+    /// </summary>
+    [SerializeField] private HUDController HUD;
 
 
 
@@ -56,7 +145,6 @@ public class PlayerStatus : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        HUD = GameObject.Find("HUD").GetComponent<HUDController>();
         LoadPlayerStatusBars();
     }
 

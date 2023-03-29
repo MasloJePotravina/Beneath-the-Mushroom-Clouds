@@ -16,29 +16,39 @@ MonoBehaviour:
   itemName: Pistol Magazine
   width: 1
   height: 1
+  weight: 0
+  value: 0
+  description: 
+  visibleOnDrop: 1
+  dropSizeMultiplier: 3
   equipment: 0
+  equipmentType: 0
   clothing: 0
-  weapon: 0
-  weaponHUDOutlineSprite: {fileID: 0}
-  firearm: 0
-  ammoBarFullSprite: {fileID: 0}
-  ammoBarEmptySprite: {fileID: 0}
-  manuallyChambered: 0
-  ammo: 0
-  weaponType: Pistol
+  outlineSprite: {fileID: 0}
   container: 0
   gridAmount: 0
+  containerPrefab: {fileID: 0}
   gridData: []
+  weapon: 0
+  firearm: 0
+  manuallyChambered: 0
+  fireModes: []
+  usesMagazines: 0
+  internalMagSize: 0
+  weaponType: Pistol
+  weaponLength: 0
+  weaponHUDOutlineSprite: {fileID: 0}
+  ammoBarFullSprite: {fileID: 0}
+  ammoBarEmptySprite: {fileID: 0}
+  weaponAnimationController: {fileID: 0}
+  ammoItemData: {fileID: 11400000, guid: d2354e761d1b3c74799dca1da466979a, type: 2}
+  magazineItemData: {fileID: 0}
+  ammo: 0
+  magazine: 1
+  magazineSize: 12
+  usable: 0
   stackable: 0
   maxStack: 0
   itemSubtextPrefab: {fileID: 7965834515029828087, guid: 9b695b4cc89c56f4292c39b2d0d38a68, type: 3}
-  magazine: 1
-  magazineSize: 12
-  ammoItemData: {fileID: 11400000, guid: d2354e761d1b3c74799dca1da466979a, type: 2}
-  magazineItemData: {fileID: 0}
-  usable: 0
-  equipmentType: 0
-  containerPrefab: {fileID: 0}
-  outlineSprite: {fileID: 0}
   inventorySprite: {fileID: 21300000, guid: b87f7ecaf9911c742a4865a794a00b5b, type: 3}
   inventorySpriteSecondary: {fileID: 0}

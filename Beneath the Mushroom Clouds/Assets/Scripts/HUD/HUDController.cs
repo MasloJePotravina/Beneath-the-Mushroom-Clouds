@@ -9,6 +9,8 @@ using TMPro;
 public class HUDController : MonoBehaviour
 {
 
+    public GameObject player;
+
     /// <summary>
     /// Reference to the player status script.
     /// </summary>
@@ -62,7 +64,17 @@ public class HUDController : MonoBehaviour
     /// <summary> 
     /// Reference to the stance object image component.
     /// </summary>
-    private Image stanceImage;
+    private RawImage stanceImage;
+
+    /// <summary>
+    /// Texture for standing stance
+    /// </summary>
+    [SerializeField] private Texture stanceStandingTexture;
+
+    /// <summary>
+    /// Texture for crouching stance
+    /// </summary>
+    [SerializeField] private Texture stanceCrouchingTexture;
 
     /// <summary>
     /// Reference to the Watch object.
@@ -133,15 +145,31 @@ public class HUDController : MonoBehaviour
     /// </summary>
     private GameObject ammoCountText;
 
+    [SerializeField] GameObject interactText;
 
-    // Start is called before the first frame update
+    private InteractText interactTextScript;
+
+
+    /// <summary>
+    /// Get all objects references on start.
+    /// </summary>
     void Start()
     {
+        interactTextScript = interactText.GetComponent<InteractText>();
         GetStatusBarObjects();
         GetWeaponObjects();
     }
 
-    //This is not super effective, but it's done only once at the start of the game
+    void Update(){
+        if(interactTextScript.isActive){
+            interactTextScript.MoveTextAbovePlayer(player.transform.position);
+        }
+    }
+
+    /// <summary>
+    /// Gets all of the status objects such ass all of the status bars, their components and the stance image reference.
+    /// This method id not very effective but it is only called once at start.
+    /// </summary>
     private void GetStatusBarObjects(){
         healthBar = transform.Find("UpperStatusBars").Find("HealthBar").gameObject;
         staminaBar = transform.Find("UpperStatusBars").Find("StaminaBar").gameObject;
@@ -183,12 +211,15 @@ public class HUDController : MonoBehaviour
 
         bodyTempCursor = bodyTempBar.transform.Find("BodyTempCursor").gameObject;
 
-        stance = this.transform.Find("LowerStatusBars").Find("Stance").gameObject;
-        stanceImage = stance.GetComponent<Image>();
+        stance = transform.Find("LowerStatusBars").transform.Find("Stance").gameObject;
+        stanceImage = stance.GetComponent<RawImage>();
 
     }
 
-    //Again not super effective, but it's done only once at the start of the game
+    /// <summary>
+    /// Gets all of the references tied to the weapon section of the HUD.
+    /// This method is not very effective but it is only called once at start.
+    /// </summary>
     private void GetWeaponObjects(){
         weapon = transform.Find("Weapon").gameObject;
 
@@ -207,8 +238,10 @@ public class HUDController : MonoBehaviour
     }
 
 
-    // Disables arrows in the upper status bars, when the value approaches 0,
-    // so that they do not leave the boundaries of the status bar
+    /// <summary>
+    /// Graduaaly disables drain and regeneration arrows in the upper status bars, when the value approaches 0.
+    /// </summary>
+    /// <param name="bar">String that determines which bar to disable arrows for.</param>
     public void ArrowEdges(string bar){
         if(bar == "stamina"){
             if(status.playerStamina <= 6){
@@ -224,9 +257,27 @@ public class HUDController : MonoBehaviour
                 staminaArrows[3].SetActive(false);
             }
         }
+
+        if(bar == "health"){
+            if(status.playerStamina <= 6){
+                healthArrows[2].SetActive(false);
+                healthArrows[5].SetActive(false);
+            }
+            if(status.playerStamina <= 4){
+                healthArrows[1].SetActive(false);
+                healthArrows[4].SetActive(false);
+            }
+            if(status.playerStamina <= 2){
+                healthArrows[0].SetActive(false);
+                healthArrows[3].SetActive(false);
+            }
+        }
     }
 
-    //Updates the stamina bar fill, sets the color to red if the stamina is too low and calls functions for arroow updates
+    /// <summary>
+    /// Updates the stamina bar fill, regenration and drain arrows, and the color of the bar fill.
+    /// </summary>
+    /// <param name="drain"></param>
     public void UpdateStamina(float drain){
         staminaBarFillRect.offsetMax = UpdateStaminaRectSize();
         if(status.playerStamina <= 20)
@@ -244,10 +295,16 @@ public class HUDController : MonoBehaviour
     }
 
 
-    //The functions below handle the drain (left facing arrows) and regeneration (right facing arrows) of the upper status bars
-    //The amount of arrows corresponds to the multiple of the base drain/regeneration
+
+
     //(regular drain/regeneration -> one arrow, double drain/regeneration -> two arrows, triple or more drain/regeneration -> three arrows)
     //TODO: Is not yet implemented for the body temperature bar, as that mechanic is not yet in the game
+
+
+    /// <summary>
+    /// Determines how many arrows to show for drain of the stamina bar (left facing arrows).
+    /// </summary>
+    /// <param name="drain">Current stamina drain.</param>
     private void StaminaArrowsDrain(float drain){
         staminaArrows[3].SetActive(false);
         staminaArrows[4].SetActive(false);
@@ -261,6 +318,10 @@ public class HUDController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Determines how many arrows to show for drain of the health bar (left facing arrows).
+    /// </summary>
+    /// <param name="drain">Current health drain.</param>
     private void HealthArrowsDrain(float drain){
         healthArrows[3].SetActive(false);
         healthArrows[4].SetActive(false);
@@ -274,6 +335,10 @@ public class HUDController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Determines how many arrows to show for regeneration of the stamina bar (right facing arrows).
+    /// </summary>
+    /// <param name="drain">Current stamina drain (negative value as it is regeneration in this case).</param>
     private void StaminaArrowsRegen(float drain){
         staminaArrows[0].SetActive(false);
         staminaArrows[1].SetActive(false);
@@ -287,6 +352,10 @@ public class HUDController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Determines how many arrows to show for regeneration of the health bar (right facing arrows).
+    /// </summary>
+    /// <param name="drain">Current health drain (negative value as it is regeneration in this case).</param>
     private void HealthArrowsRegen(float drain){
         healthArrows[0].SetActive(false);
         healthArrows[1].SetActive(false);
@@ -300,33 +369,62 @@ public class HUDController : MonoBehaviour
         }
     }
 
+    //NOTE: This is done instead of fill amount because the stamina arrows need to move together with the end of the bar
+    //If fill amount was used, like in the lower status bars, the arrows would need a calculation like this anyway
+    //This way, the arrows are anchored to the end of the bar and move with it
 
-    //Activates the weapon section of the HUD (bottom right corner)
+    /// <summary>
+    /// Updates the size of the stamina bar fill.
+    /// </summary>
+    /// <returns></returns>
+    private Vector2 UpdateStaminaRectSize(){
+        return new Vector2(-2-(400-4*status.playerStamina), 7.5f);
+    }
+
+
+    /// <summary>
+    /// Activates the weapon section of the HUD
+    /// </summary>
     public void ActivateWeaponSection(){
         weapon.SetActive(true);
     }
 
-    //Deactivates the weapon section of the HUD
+    /// <summary>
+    /// Deactivates the weapon section of the HUD
+    /// </summary>
     public void DeactivateWeaponSection(){
         weapon.SetActive(false);
     }
 
-    //Updates the weapon name in the HUD
+    /// <summary>
+    /// Updates the weapon name in the HUD
+    /// </summary>
+    /// <param name="name">Name of the weapon</param>
     public void UpdateWeaponName(string name){
         weaponName.GetComponent<TextMeshProUGUI>().text = name;
     }
 
-    //Updates the weapon image (outline) in the HUD
+    /// <summary>
+    /// Updates the weapon image (outline) in the HUD
+    /// </summary>
+    /// <param name="image">Sprite of the weapon's outline</param>
     public void UpdateWeaponImage(Sprite image){
         weaponImage.GetComponent<Image>().sprite = image;
     }
 
-    //Updates the fire mode text in the HUD
+    /// <summary>
+    /// Updates the fire mode text in the HUD
+    /// </summary>
+    /// <param name="mode">Weapon's fire mode</param>
     public void UpdateFireModeText(string mode){
         fireModeText.GetComponent<TextMeshProUGUI>().text = mode;
     }
-
-    //Updates the magazine bar in the HUD, swaps images for different weapons and sets appropriate height and fill amount
+    /// <summary>
+    /// Updates the magazine bar in the HUD, swaps images for different weapons and sets appropriate height and fill amount
+    /// </summary>
+    /// <param name="ammoBarFull">Sprite of the full magazine bar</param>
+    /// <param name="ammoBarEmpty">Sprite of the empty magazine bar</param>
+    /// <param name="weaponType">Type of the weapon</param>
     public void UpdateMagazineBarImage(Sprite ammoBarFull, Sprite ammoBarEmpty, string weaponType){
 
         magazineBarFull.GetComponent<Image>().sprite = ammoBarFull;
@@ -340,7 +438,8 @@ public class HUDController : MonoBehaviour
 
         float maxAmmo = 0;
         float barHeight = 0;
-
+        
+        //The maximum ammo and ammo bar height depends on the weapon type
         switch(weaponType){
             case "AssaultRifle":
                 maxAmmo = 30.0f;
@@ -371,8 +470,13 @@ public class HUDController : MonoBehaviour
         chamberEmptyImage.fillAmount = 1/maxAmmo;
     }
 
-    //Updates the ammo count text in the HUD (above the magazine bar)
-    public void UpdateAmmoStatus(int ammoCount, int maxAmmo, bool isChambered, bool manuallyChambered){
+    /// <summary>
+    /// Updates the ammunition status in the hud.
+    /// </summary>
+    /// <param name="ammoCount">Current ammunition count of the weapon (chambered round excluded).
+    /// <param name="maxAmmo">Maximum capacity of the magazine in the weapon.</param>
+    /// <param name="isChambered">Whether the weapon is chambered or not.</param>
+    public void UpdateAmmoStatus(int ammoCount, int maxAmmo, bool isChambered){
         float ammoPercent = (float)ammoCount / (float)maxAmmo;
         magazineBarFull.GetComponent<Image>().fillAmount = ammoPercent;
         if(isChambered){
@@ -388,7 +492,10 @@ public class HUDController : MonoBehaviour
 
     }
 
-    //Master function which calls all of the functions needed to update the weapon section of the HUD
+    /// <summary>
+    /// Master method which calls all of the methods needed to update the weapon section of the HUD
+    /// </summary>
+    /// <param name="item">Currently selected weapon</param>
     public void UpdateWeaponHUD(InventoryItem item){
         if(item == null){
             DeactivateWeaponSection();
@@ -402,16 +509,34 @@ public class HUDController : MonoBehaviour
             UpdateFireModeText(item.GetFiremode().ToUpper());
             UpdateMagazineBarImage( item.itemData.ammoBarFullSprite, item.itemData.ammoBarEmptySprite, 
                                     item.itemData.weaponType);
-            UpdateAmmoStatus(item.ammoCount, item.currentMagazineSize, item.isChambered, item.itemData.manuallyChambered);
+            UpdateAmmoStatus(item.ammoCount, item.currentMagazineSize, item.isChambered);
         }
     }
 
-    //Updates the size of the stamina bar
-    //NOTE: This is done instead of fill amount because the stamina arrows need to move together with the end of the bar
-    //If fill amount was used, like in the lower status bars, the arrows would need a calculation like this anyway
-    //This way, the arrows are anchored to the end of the bar and move with it
-    private Vector2 UpdateStaminaRectSize(){
-        return new Vector2(-2-(400-4*status.playerStamina), 7.5f);
+    /// <summary>
+    /// Switches the stance image to the standing stance
+    /// </summary>
+    public void StanceStand(){
+        stanceImage.texture = stanceStandingTexture;
+    }
+
+    /// <summary>
+    /// Switches the stance image to the crouching stance
+    /// </summary>
+    public void StanceCrouch(){
+        stanceImage.texture = stanceCrouchingTexture;
+    }
+
+    public void SetInteractText(string text){
+        interactTextScript.SetText(text);
+    }
+
+    public void ActivateInteractText(){
+        interactText.SetActive(true);
+    }
+
+    public void DeactivateInteractText(){
+        interactText.SetActive(false);
     }
     
         

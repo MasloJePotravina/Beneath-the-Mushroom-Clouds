@@ -52,6 +52,10 @@ public class ItemData : ScriptableObject
     /// </summary>
     [TextAreaAttribute] public string description;
 
+    public bool visibleOnDrop;
+
+    public float dropSizeMultiplier;
+
     [Header("Equipment")]
     /// <summary>
     /// Whether the item is equippable.

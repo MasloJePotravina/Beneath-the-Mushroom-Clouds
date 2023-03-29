@@ -98,7 +98,7 @@ public class ItemSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
             if(item.itemData.firearm){
                 if(placedItem.itemData.magazine){
                     if(item.itemData.weaponType == placedItem.itemData.weaponType){
-                        if(item.AttachMagazine(item)){
+                        if(item.AttachMagazine(placedItem)){
                             Destroy(placedItem.gameObject);
                             return true;
                         }else{

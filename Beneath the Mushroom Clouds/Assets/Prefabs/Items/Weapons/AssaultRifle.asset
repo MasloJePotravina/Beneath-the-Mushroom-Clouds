@@ -21,6 +21,8 @@ MonoBehaviour:
   description: 'An old assault rifle designed shortly after WWII. It was used by
     militaries around the world before the bombs fell and is still widely used today.
     Truly a testament to its reliability and timelessness. '
+  visibleOnDrop: 1
+  dropSizeMultiplier: 4
   equipment: 1
   equipmentType: 11
   clothing: 0

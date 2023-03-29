@@ -31,7 +31,7 @@ public class ItemGrid : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     /// <summary>
     /// Two dimensional array of references to items. It is used to determine what item each tile of the grid contains.
     /// </summary>
-    private InventoryItem[,] inventorySlot;
+    private InventoryItem[,] inventorySlots;
 
     /// <summary>
     /// Rect transform of the grid.
@@ -57,6 +57,9 @@ public class ItemGrid : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     /// </summary>
     /// <returns></returns>
     Vector2Int tileOnGrid = new Vector2Int();
+
+
+    bool isGround;
 
     /// <summary>
     /// Detects when the mouse enters a grid and sets the grid as the selected grid in the Inventory Controller.
@@ -86,7 +89,7 @@ public class ItemGrid : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         rectTransform = GetComponent<RectTransform>();
         Init(gridWidth, gridHeight);
 
-        LoadItems(parentItem);
+        LoadItemsFromContainerItem(parentItem);
     }
 
     /// <summary>
@@ -94,23 +97,65 @@ public class ItemGrid : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     /// </summary>
     /// <param name="width">Width of the grid in tiles.</param>
     /// <param name="height">Height of the grid in tiles.</param>
-    private void Init(int width, int height)
+    /// <param name="isGround">If true, the grid is a ground grid.</param>
+    public void Init(int width, int height, bool isGround = false)
     {
-        inventorySlot = new InventoryItem[width, height];
+        inventorySlots = new InventoryItem[width, height];
         Vector2 size = new Vector2(width * tileDimension, height * tileDimension);
         rectTransform.sizeDelta = size;
+        gridWidth = width;
+        gridHeight = height;
+        this.isGround = isGround;
+    }
+
+    public void LoadItemsFromContainerObject(ContainerObject container)
+    {
+        if(container == null)
+            return;
+        inventorySlots = container.LoadGrid();
+        foreach(InventoryItem item in inventorySlots){
+            if(item != null){
+                item.transform.SetParent(transform);
+                item.transform.localPosition = CalculateGridPosition(item, item.gridPositionX, item.gridPositionY);
+                RectTransform itemRectTransform = item.GetComponent<RectTransform>();
+                itemRectTransform.localScale = Vector2.one;
+                item.gameObject.SetActive(true);
+            }
+        }
+    }
+
+    public void LoadItemsFromGround(ItemPickUp itemPickUp)
+    {
+        inventorySlots = itemPickUp.CreateGroundGrid();
+        foreach(InventoryItem item in inventorySlots){
+            if(item != null){
+                item.transform.SetParent(transform);
+                item.transform.localPosition = CalculateGridPosition(item, item.gridPositionX, item.gridPositionY);
+                RectTransform itemRectTransform = item.GetComponent<RectTransform>();
+                itemRectTransform.localScale = Vector2.one;
+                item.gameObject.SetActive(true);
+            }
+        }
+    }
+
+    public void SaveItemsToContainerObject(ContainerObject container)
+    {
+        if(container == null)
+            return;
+        
+        container.SaveGrid(inventorySlots);
     }
 
     /// <summary>
     /// Loads items stored in the parent item of the grid.
     /// </summary>
     /// <param name="parentItem">Item, which contains the grid.</param>
-    private void LoadItems(InventoryItem parentItem)
+    private void LoadItemsFromContainerItem(InventoryItem parentItem)
     {
         if(parentItem == null)
             return;
-        inventorySlot = parentItem.LoadGrid(transform.GetSiblingIndex());
-        foreach(InventoryItem item in inventorySlot){
+        inventorySlots = parentItem.LoadGrid(transform.GetSiblingIndex());
+        foreach(InventoryItem item in inventorySlots){
             if(item != null){
                 item.transform.SetParent(transform);
                 item.transform.localPosition = CalculateGridPosition(item, item.gridPositionX, item.gridPositionY);
@@ -118,6 +163,9 @@ public class ItemGrid : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
             }
         }
     }
+
+
+    
 
     /// <summary>
     /// Saves items stored in the grid into the parent item of the grid.
@@ -127,7 +175,7 @@ public class ItemGrid : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         if(parentItem == null)
             return;
         
-        parentItem.SaveGrid(transform.GetSiblingIndex(), inventorySlot);
+        parentItem.SaveGrid(transform.GetSiblingIndex(), inventorySlots);
     }
 
     
@@ -184,7 +232,7 @@ public class ItemGrid : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         if(posX > gridWidth-1 || posY > gridHeight-1 || posX < 0 || posY < 0){
             return null;
         }
-        return inventorySlot[posX, posY];
+        return inventorySlots[posX, posY];
     }
 
     /// <summary>
@@ -194,7 +242,7 @@ public class ItemGrid : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     /// <param name="posY">Y position of the tile.</param>
     /// <returns>Reference to the item which was grabbed from the grid.</returns>
     public InventoryItem GrabItem(int posX, int posY){
-        InventoryItem item = inventorySlot[posX, posY];
+        InventoryItem item = inventorySlots[posX, posY];
 
         if(item == null){
             return null;
@@ -202,8 +250,12 @@ public class ItemGrid : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         
         for(int x = 0; x < item.Width; x++){
             for(int y = 0; y < item.Height; y++){
-                inventorySlot[item.gridPositionX + x, item.gridPositionY + y] = null;
+                inventorySlots[item.gridPositionX + x, item.gridPositionY + y] = null;
             }
+        }
+
+        if(isGround){
+            inventoryController.PickUpItem(item);
         }
 
         return item;
@@ -236,7 +288,7 @@ public class ItemGrid : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         if(!OverlapCheck(posX, posY, item, out stackableFlag, out overlappingItem)){
             //If this is overlap due to item stacking, stack the items, if the selected item fit into the item stack return true, otherwise return false
             if(stackableFlag){
-                int amountTransfered = inventorySlot[posX, posY].AddToStack(item.currentStack);
+                int amountTransfered = inventorySlots[posX, posY].AddToStack(item.currentStack);
                 if(item.RemoveFromStack(amountTransfered) == 0){
                     return true;
                 }else{
@@ -308,7 +360,7 @@ public class ItemGrid : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         //Set all of the tiles occupied by the item to the item
         for(int x = 0; x < item.Width; x++){
             for(int y = 0; y < item.Height; y++){
-                inventorySlot[posX + x, posY + y] = item;
+                inventorySlots[posX + x, posY + y] = item;
             }
         }
 
@@ -318,6 +370,10 @@ public class ItemGrid : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         Vector2 position = CalculateGridPosition(item, posX, posY);
     
         itemRectTransform.localPosition = position;
+
+        if(isGround){
+            inventoryController.DropItem(item);
+        }
         return true;
         
     }
@@ -385,11 +441,11 @@ public class ItemGrid : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         overlappingItem = null;
         for(int x = 0; x < item.Width; x++){
             for(int y = 0; y < item.Height; y++){
-                if(inventorySlot[posX + x, posY + y] != null){
-                    if(CheckIfStackable(inventorySlot[posX + x, posY + y], item)){
+                if(inventorySlots[posX + x, posY + y] != null){
+                    if(CheckIfStackable(inventorySlots[posX + x, posY + y], item)){
                         stackableFlag = true;
                     }
-                    overlappingItem = inventorySlot[posX + x, posY + y];
+                    overlappingItem = inventorySlots[posX + x, posY + y];
                     return false;
                 }
             }
@@ -460,7 +516,7 @@ public class ItemGrid : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     public InventoryItem FindBestMagazine(string weaponType){
         int mostAmmo = -1;
         InventoryItem bestMagazine = null;
-        foreach(InventoryItem item in inventorySlot){
+        foreach(InventoryItem item in inventorySlots){
             if(item == null){
                 continue;
             }
@@ -483,7 +539,7 @@ public class ItemGrid : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     /// <param name="weaponType">Weapon type to find ammo for</param>
     /// <returns>Reference to the ammo, null if no ammo was found</returns>
     public InventoryItem FindAmmo(string weaponType){
-        foreach(InventoryItem item in inventorySlot){
+        foreach(InventoryItem item in inventorySlots){
             if(item == null){
                 continue;
             }
@@ -503,5 +559,12 @@ public class ItemGrid : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         return null;
     }
 
+    public void DisableItemsInGrid(){
+        foreach(InventoryItem item in inventorySlots){
+            if(item != null){
+                item.gameObject.SetActive(false);
+            }
+        }
+    }
 
 }
