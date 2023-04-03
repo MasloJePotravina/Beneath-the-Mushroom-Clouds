@@ -33,6 +33,12 @@ public class InteractableBehaviour : MonoBehaviour
             ContainerObject containerObject = this.GetComponent<ContainerObject>();
             containerObject.Open();
         }
+
+        if(interactableTag == "Bed")
+        {
+            BedBehaviour bedBehaviour = this.GetComponent<BedBehaviour>();
+            bedBehaviour.Sleep();
+        }
     }
 
     public string GetInteractText(){
@@ -47,9 +53,14 @@ public class InteractableBehaviour : MonoBehaviour
             {
                 return "Open";
             }
-        }else if(interactableTag == "Container")
+        }
+        else if(interactableTag == "Container")
         {
             return "Open";
+        }
+        else if(interactableTag == "Bed")
+        {
+            return "Rest";
         }
         else
         {

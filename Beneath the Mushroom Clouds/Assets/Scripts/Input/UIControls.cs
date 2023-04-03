@@ -34,6 +34,8 @@ public class UIControls : MonoBehaviour
     /// </summary>
     private FirearmScript firearmScript;
 
+
+
     /// <summary>
     /// On Awake, initializes all needed references.
     /// </summary>
@@ -42,7 +44,6 @@ public class UIControls : MonoBehaviour
         inventoryController = inventoryScreen.GetComponent<InventoryController>();
         playerAnimationController = GetComponent<PlayerAnimationController>();
         firearmScript = transform.Find("PlayerFirearm").GetComponent<FirearmScript>();
-
     }
 
     /// <summary>
@@ -122,4 +123,5 @@ public class UIControls : MonoBehaviour
     void OnQuickEquip(InputValue value){
         inventoryController.QuickEquipHotkey(value);
     }
+
 }

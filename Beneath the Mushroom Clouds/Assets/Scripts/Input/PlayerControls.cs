@@ -117,14 +117,18 @@ public class PlayerControls : MonoBehaviour
 
     private PlayerInteract playerInteract;
 
+    private PauseMenu pauseMenu;
+
     /// <summary>
     /// At Start initializes all og the needed references.
     /// </summary>
-    void Start()
+    void Awake()
     {
         player = this.gameObject;
         playerInput = GetComponent<PlayerInput>();
         playerAnimationController = player.GetComponent<PlayerAnimationController>();
+
+        pauseMenu = GameObject.FindObjectOfType<PauseMenu>(true);
 
         playerInteract = interactRange.GetComponent<PlayerInteract>();
 
@@ -370,6 +374,12 @@ public class PlayerControls : MonoBehaviour
         if(value.isPressed)
         {
             playerInteract.Interact();
+        }
+    }
+
+    public void OnPauseGame(InputValue value){
+        if(value.isPressed){
+            pauseMenu.TogglePauseMenu();
         }
     }
 

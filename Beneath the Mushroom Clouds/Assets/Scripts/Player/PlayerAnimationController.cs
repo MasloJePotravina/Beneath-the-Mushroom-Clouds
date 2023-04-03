@@ -60,6 +60,9 @@ public class PlayerAnimationController : MonoBehaviour
     private Quaternion prevTorsoRotation;
 
 
+    private AudioManager audioManager;
+
+
     /// <summary>
     /// On Start, initiliazes all of the needed references.
     /// </summary>
@@ -83,6 +86,8 @@ public class PlayerAnimationController : MonoBehaviour
 
         //Store the rotation of the torso in the first frame
         prevTorsoRotation = playerTorso.transform.rotation;
+
+        audioManager = GameObject.FindObjectOfType<AudioManager>();
     }
 
     /// <summary>
@@ -123,6 +128,7 @@ public class PlayerAnimationController : MonoBehaviour
                 if(previousWeapon == null)
                     torsoAnimator.ResetTrigger("weaponUnequipped");   
                 torsoAnimator.SetTrigger("longWeaponEquipped");
+                audioManager.Play("AssaultRifleEquip");
             }
             if(previousWeapon == null)
                 firearmAnimator.ResetTrigger("weaponUnequipped");
@@ -296,6 +302,7 @@ public class PlayerAnimationController : MonoBehaviour
         //Long weapon
         }else{
             torsoAnimator.SetTrigger("longWeaponRack");
+            audioManager.Play("AssaultRifleRack");
         }
 
         firearmAnimator.SetTrigger("weaponRack");
@@ -314,6 +321,7 @@ public class PlayerAnimationController : MonoBehaviour
             torsoAnimator.SetTrigger("shortWeaponUnloadMag");
         }else{
             torsoAnimator.SetTrigger("longWeaponUnloadMag");
+            audioManager.Play("AssaultRifleUnloadMagazine");
         }
 
         firearmAnimator.SetTrigger("weaponUnloadMag");
@@ -332,6 +340,7 @@ public class PlayerAnimationController : MonoBehaviour
             torsoAnimator.SetTrigger("shortWeaponLoadMag");
         }else{
             torsoAnimator.SetTrigger("longWeaponLoadMag");
+            audioManager.Play("AssaultRifleLoadMagazine");
         }
 
         firearmAnimator.SetTrigger("weaponLoadMag");

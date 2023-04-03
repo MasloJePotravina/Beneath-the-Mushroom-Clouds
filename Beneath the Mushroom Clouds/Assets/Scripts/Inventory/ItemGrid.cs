@@ -82,7 +82,7 @@ public class ItemGrid : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     /// <summary>
     /// On start, initializes the grid and load items if the grid is a child of a container item.
     /// </summary>
-    void Start()
+    void Awake()
     {
         inventoryScreen = GameObject.Find("InventoryScreen");
         inventoryController = inventoryScreen.GetComponent<InventoryController>();

@@ -2,6 +2,9 @@ Junk items - prefix 00
 000001 - Gold Sapphire Earrings
 
 Consumables - prefix 01
+010001 - Beef Stew
+010002 - Water Bottle
+010003 - Energy Drink
 
 Clothing - prefix 02
 020001 - Chest Rig Small

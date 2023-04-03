@@ -11,12 +11,6 @@ using TMPro;
 /// </summary>
 public class InventoryController : MonoBehaviour
 {
-    //TODO: Dropdown menu for spawning items in the inventory
-    /// <summary>
-    /// Dropdown item spawner gameObject reference.
-    /// </summary>
-    [SerializeField] private GameObject debugSpawner;
-
     /// <summary>
     /// Dropdown item spawner TMP_Dropdown component.
     /// </summary>
@@ -26,6 +20,8 @@ public class InventoryController : MonoBehaviour
     /// Player gameObject reference.
     /// </summary>
     [SerializeField] private GameObject player;
+
+    private PlayerStatus playerStatus;
 
     /// <summary>
     /// Array of equipment slots. The index of the array corresponds to the integer representation of the equipment type. Starts at 1 as 0 is reserved for non equippable items.
@@ -254,12 +250,7 @@ public class InventoryController : MonoBehaviour
     /// <summary>
     /// Canvas transform reference of the inventory canvas.
     /// </summary>
-    [SerializeField] private Transform canvasTransform;
-
-    /// <summary>
-    /// Reference to the item highlighter object.
-    /// </summary>
-    [SerializeField] private GameObject highlighterObject;
+    private RectTransform canvasTransform;
 
     /// <summary>
     /// Highlighter script reference.
@@ -278,20 +269,31 @@ public class InventoryController : MonoBehaviour
 
     private ItemPickUp itemPickUp;
 
+    private CursorController cursorController;
+
     
 
     /// <summary>
     /// Sets up all the references to other objects and scripts and sets up the debug dropdown menu.
     /// </summary>
     private void Awake() {
-        highlighter = highlighterObject.GetComponent<InventoryHighlight>();
+        highlighter = GameObject.FindObjectOfType<InventoryHighlight>();
         firearmScript = playerFirearm.GetComponent<FirearmScript>();
         hudController = hudCanvas.GetComponent<HUDController>();
         playerAnimationController = player.GetComponent<PlayerAnimationController>();
-        debugSpawnerDropdown = debugSpawner.GetComponent<TMP_Dropdown>();
-        interactRange = player.transform.Find("InteractRange").gameObject;
+        debugSpawnerDropdown = GameObject.FindObjectOfType<DebugDropdownSpawner>().gameObject.GetComponent<TMP_Dropdown>();
+        interactRange = GameObject.FindObjectOfType<PlayerInteract>().gameObject;
         itemPickUp = interactRange.GetComponent<ItemPickUp>();
+        cursorController = GameObject.FindObjectOfType<CursorController>();
+        canvasTransform = GetComponent<RectTransform>();
+        playerStatus = player.GetComponent<PlayerStatus>();
         SetUpDebugDropdown();
+
+        //Since awake is not called on disabled objects but the inventory screen has to be disabled at the start,
+        // the inventory screen is enabled, variables are set up, and then the inventory screen is disabled again.
+        //This is done due to the fact that other scripts may use functions of InventoryController before the inventory
+        // screen is opened for the first time.
+        this.gameObject.SetActive(false);
     }
 
     /// <summary>
@@ -333,6 +335,7 @@ public class InventoryController : MonoBehaviour
     /// </summary>
     public void OpenInventory(){
         inventoryOpen = true;
+        cursorController.SwitchToDefaultCursor();
         this.gameObject.SetActive(true);
         containerGrid.Init(9, 14, true);
         containerGrid.LoadItemsFromGround(itemPickUp);
@@ -340,6 +343,7 @@ public class InventoryController : MonoBehaviour
 
     public void CloseInventory(){
         inventoryOpen = false;
+        cursorController.SwitchToCrosshairCursor();
         this.gameObject.SetActive(false);
         if(selectedItem != null){
             ReturnItem(selectedItem);
@@ -1740,6 +1744,20 @@ public class InventoryController : MonoBehaviour
 
         if(firearm.isEquipped && firearm.isSelectedWeapon){
             hudController.UpdateWeaponHUD(firearm);
+        }
+    }
+
+    public void UseItem(InventoryItem item){
+        if(item == null){
+            return;
+        }
+
+        if(item.itemData.usable){
+            playerStatus.IncreaseHunger(item.itemData.hunger);
+            playerStatus.IncreaseThirst(item.itemData.thirst);
+            playerStatus.IncreaseTiredness(item.itemData.tiredness);
+
+            DestroyItem(item);
         }
     }
 

@@ -28,7 +28,7 @@ public class PlayerStatus : MonoBehaviour
     /// <summary>
     /// Body temperature of the player
     /// </summary>
-    public float playerTemp = 0.0f;
+    public float playerBodyTemp = 0.0f;
 
     /// <summary>
     /// Tiredness of the player (or rather the wakefulness of the player as the lower the value, the more tired the player is)
@@ -106,17 +106,29 @@ public class PlayerStatus : MonoBehaviour
     /// <summary>
     /// Base hunger drain
     /// </summary>
-    public float baseHungerDrain = 0.111f;      //Depletes completely from full to nothing after roughly 15 minutes of gameplay (15 hours in game)
+    public float baseHungerDrain = 0.037f;      //Depletes completely from full to nothing after roughly 45 minutes of gameplay (15 hours in game)
 
     /// <summary>
     /// Base thirst drain
     /// </summary>
-    public float baseThirstDrain = 0.166f;      //Depletes completely from full to nothing after roughly 10 minutes of gameplay (10 hours in game)
+    public float baseThirstDrain = 0.055f;      //Depletes completely from full to nothing after roughly 30 minutes of gameplay (10 hours in game)
 
     /// <summary>
     /// Base tiredness drain
     /// </summary>
-    public float baseTirednessDrain = 0.0694f;  //Depletes completely from full to nothing after roughly 24 minutes of gameplay (24 hours in game)
+    public float baseTirednessDrain = 0.023f;  //Depletes completely from full to nothing after roughly 72 minutes of gameplay (24 hours in game)
+
+    public float baseTirednessRegen = 0.069f;  //Regenerates completely from nothing to full after roughly 24 minutes of gameplay (8 hours in game)
+    public float healthDrain = 0.0f;
+    public float staminaDrain = 0.0f;
+
+    public float hungerDrain = 0.0f;
+    public float thirstDrain = 0.0f;
+    public float tirednessDrain = 0.0f;
+
+    public float bodyTempDifference = 0.0f;
+
+
 
     /// <summary>
     /// Base health drain, used in the calculation of bleed
@@ -188,7 +200,7 @@ public class PlayerStatus : MonoBehaviour
         playerStamina = 100.0f;
         playerHunger = 100.0f;
         playerThirst = 100.0f;
-        playerTemp = 0.0f; //Temperatrure ranges between -100 and 100
+        playerBodyTemp = 0.0f; //Temperatrure ranges between -100 and 100
         playerTiredness = 100.0f;
 
         return 0;
@@ -196,78 +208,112 @@ public class PlayerStatus : MonoBehaviour
 
     private void UpdateHunger(bool hypothermic, bool running)
     {
-        float drain = baseHungerDrain;
+        hungerDrain = baseHungerDrain;
         if (hypothermic)
-            drain += 0.5f * drain;
+            hungerDrain += 0.5f * baseHungerDrain;
         if (running)
-            drain += 0.5f * drain;
+            hungerDrain += 0.5f * baseHungerDrain;
 
-        playerHunger -= (drain * Time.deltaTime);
+        playerHunger -= (hungerDrain * Time.deltaTime);
+        if(playerHunger < 0)
+        {
+            playerHunger = 0;
+        }
     }
 
     public void IncreaseHunger(float amount)
     {
-        playerHunger += amount;
+        if(playerHunger + amount > 100)
+        {
+            playerHunger = 100;
+        }
+        else
+        {
+            playerHunger += amount;
+        }
     }
 
     private void UpdateThirst(bool hyperthermic, bool running)
     {
-        float drain = baseThirstDrain;
+        thirstDrain = baseThirstDrain;
         if (hyperthermic)
-            drain += 0.5f * drain;
+            thirstDrain += 0.5f * baseThirstDrain;
         if (running)
-            drain += 0.5f * drain;
+            thirstDrain += 0.5f * baseThirstDrain;
+        playerThirst -= (thirstDrain * Time.deltaTime);
 
-        playerThirst -= (drain * Time.deltaTime);
+        if(playerThirst < 0)
+        {
+            playerThirst = 0;
+        }
     }
 
     public void IncreaseThirst(float amount)
     {
-        playerThirst += amount;
+        if(playerThirst + amount > 100)
+        {
+            playerThirst = 100;
+        }
+        else
+        {
+            playerThirst += amount;
+        }
+
+
     }
 
     private void UpdateTiredness(bool running)
     {
-        float drain = baseTirednessDrain;
+        tirednessDrain = baseTirednessDrain;
         if (running)
-            drain += 0.2f * drain;
+            tirednessDrain += 0.2f * baseTirednessDrain;
 
-        playerTiredness -= (drain * Time.deltaTime);
+        playerTiredness -= (tirednessDrain * Time.deltaTime);
+
+        if(playerTiredness < 0)
+        {
+            playerTiredness = 0;
+        }
     }
 
     public void IncreaseTiredness(float amount)
     {
-        playerTiredness += amount;
+        if(playerTiredness + amount > 100)
+        {
+            playerTiredness = 100;
+        }
+        else
+        {
+            playerTiredness += amount;
+        }
     }
 
     //TODO: Iplement weight debuff
     public void UpdateStamina(bool running)
     {
-        float drain;
         if(running)
-            drain = baseStaminaDrain;
+            staminaDrain = baseStaminaDrain;
+        else if(!running && playerStamina < 100)
+            staminaDrain = -baseStaminaRegen;
         else
-            drain = -baseStaminaRegen; //Regenerates stamina when not running
+            staminaDrain = 0;
 
-        if(drain > 0 && playerStamina <= 0)
+        if(staminaDrain > 0 && playerStamina <= 0)
         {
             playerStamina = 0;
             ToggleSprintOff();
             staminaDepleted = true;
-            HUD.UpdateStamina(0);
             return;
-        }else if(drain < 0 && playerStamina >= 100)
+        }else if(staminaDrain < 0 && playerStamina >= 100)
         {
             playerStamina = 100;
-            HUD.UpdateStamina(0);
             return;
         }
-        playerStamina -= (drain * Time.deltaTime);
+        playerStamina -= (staminaDrain * Time.deltaTime);
         if (playerStamina > 20)
         {
             staminaDepleted = false;
         }
-        HUD.UpdateStamina(drain);
         return;
     }
 

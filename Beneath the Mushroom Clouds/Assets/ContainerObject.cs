@@ -14,11 +14,8 @@ public class ContainerObject : MonoBehaviour
 
     [SerializeField] private GameObject itemPrefab;
 
-    private GameObject inventoryScreen;
-
     private InventoryController inventoryController;
 
-    private GameObject player;
 
     private UIControls uiControls;
 
@@ -27,17 +24,10 @@ public class ContainerObject : MonoBehaviour
     [SerializeField] private AnimatorOverrideController animatorOverrideController;
 
     void Awake(){
-        inventoryScreen = GameObject.Find("InventoryScreen");
-        inventoryController = inventoryScreen.GetComponent<InventoryController>();
-
-        player = GameObject.Find("Player");
-        uiControls = player.GetComponent<UIControls>();
-
+        inventoryController = GameObject.FindObjectOfType<InventoryController>();
+        uiControls = GameObject.FindObjectOfType<UIControls>();
         animator = GetComponent<Animator>();
-
         animator.runtimeAnimatorController = animatorOverrideController;
-
-
     }
 
 

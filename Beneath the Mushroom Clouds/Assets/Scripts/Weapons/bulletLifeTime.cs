@@ -4,7 +4,7 @@ public class BulletLifeTime : MonoBehaviour
 
 {
 
-    private float TTL = 0.05f;
+    private float TTL = 0.5f;
     // Start is called before the first frame update
     void Start()
     {

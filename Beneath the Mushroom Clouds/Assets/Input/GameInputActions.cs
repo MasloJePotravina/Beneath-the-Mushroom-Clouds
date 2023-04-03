@@ -143,6 +143,15 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""PauseGame"",
+                    ""type"": ""Button"",
+                    ""id"": ""c4db7d96-9a4e-4a98-b7d7-0b3c6ed76bed"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -332,6 +341,17 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
                     ""action"": ""Interact"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""1ca62356-f011-4c70-be63-534f20637b74"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""PauseGame"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         },
@@ -406,6 +426,15 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
                     ""name"": ""QuickEquip"",
                     ""type"": ""Button"",
                     ""id"": ""2724323c-8d9d-414d-bf19-731e0f0db523"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""PauseGame"",
+                    ""type"": ""Button"",
+                    ""id"": ""4777191b-1b36-45de-9e01-82d4f36dfaa2"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """",
@@ -500,6 +529,17 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
                     ""action"": ""QuickEquip"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""c3347d9b-3ed0-445d-956f-fe3832495eaa"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""PauseGame"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -521,6 +561,7 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
         m_Player_CycleWeapon = m_Player.FindAction("CycleWeapon", throwIfNotFound: true);
         m_Player_SwitchFiremode = m_Player.FindAction("SwitchFiremode", throwIfNotFound: true);
         m_Player_Interact = m_Player.FindAction("Interact", throwIfNotFound: true);
+        m_Player_PauseGame = m_Player.FindAction("PauseGame", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_CloseInventory = m_UI.FindAction("CloseInventory", throwIfNotFound: true);
@@ -531,6 +572,7 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
         m_UI_RightClick = m_UI.FindAction("RightClick", throwIfNotFound: true);
         m_UI_QuickTransfer = m_UI.FindAction("QuickTransfer", throwIfNotFound: true);
         m_UI_QuickEquip = m_UI.FindAction("QuickEquip", throwIfNotFound: true);
+        m_UI_PauseGame = m_UI.FindAction("PauseGame", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -603,6 +645,7 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_CycleWeapon;
     private readonly InputAction m_Player_SwitchFiremode;
     private readonly InputAction m_Player_Interact;
+    private readonly InputAction m_Player_PauseGame;
     public struct PlayerActions
     {
         private @GameInputActions m_Wrapper;
@@ -620,6 +663,7 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
         public InputAction @CycleWeapon => m_Wrapper.m_Player_CycleWeapon;
         public InputAction @SwitchFiremode => m_Wrapper.m_Player_SwitchFiremode;
         public InputAction @Interact => m_Wrapper.m_Player_Interact;
+        public InputAction @PauseGame => m_Wrapper.m_Player_PauseGame;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -668,6 +712,9 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
                 @Interact.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnInteract;
                 @Interact.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnInteract;
                 @Interact.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnInteract;
+                @PauseGame.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnPauseGame;
+                @PauseGame.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnPauseGame;
+                @PauseGame.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnPauseGame;
             }
             m_Wrapper.m_PlayerActionsCallbackInterface = instance;
             if (instance != null)
@@ -711,6 +758,9 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
                 @Interact.started += instance.OnInteract;
                 @Interact.performed += instance.OnInteract;
                 @Interact.canceled += instance.OnInteract;
+                @PauseGame.started += instance.OnPauseGame;
+                @PauseGame.performed += instance.OnPauseGame;
+                @PauseGame.canceled += instance.OnPauseGame;
             }
         }
     }
@@ -727,6 +777,7 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
     private readonly InputAction m_UI_RightClick;
     private readonly InputAction m_UI_QuickTransfer;
     private readonly InputAction m_UI_QuickEquip;
+    private readonly InputAction m_UI_PauseGame;
     public struct UIActions
     {
         private @GameInputActions m_Wrapper;
@@ -739,6 +790,7 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
         public InputAction @RightClick => m_Wrapper.m_UI_RightClick;
         public InputAction @QuickTransfer => m_Wrapper.m_UI_QuickTransfer;
         public InputAction @QuickEquip => m_Wrapper.m_UI_QuickEquip;
+        public InputAction @PauseGame => m_Wrapper.m_UI_PauseGame;
         public InputActionMap Get() { return m_Wrapper.m_UI; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -772,6 +824,9 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
                 @QuickEquip.started -= m_Wrapper.m_UIActionsCallbackInterface.OnQuickEquip;
                 @QuickEquip.performed -= m_Wrapper.m_UIActionsCallbackInterface.OnQuickEquip;
                 @QuickEquip.canceled -= m_Wrapper.m_UIActionsCallbackInterface.OnQuickEquip;
+                @PauseGame.started -= m_Wrapper.m_UIActionsCallbackInterface.OnPauseGame;
+                @PauseGame.performed -= m_Wrapper.m_UIActionsCallbackInterface.OnPauseGame;
+                @PauseGame.canceled -= m_Wrapper.m_UIActionsCallbackInterface.OnPauseGame;
             }
             m_Wrapper.m_UIActionsCallbackInterface = instance;
             if (instance != null)
@@ -800,6 +855,9 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
                 @QuickEquip.started += instance.OnQuickEquip;
                 @QuickEquip.performed += instance.OnQuickEquip;
                 @QuickEquip.canceled += instance.OnQuickEquip;
+                @PauseGame.started += instance.OnPauseGame;
+                @PauseGame.performed += instance.OnPauseGame;
+                @PauseGame.canceled += instance.OnPauseGame;
             }
         }
     }
@@ -819,6 +877,7 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
         void OnCycleWeapon(InputAction.CallbackContext context);
         void OnSwitchFiremode(InputAction.CallbackContext context);
         void OnInteract(InputAction.CallbackContext context);
+        void OnPauseGame(InputAction.CallbackContext context);
     }
     public interface IUIActions
     {
@@ -830,5 +889,6 @@ public partial class @GameInputActions : IInputActionCollection2, IDisposable
         void OnRightClick(InputAction.CallbackContext context);
         void OnQuickTransfer(InputAction.CallbackContext context);
         void OnQuickEquip(InputAction.CallbackContext context);
+        void OnPauseGame(InputAction.CallbackContext context);
     }
 }

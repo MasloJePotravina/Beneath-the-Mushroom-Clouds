@@ -266,7 +266,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -331,6 +331,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 5168463113655349450}
+  firearmSprite: {fileID: 0}
 --- !u!1 &5168463113173081272
 GameObject:
   m_ObjectHideFlags: 0
@@ -471,7 +472,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -515,6 +516,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 625353b50e816f34eb143b4ca85ba975, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  selectedFirearm: {fileID: 0}
+  inventoryScreen: {fileID: 0}
   muzzle: {fileID: 5168463111945277352}
   player: {fileID: 5168463113655349450}
   coneLineL: {fileID: 5168463112013493540}
@@ -582,7 +585,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -611,7 +614,7 @@ SpriteRenderer:
   m_Size: {x: 1, y: 1}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!50 &5168463113655349455
@@ -652,12 +655,26 @@ MonoBehaviour:
   playerHunger: 0
   playerThirst: 0
   playerTemp: 0
-  playerTired: 0
+  playerTiredness: 0
   playerSpeed: 50
+  crouchSpeed: 20
+  walkSpeed: 50
+  sprintSpeed: 100
+  playerHypothermia: 0
+  playerHyperthermia: 0
   playerCrouched: 0
   playerSprint: 0
   playerAiming: 0
+  playerMoving: 0
   shooterAbility: 1
+  baseStaminaDrain: 5
+  baseStaminaRegen: 7.5
+  baseHungerDrain: 0.111
+  baseThirstDrain: 0.166
+  baseTirednessDrain: 0.0694
+  baseHealthDrain: 1
+  baseHealthRegen: 0.5
+  HUD: {fileID: 0}
 --- !u!114 &5168463113655349452
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -670,12 +687,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff2f9361a019e254dbb15d017f42d315, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  player: {fileID: 0}
   status: {fileID: 5168463113655349449}
+  inventoryScreen: {fileID: 0}
+  mainCamera: {fileID: 0}
   playerTorso: {fileID: 5168463113102002866}
   playerLegs: {fileID: 6335358599409273489}
   playerHeadPivot: {fileID: 3572676985685866141}
   playerWeapon: {fileID: 5168463113184457419}
+  weaponChangeEnabled: 0
   crouchEnabled: 0
+  hudController: {fileID: 0}
+  interactRange: {fileID: 0}
 --- !u!60 &5168463113655349443
 PolygonCollider2D:
   m_ObjectHideFlags: 0
@@ -795,7 +818,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -900,7 +923,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

@@ -256,8 +256,7 @@ public class ContextMenu : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     /// </summary>
     public void UseButton()
     {
-        //TODO: Add use item function, it will be used for consumables and other items that can be used
-        Debug.Log("Use Button");
+        inventoryController.UseItem(item);
         inventoryController.CloseContextMenu();
     }
 

@@ -18,7 +18,7 @@ public class FirearmScript: MonoBehaviour
     public GameObject player;
     public GameObject coneLineL;
     public GameObject coneLineR;
-    public GameObject bulletPrefab;
+    public GameObject bulletImpactPrefab;
 
     private bool reloading = false;
     private bool racking = false;
@@ -63,6 +63,19 @@ public class FirearmScript: MonoBehaviour
 
     private RaycastHit2D[] hits; //Field of hit objects
 
+    [SerializeField] private GameObject muzzleFlash;
+
+    private SpriteRenderer muzzleSpriteRenderer;
+    private UnityEngine.Rendering.Universal.Light2D muzzleLight;
+
+    [SerializeField] private Sprite[] muzzleFlashSprites;
+
+    private int muzzleFlashCycle = 0;
+    private int muzzleFlashOffset = 0;
+
+    private AudioManager audioManager;
+
+
 
     // Start is called before the first frame update
     void Start()
@@ -72,6 +85,11 @@ public class FirearmScript: MonoBehaviour
         UpdateConeLines(shooterAbility * (initialDeviation/2));
         inventoryController = inventoryScreen.GetComponent<InventoryController>();
         playerAnimationController = player.GetComponent<PlayerAnimationController>();
+
+        muzzleSpriteRenderer = muzzleFlash.GetComponent<SpriteRenderer>();
+        muzzleLight = muzzleFlash.GetComponent<UnityEngine.Rendering.Universal.Light2D>();
+
+        audioManager = FindObjectOfType<AudioManager>();
 
     }
 
@@ -142,6 +160,7 @@ public class FirearmScript: MonoBehaviour
         }
 
         //Trigger is pressed
+        StartCoroutine(MuzzleFlash());
         Vector2 BulletDeviation = ApplyAimErrorToRaycast(transform.parent.transform.up, CalcAimCone());
         if(weaponType == "Shotgun"){
             for (int i = 0; i < 8; i++)
@@ -169,6 +188,15 @@ public class FirearmScript: MonoBehaviour
 
 
         autoChamber = true;
+    }
+
+    IEnumerator MuzzleFlash(){
+        muzzleSpriteRenderer.sprite = muzzleFlashSprites[muzzleFlashOffset + ((muzzleFlashCycle++) % 3)];
+        muzzleLight.enabled = true;
+        muzzleSpriteRenderer.enabled = true;
+        yield return new WaitForSeconds(0.05f);
+        muzzleLight.enabled = false;
+        muzzleSpriteRenderer.enabled = false;
     }
 
 
@@ -231,7 +259,7 @@ public class FirearmScript: MonoBehaviour
             {
                 if (!HalfWallPassed(hit.distance)) //If bullet hit the wall draw bullet line
                 {
-                    BulletLine(hit, muzzle.transform.position);
+                    BulletImpact(hit, muzzle.transform.position);
                     break;
                 }
                 else //If not proceed with next collider
@@ -245,7 +273,7 @@ public class FirearmScript: MonoBehaviour
             {
                 if(NPCHit(halfWallDistance, hit))
                 {
-                    BulletLine(hit, muzzle.transform.position);
+                    BulletImpact(hit, muzzle.transform.position);
                     //Destroy(hit.transform.gameObject);
                     break;
                 }
@@ -254,7 +282,7 @@ public class FirearmScript: MonoBehaviour
                     continue;
                 }
             }
-            BulletLine(hit, muzzle.transform.position);
+            BulletImpact(hit, muzzle.transform.position);
             //After something is hit the bullet does not travel further
             break;
         }
@@ -399,12 +427,10 @@ public class FirearmScript: MonoBehaviour
     }
 
     //Creates the bullet raycast
-    public void BulletLine(RaycastHit2D hit, Vector3 muzzlePos)
+    public void BulletImpact(RaycastHit2D hit, Vector3 muzzlePos)
     {
-        GameObject bullet = Instantiate(bulletPrefab);
-        LineRenderer lineRenderer = bullet.GetComponent<LineRenderer>();
-        Vector3[] trajectory = { muzzlePos, hit.point };
-        lineRenderer.SetPositions(trajectory);
+        Vector3 dir = hit.point - new Vector2(muzzlePos.x, muzzlePos.y);
+        GameObject bullet = Instantiate(bulletImpactPrefab, hit.point, Quaternion.LookRotation(Vector3.forward, dir));
     }
 
     public void ChangeSelectedFirearm(InventoryItem firearm){
@@ -416,6 +442,7 @@ public class FirearmScript: MonoBehaviour
         firearmActive = true;
         weaponType = selectedFirearm.itemData.weaponType;
         fireMode = selectedFirearm.GetFiremode();
+        MuzzleFlashOffsetSelector();
         if(selectedFirearm.itemData.weaponLength == 0){
             this.transform.localPosition = new Vector3(0, 0.6f, 0);
         }else if(selectedFirearm.itemData.weaponLength == 1){
@@ -425,8 +452,17 @@ public class FirearmScript: MonoBehaviour
             this.transform.localPosition = new Vector3(0, 0.75f, 0);
         }
 
-
         
+    }
+
+    private void MuzzleFlashOffsetSelector(){
+        if(weaponType == "Pistol"){
+            muzzleFlashOffset = 0;
+        }else if(weaponType == "AssaultRifle" || weaponType == "HuntingRifle"){
+            muzzleFlashOffset = 3;
+        }else if(weaponType == "Shotgun"){
+            muzzleFlashOffset = 6;
+        }
     }
 
     public void ReloadButtonPressed(){

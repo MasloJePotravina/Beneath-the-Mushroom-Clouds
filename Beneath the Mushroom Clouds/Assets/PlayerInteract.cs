@@ -14,12 +14,15 @@ public class PlayerInteract : MonoBehaviour
         if(interactableObjects.Count <= 0)
         {
             interactableObject = null;
+            hudController.DeactivateInteractText();
             return;
         }
 
         interactableObject = GetClosestObject();
 
         hudController.SetInteractText(interactableObject.GetComponent<InteractableBehaviour>().GetInteractText());
+
+        hudController.ActivateInteractText();
     }
 
     
@@ -41,7 +44,7 @@ public class PlayerInteract : MonoBehaviour
         if (other.gameObject.CompareTag("Interactable"))
         {
             interactableObjects.Add(other.gameObject);
-            hudController.ActivateInteractText();
+            
         }
     }
 
@@ -50,7 +53,10 @@ public class PlayerInteract : MonoBehaviour
         if (other.gameObject.CompareTag("Interactable"))
         {
             interactableObjects.Remove(other.gameObject);
-            hudController.DeactivateInteractText();
+            if(other.gameObject.GetComponent<InteractableBehaviour>().interactableTag == "Bed")
+            {
+               hudController.DeactivateRestMenu();
+            }
         }
     }
 

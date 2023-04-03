@@ -196,6 +196,10 @@ public class ItemData : ScriptableObject
     /// </summary>
     public bool usable;
 
+    public float thirst;
+    public float hunger;
+    public float tiredness;
+
 
     [Header("Misc")]
     /// <summary>
