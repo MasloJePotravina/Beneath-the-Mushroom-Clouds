@@ -24,6 +24,11 @@ public class PauseMenu : MonoBehaviour
         TogglePauseMenu();
     }
 
+    public void Options(){
+        this.gameObject.transform.Find("PauseMenuMain").gameObject.SetActive(false);
+        this.gameObject.transform.Find("PauseMenuOptions").gameObject.SetActive(true);
+    }
+
     public void MainMenu()
     {
         Time.timeScale = 1;
@@ -33,5 +38,10 @@ public class PauseMenu : MonoBehaviour
     public void QuitGame()
     {
         Application.Quit();
+    }
+
+    public void Back(){
+        this.gameObject.transform.Find("PauseMenuMain").gameObject.SetActive(true);
+        this.gameObject.transform.Find("PauseMenuOptions").gameObject.SetActive(false);
     }
 }

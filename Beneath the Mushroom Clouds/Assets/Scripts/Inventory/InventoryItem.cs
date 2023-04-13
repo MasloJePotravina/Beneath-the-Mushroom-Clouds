@@ -73,6 +73,10 @@ public class InventoryItem : MonoBehaviour
     /// </summary>
     public bool isChambered = false;
 
+    public bool shellInChamber = false;
+
+    public bool boltOpen = false;
+
     /// <summary>
     /// Whether the item has a magazine inserted (firearms)
     /// </summary>
@@ -127,7 +131,7 @@ public class InventoryItem : MonoBehaviour
             InstantiateSubtext();
         }
 
-        GetComponent<Image>().sprite = itemData.inventorySprite;
+        GetComponent<Image>().sprite = itemData.inventorySprites[0];
 
         RectTransform rectTransform = GetComponent<RectTransform>();
 
@@ -367,7 +371,11 @@ public class InventoryItem : MonoBehaviour
         ammoCount = magazine.ammoCount;
         currentMagazineSize = magazine.itemData.magazineSize;
         UpdateFirearmText();
-        SelectSprite(1);
+        if(boltOpen){
+            FirearmSelectSprite("MagBoltOpen");
+        }else{
+            FirearmSelectSprite("MagBoltClosed");
+        }
         return true;
     }
 
@@ -381,7 +389,11 @@ public class InventoryItem : MonoBehaviour
         ammoCount = 0;
         currentMagazineSize = 0;
         UpdateFirearmText();
-        SelectSprite(0);
+        if(boltOpen){
+            FirearmSelectSprite("NoMagBoltOpen");
+        }else{
+            FirearmSelectSprite("NoMagBoltClosed");
+        }
         return count;
     }
 
@@ -420,6 +432,11 @@ public class InventoryItem : MonoBehaviour
             return false;
         }
         isChambered = false;
+        if(itemData.usesMagazines){
+            if(ammoCount == 0){
+                OpenBolt();
+            }
+        }
         UpdateFirearmText();
         return true;
     }
@@ -438,17 +455,59 @@ public class InventoryItem : MonoBehaviour
         return true;
     }
 
+    public bool OpenBolt(){
+        if(!boltOpen){
+            boltOpen = true;
+            if(hasMagazine){
+                FirearmSelectSprite("MagBoltOpen");
+            }else{
+                FirearmSelectSprite("NoMagBoltOpen");
+            }
+        }
+
+        if(isChambered){
+            isChambered = false;
+            UpdateFirearmText();
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    public void CloseBolt(){
+        if(boltOpen){
+            boltOpen = false;
+            if(hasMagazine){
+                FirearmSelectSprite("MagBoltClosed");
+            }else{
+                FirearmSelectSprite("NoMagBoltClosed");
+            }
+        }
+
+        if(ammoCount > 0 && !isChambered){
+            ammoCount--;
+            isChambered = true;
+            UpdateFirearmText();
+        }
+    }
+
     /// <summary>
     /// Selects the sprite of the item. Each item may have a primary and secondary sprite. For example weapons have a sprite with and without a magazine.
     /// </summary>
     /// <param name="selector">0 for primary sprite, 1 for secondary sprite.</param>
-    private void SelectSprite(int selector){
-        if(selector == 0){
-            GetComponent<Image>().sprite = itemData.inventorySprite;
-        }else if(selector == 1){
-            GetComponent<Image>().sprite = itemData.inventorySpriteSecondary;
+    private void FirearmSelectSprite(string selector){
+        if(selector == "NoMagBoltClosed"){
+            GetComponent<Image>().sprite = itemData.inventorySprites[0];
+        }else if(selector == "MagBoltClosed"){
+            GetComponent<Image>().sprite = itemData.inventorySprites[1];
+        }else if(selector == "NoMagBoltOpen"){
+            GetComponent<Image>().sprite = itemData.inventorySprites[2];
+        }else if(selector == "MagBoltOpen"){
+            GetComponent<Image>().sprite = itemData.inventorySprites[3];
         }
     }
+
+    
 
     /// <summary>
     /// Switches the fire mode of the item (firearm).

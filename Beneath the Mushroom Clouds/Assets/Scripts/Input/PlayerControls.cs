@@ -37,7 +37,7 @@ public class PlayerControls : MonoBehaviour
     /// <summary>
     /// Reference to the Player Animation Controller script.
     /// </summary>
-    private PlayerAnimationController playerAnimationController;
+    private HumanAnimationController playerAnimationController;
 
     /// <summary>
     /// Reference to the main camera.
@@ -126,7 +126,7 @@ public class PlayerControls : MonoBehaviour
     {
         player = this.gameObject;
         playerInput = GetComponent<PlayerInput>();
-        playerAnimationController = player.GetComponent<PlayerAnimationController>();
+        playerAnimationController = player.GetComponent<HumanAnimationController>();
 
         pauseMenu = GameObject.FindObjectOfType<PauseMenu>(true);
 
@@ -139,6 +139,7 @@ public class PlayerControls : MonoBehaviour
         crouchEnabled = true;
         weaponChangeEnabled = true;
         playerRigidbody = GetComponent<Rigidbody2D>();
+        playerRigidbody.centerOfMass = Vector2.zero;
         firearmScript = playerWeapon.GetComponent<FirearmScript>();
 
         inventoryController = inventoryScreen.GetComponent<InventoryController>();
@@ -185,7 +186,7 @@ public class PlayerControls : MonoBehaviour
     private void OnMove(InputValue value)
     {
         movementInput = value.Get<Vector2>();
-        status.playerMoving = (movementInput != Vector2.zero);
+        status.isMoving = (movementInput != Vector2.zero);
     }
 
     /// <summary>
@@ -197,11 +198,11 @@ public class PlayerControls : MonoBehaviour
 
         if (value.Get<float>() > 0.1f)
         {
-            status.playerAiming = true;
+            status.isAiming = true;
         }
         else
         {
-            status.playerAiming = false;
+            status.isAiming = false;
         }
     }
 
@@ -224,20 +225,20 @@ public class PlayerControls : MonoBehaviour
     {
         
 
-        if (!status.playerCrouched && crouchEnabled)
+        if (!status.isCrouched && crouchEnabled)
         {
-            status.playerCrouched = true;
+            status.isCrouched = true;
             status.playerSpeed = status.crouchSpeed;
             playerAnimationController.CrouchDownAnimation();
             hudController.StanceCrouch();
         }
-        else if(status.playerCrouched && crouchEnabled)
+        else if(status.isCrouched && crouchEnabled)
         {
-            status.playerCrouched = false;
+            status.isCrouched = false;
             playerAnimationController.StandUpAnimation();
 
-            if (status.playerSprint)
-                status.playerSpeed = status.sprintSpeed;
+            if (status.isRunning)
+                status.playerSpeed = status.runSpeed;
             else
                 status.playerSpeed = status.walkSpeed;
 
@@ -306,8 +307,14 @@ public class PlayerControls : MonoBehaviour
         InventoryItem previousWeapon = firearmScript.selectedFirearm;
         firearmScript.selectedFirearm = inventoryController.CycleWeapon(value);
         //If a weapon was equipped, unequipped or changed to differento one, play the animation
-        if(previousWeapon != null || firearmScript.selectedFirearm != null)
-            playerAnimationController.WeaponSelectAnimation(previousWeapon);
+        if(previousWeapon != null || firearmScript.selectedFirearm != null){
+            playerAnimationController.WeaponSelectAnimation(firearmScript.selectedFirearm, previousWeapon);
+            if(previousWeapon != null)
+                StartCoroutine(DisableWeaponInteraction(true));
+            else{
+                StartCoroutine(DisableWeaponInteraction(false));
+            }
+        }
         
         
     }
@@ -321,8 +328,16 @@ public class PlayerControls : MonoBehaviour
             return;
         InventoryItem previousWeapon = firearmScript.selectedFirearm;
         firearmScript.selectedFirearm = inventoryController.SelectWeapon(1);
-        if(previousWeapon != null || firearmScript.selectedFirearm != null)
-            playerAnimationController.WeaponSelectAnimation(previousWeapon);
+        if(previousWeapon != null || firearmScript.selectedFirearm != null){
+            playerAnimationController.WeaponSelectAnimation(firearmScript.selectedFirearm, previousWeapon);
+            if(previousWeapon != null)
+                StartCoroutine(DisableWeaponInteraction(true));
+            else{
+                StartCoroutine(DisableWeaponInteraction(false));
+            }
+        }
+            
+            
         
     }
 
@@ -335,8 +350,14 @@ public class PlayerControls : MonoBehaviour
             return;
         InventoryItem previousWeapon = firearmScript.selectedFirearm;
         firearmScript.selectedFirearm = inventoryController.SelectWeapon(2);
-        if(previousWeapon != null || firearmScript.selectedFirearm != null)
-            playerAnimationController.WeaponSelectAnimation(previousWeapon);
+        if(previousWeapon != null || firearmScript.selectedFirearm != null){
+            playerAnimationController.WeaponSelectAnimation(firearmScript.selectedFirearm, previousWeapon);
+            if(previousWeapon != null)
+                StartCoroutine(DisableWeaponInteraction(true));
+            else{
+                StartCoroutine(DisableWeaponInteraction(false));
+            }
+        }
     }
 
 
@@ -353,7 +374,7 @@ public class PlayerControls : MonoBehaviour
         {
             timeToWait = 2*equipAnimationTime;
         }else{
-            if(status.playerCrouched)
+            if(status.isCrouched)
                 timeToWait = equipAnimationTime + crouchAnimationPaddingTime;
             else
                 timeToWait = equipAnimationTime;

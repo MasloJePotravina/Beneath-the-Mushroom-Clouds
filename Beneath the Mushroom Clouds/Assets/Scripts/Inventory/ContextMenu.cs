@@ -41,6 +41,8 @@ public class ContextMenu : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         {"ChamberRound", false},
         {"ClearChamber", false},
         {"RackFirearm", false},
+        {"OpenBolt", false},
+        {"CloseBolt", false},
         {"UnloadAmmo", false},
         {"LoadAmmo", false},
         {"SplitStack", false},
@@ -156,10 +158,16 @@ public class ContextMenu : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                     menuOptions["LoadAmmo"] = true;
             }
 
-            if(item.isChambered){
-                menuOptions["ClearChamber"] = true;
-            } else {
-                menuOptions["ChamberRound"] = true;
+            if(item.boltOpen){
+                menuOptions["CloseBolt"] = true;
+                if(item.isChambered){
+                    menuOptions["ClearChamber"] = true;
+                } else {
+                    menuOptions["ChamberRound"] = true;
+                }
+
+            }else{
+                menuOptions["OpenBolt"] = true;
                 if(item.ammoCount > 0){
                     menuOptions["RackFirearm"] = true;
                 }
@@ -302,6 +310,18 @@ public class ContextMenu : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     public void RackFirearmButton()
     {
         inventoryController.RackFirearm(item);
+        inventoryController.CloseContextMenu();
+    }
+
+    public void OpenBoltButton()
+    {
+        inventoryController.OpenBolt(item);
+        inventoryController.CloseContextMenu();
+    }
+
+    public void CloseBoltButton()
+    {
+        inventoryController.CloseBolt(item);
         inventoryController.CloseContextMenu();
     }
 

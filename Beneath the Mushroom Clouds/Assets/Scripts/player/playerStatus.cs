@@ -7,6 +7,9 @@ using UnityEngine.UI;
 /// </summary>
 public class PlayerStatus : MonoBehaviour
 {
+
+    private WorldStatus worldStatus;
+
     /// <summary>
     /// Health of the player
     /// </summary>
@@ -54,7 +57,7 @@ public class PlayerStatus : MonoBehaviour
     /// <summary>
     /// Default sprint speed of the player
     /// </summary>
-    public float sprintSpeed = 100.0f;
+    public float runSpeed = 100.0f;
 
 
     /// <summary>
@@ -70,22 +73,22 @@ public class PlayerStatus : MonoBehaviour
     /// <summary>
     /// Whether the player is currently crouched
     /// </summary>
-    public bool playerCrouched = false;
+    public bool isCrouched = false;
 
     /// <summary>
     /// Whether the player is currently sprinting
     /// </summary>
-    public bool playerSprint = false;
+    public bool isRunning = false;
 
     /// <summary>
     /// Whether the player is currently aiming
     /// </summary>
-    public bool playerAiming = false;
+    public bool isAiming = false;
 
     /// <summary>
     /// Whether the player is currently moving
     /// </summary>
-    public bool playerMoving = false;
+    public bool isMoving = false;
 
 
     /// <summary>
@@ -106,19 +109,19 @@ public class PlayerStatus : MonoBehaviour
     /// <summary>
     /// Base hunger drain
     /// </summary>
-    public float baseHungerDrain = 0.037f;      //Depletes completely from full to nothing after roughly 45 minutes of gameplay (15 hours in game)
+    public float baseHungerDrain = 0.00185f;      //Depletes completely from full to nothing after roughly 45 minutes of gameplay (15 hours in game)
 
     /// <summary>
     /// Base thirst drain
     /// </summary>
-    public float baseThirstDrain = 0.055f;      //Depletes completely from full to nothing after roughly 30 minutes of gameplay (10 hours in game)
+    public float baseThirstDrain = 0.00275f;      //Depletes completely from full to nothing after roughly 30 minutes of gameplay (10 hours in game)
 
     /// <summary>
     /// Base tiredness drain
     /// </summary>
-    public float baseTirednessDrain = 0.023f;  //Depletes completely from full to nothing after roughly 72 minutes of gameplay (24 hours in game)
+    public float baseTirednessDrain = 0.00115f;  //Depletes completely from full to nothing after roughly 72 minutes of gameplay (24 hours in game)
 
-    public float baseTirednessRegen = 0.069f;  //Regenerates completely from nothing to full after roughly 24 minutes of gameplay (8 hours in game)
+    public float baseTirednessRegen = 0.00345f;  //Regenerates completely from nothing to full after roughly 24 minutes of gameplay (8 hours in game)
     public float healthDrain = 0.0f;
     public float staminaDrain = 0.0f;
 
@@ -127,6 +130,8 @@ public class PlayerStatus : MonoBehaviour
     public float tirednessDrain = 0.0f;
 
     public float bodyTempDifference = 0.0f;
+
+    public bool isResting = false;
 
 
 
@@ -149,7 +154,9 @@ public class PlayerStatus : MonoBehaviour
     /// <summary>
     /// Reference to the HUD controller
     /// </summary>
-    [SerializeField] private HUDController HUD;
+    private HUDController HUD;
+
+    private NoiseOrigin noiseOrigin;
 
 
 
@@ -158,12 +165,16 @@ public class PlayerStatus : MonoBehaviour
     void Start()
     {
         LoadPlayerStatusBars();
+        worldStatus = GameObject.FindObjectOfType<WorldStatus>();
+        HUD = GameObject.FindObjectOfType<HUDController>();
+        noiseOrigin = GetComponent<NoiseOrigin>();
     }
 
     // Update is called once per frame
     void Update()
     {
         UpdatePlayerStatus();
+        GenerateNoise();
         
     }
 
@@ -172,17 +183,17 @@ public class PlayerStatus : MonoBehaviour
         if(staminaDepleted)
             return;
 
-        playerSprint = true;
-        if (!playerCrouched)
+        isRunning = true;
+        if (!isCrouched)
         {
-            playerSpeed = sprintSpeed;
+            playerSpeed = runSpeed;
         }
     }
 
     public void ToggleSprintOff()
     {
-        playerSprint = false;
-        if (!playerCrouched)
+        isRunning = false;
+        if (!isCrouched)
         {
             playerSpeed = walkSpeed;
         }
@@ -196,12 +207,12 @@ public class PlayerStatus : MonoBehaviour
     /// <returns>0 when load is successful, 1 when unsuccessful</returns>
     int LoadPlayerStatusBars()
     {
-        playerHealth = 100.0f;
+        /*playerHealth = 100.0f;
         playerStamina = 100.0f;
         playerHunger = 100.0f;
         playerThirst = 100.0f;
         playerBodyTemp = 0.0f; //Temperatrure ranges between -100 and 100
-        playerTiredness = 100.0f;
+        playerTiredness = 100.0f;*/
 
         return 0;
     }
@@ -214,7 +225,7 @@ public class PlayerStatus : MonoBehaviour
         if (running)
             hungerDrain += 0.5f * baseHungerDrain;
 
-        playerHunger -= (hungerDrain * Time.deltaTime);
+        playerHunger -= (hungerDrain * Time.deltaTime * worldStatus.timeMultiplier);
         if(playerHunger < 0)
         {
             playerHunger = 0;
@@ -240,7 +251,7 @@ public class PlayerStatus : MonoBehaviour
             thirstDrain += 0.5f * baseThirstDrain;
         if (running)
             thirstDrain += 0.5f * baseThirstDrain;
-        playerThirst -= (thirstDrain * Time.deltaTime);
+        playerThirst -= (thirstDrain * Time.deltaTime * worldStatus.timeMultiplier);
 
         if(playerThirst < 0)
         {
@@ -264,16 +275,26 @@ public class PlayerStatus : MonoBehaviour
 
     private void UpdateTiredness(bool running)
     {
-        tirednessDrain = baseTirednessDrain;
-        if (running)
-            tirednessDrain += 0.2f * baseTirednessDrain;
-
-        playerTiredness -= (tirednessDrain * Time.deltaTime);
-
-        if(playerTiredness < 0)
+        if(isResting)
         {
-            playerTiredness = 0;
+            playerTiredness += (baseTirednessRegen * Time.deltaTime * worldStatus.timeMultiplier);
+            if(playerTiredness > 100)
+            {
+                playerTiredness = 100;
+            }
+        }else{
+            tirednessDrain = baseTirednessDrain;
+            if (running)
+                tirednessDrain += 0.2f * baseTirednessDrain;
+
+            playerTiredness -= (tirednessDrain * Time.deltaTime * worldStatus.timeMultiplier);
+
+            if(playerTiredness < 0)
+            {
+                playerTiredness = 0;
+            }
         }
+        
     }
 
     public void IncreaseTiredness(float amount)
@@ -320,10 +341,30 @@ public class PlayerStatus : MonoBehaviour
 
     private void UpdatePlayerStatus()
     {
-        bool running = playerSprint && playerMoving;
+        bool running = isRunning && isMoving;
         UpdateHunger(playerHypothermia, running);
         UpdateThirst(playerHyperthermia, running);
         UpdateTiredness(running);
         UpdateStamina(running);
+    }
+
+    private void GenerateNoise()
+    {
+        if (isMoving)
+        {
+
+            if(isCrouched){
+                return;
+            }
+
+            if(isRunning)
+            {
+                noiseOrigin.GenerateNoise(50f);
+            }
+            else
+            {
+                noiseOrigin.GenerateNoise(30f);
+            }         
+        }
     }
 }

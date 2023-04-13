@@ -215,11 +215,7 @@ public class ItemData : ScriptableObject
     /// </summary>
     public GameObject itemSubtextPrefab;
     /// <summary>
-    /// Primary sprite of the item in the inventory.
+    /// List of sprites in inventory (some items such as weapons have multiple while most have just one)
     /// </summary>
-    public Sprite inventorySprite;
-    /// <summary>
-    /// Secondary sprite of the item in the inventory (i.e. the sprite of a weapon with and without magazine).
-    /// </summary>
-    public Sprite inventorySpriteSecondary;
+    public Sprite[] inventorySprites;
 }

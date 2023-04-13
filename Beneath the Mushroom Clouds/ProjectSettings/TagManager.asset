@@ -11,6 +11,8 @@ TagManager:
   - FOV
   - Interactable
   - LooseItem
+  - PathBlock
+  - NoiseReceiver
   layers:
   - Default
   - TransparentFX
@@ -23,10 +25,10 @@ TagManager:
   - Enemy
   - FullObstacle
   - HalfObstacle
-  - 
-  - 
-  - 
-  - 
+  - PathFindPadding
+  - Player
+  - NPC
+  - NoiseReceiver
   - 
   - 
   - 

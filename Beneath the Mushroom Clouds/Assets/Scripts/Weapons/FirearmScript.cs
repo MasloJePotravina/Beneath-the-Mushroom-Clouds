@@ -12,7 +12,7 @@ public class FirearmScript: MonoBehaviour
 
     [SerializeField] private GameObject inventoryScreen;
     private InventoryController inventoryController;
-    private PlayerAnimationController playerAnimationController;
+    private HumanAnimationController playerAnimationController;
 
     public GameObject muzzle;
     public GameObject player;
@@ -61,8 +61,6 @@ public class FirearmScript: MonoBehaviour
     private float rackWeaponSpeed = 1f;
     private float loadRoundSpeed = 1f;
 
-    private RaycastHit2D[] hits; //Field of hit objects
-
     [SerializeField] private GameObject muzzleFlash;
 
     private SpriteRenderer muzzleSpriteRenderer;
@@ -75,6 +73,12 @@ public class FirearmScript: MonoBehaviour
 
     private AudioManager audioManager;
 
+    public bool inventoryBlock = false;
+
+    private int layerMask;
+
+    private NoiseOrigin noiseOrigin;
+
 
 
     // Start is called before the first frame update
@@ -84,12 +88,16 @@ public class FirearmScript: MonoBehaviour
         shooterAbility = playerStatus.shooterAbility;
         UpdateConeLines(shooterAbility * (initialDeviation/2));
         inventoryController = inventoryScreen.GetComponent<InventoryController>();
-        playerAnimationController = player.GetComponent<PlayerAnimationController>();
+        playerAnimationController = player.GetComponent<HumanAnimationController>();
 
         muzzleSpriteRenderer = muzzleFlash.GetComponent<SpriteRenderer>();
         muzzleLight = muzzleFlash.GetComponent<UnityEngine.Rendering.Universal.Light2D>();
 
         audioManager = FindObjectOfType<AudioManager>();
+
+        layerMask = LayerMask.GetMask("NPC", "HalfObstacle", "FullObstacle");
+
+        noiseOrigin = GetComponent<NoiseOrigin>();
 
     }
 
@@ -108,6 +116,11 @@ public class FirearmScript: MonoBehaviour
                     StopCoroutine(rackCoroutine);
             }
         }
+
+        if(inventoryBlock){
+            return;
+        }
+
         //Consecutive shots accuracy cooldown
         if (consecShots > 0)
         {
@@ -132,9 +145,14 @@ public class FirearmScript: MonoBehaviour
         if (!firearmActive)
             return;
 
+        if(selectedFirearm.boltOpen &&  (selectedFirearm.ammoCount > 0 || selectedFirearm.isChambered) && !reloading && !racking){
+            StartCoroutine(CloseBolt());
+            return;
+        }
+
         if(!selectedFirearm.isChambered && selectedFirearm.ammoCount > 0 && !reloading){
             if(selectedFirearm.itemData.manuallyChambered && !racking){
-                rackCoroutine =  StartCoroutine(RackFirearm());
+                rackCoroutine =  StartCoroutine(RackFirearm(rackDelay: true));
             }else{
                 if(FireRateCheck()){
                     if(autoChamber){
@@ -148,19 +166,27 @@ public class FirearmScript: MonoBehaviour
             }
             return;
         }
+
+        //Trigger is pressed
         if (!triggerPressed)
             return;
 
+        //If weapon is semi automatic, only fire one round per trigger press
         if(semiBlock)
             return;
 
-        
+        //Attempt to fire a round (if weapon is empty, this will return false)
         if(!inventoryController.FireRound()){
             return;
         }
 
-        //Trigger is pressed
+        //Round is fired
+        audioManager.Play(selectedFirearm.itemData.weaponType + "Gunshot");
+        noiseOrigin.GenerateNoise(300f);
         StartCoroutine(MuzzleFlash());
+        if(selectedFirearm.itemData.manuallyChambered){
+            selectedFirearm.shellInChamber = true;
+        }
         Vector2 BulletDeviation = ApplyAimErrorToRaycast(transform.parent.transform.up, CalcAimCone());
         if(weaponType == "Shotgun"){
             for (int i = 0; i < 8; i++)
@@ -186,8 +212,9 @@ public class FirearmScript: MonoBehaviour
             fireRateTimer = 0.15f;
         }
 
-
-        autoChamber = true;
+        if(selectedFirearm.ammoCount > 0){
+            autoChamber = true;
+        }
     }
 
     IEnumerator MuzzleFlash(){
@@ -249,13 +276,20 @@ public class FirearmScript: MonoBehaviour
 
     private void Shoot(Vector2 BulletDeviation)
     { 
-
-        hits = Physics2D.RaycastAll(muzzle.transform.position, BulletDeviation);
+        bool headShot = false;
+        bool torsoShot = false;
+        bool legsShot = false;
+        bool leftArmShot = false;
+        bool rightArmShot = false;
+        bool npcHitPossible = false;
+        bool npctested = false;
+        HumanHitbox hitNPCHitbox = null;
+        RaycastHit2D[] hits = Physics2D.RaycastAll(muzzle.transform.position, BulletDeviation, Mathf.Infinity, layerMask);
         float halfWallDistance = -1.0f;//If the bullet passes a half wall we need to store
                                        //the distance from the wall for future calculations
         foreach (RaycastHit2D hit in hits)
         {              
-            if(hit.transform.gameObject.layer == LayerMask.NameToLayer("HalfObstacle"))
+            if(hit.collider.gameObject.layer == LayerMask.NameToLayer("HalfObstacle"))
             {
                 if (!HalfWallPassed(hit.distance)) //If bullet hit the wall draw bullet line
                 {
@@ -265,27 +299,51 @@ public class FirearmScript: MonoBehaviour
                 else //If not proceed with next collider
                 {
                     halfWallDistance = hit.distance;
-                    continue;
                 }
             }
-            //TODO:This whole implementation will be moved somewhere else
-            if (hit.transform.gameObject.layer == LayerMask.NameToLayer("NPC"))
+            else if (hit.collider.gameObject.layer == LayerMask.NameToLayer("NPC"))
             {
-                if(NPCHit(halfWallDistance, hit))
-                {
-                    BulletImpact(hit, muzzle.transform.position);
-                    //Destroy(hit.transform.gameObject);
-                    break;
+
+                if(!npctested){
+                    npctested = true;
+                    if(NPCHit(halfWallDistance, hit)){
+                        npcHitPossible = true;
+                        BulletImpact(hit, muzzle.transform.position);
+                        hitNPCHitbox = hit.transform.root.Find("Torso").GetComponent<HumanHitbox>();
+                    }else{
+                        npcHitPossible = false;
+                    }
                 }
-                else
-                {
-                    continue;
-                }
+                if(npcHitPossible){
+                    if(hit.collider.gameObject.name == "Head")
+                    {
+                        headShot = true;
+                    }
+                    else if(hit.collider.gameObject.name == "Torso")
+                    {
+                        torsoShot = true;
+                    }
+                    else if(hit.collider.gameObject.name == "Legs")
+                    {
+                        legsShot = true;
+                    }else if(hit.collider.gameObject.name == "LeftArm"){
+                        leftArmShot = true;
+                    }else if(hit.collider.gameObject.name == "RightArm"){
+                        rightArmShot = true;
+                    }
+                }  
             }
-            BulletImpact(hit, muzzle.transform.position);
-            //After something is hit the bullet does not travel further
-            break;
+            else{
+                BulletImpact(hit, muzzle.transform.position);
+                break;
+            }
         }
+
+        //Debug.Log("Headshot: " + headShot + " TorsoShot: " + torsoShot + " LegsShot: " + legsShot + " LeftArmShot: " + leftArmShot + " RightArmShot: " + rightArmShot);
+
+        if(hitNPCHitbox != null){
+            hitNPCHitbox.BulletHit(0.5f, headShot, torsoShot, legsShot, leftArmShot, rightArmShot);
+        } 
     }
 
     
@@ -362,7 +420,10 @@ public class FirearmScript: MonoBehaviour
     }
     public bool NPCHit(float halfWallDistance, RaycastHit2D hit)
     {
-        bool isCrouched = hit.transform.gameObject.GetComponent<NPCStatus>().isCrouched;
+
+
+        bool isCrouched = hit.transform.root.GetComponent<NPCStatus>().isCrouched;
+
         if (isCrouched)
         {
             float hitChance = ApplyCoverToEnemy(halfWallDistance, hit);
@@ -430,7 +491,13 @@ public class FirearmScript: MonoBehaviour
     public void BulletImpact(RaycastHit2D hit, Vector3 muzzlePos)
     {
         Vector3 dir = hit.point - new Vector2(muzzlePos.x, muzzlePos.y);
-        GameObject bullet = Instantiate(bulletImpactPrefab, hit.point, Quaternion.LookRotation(Vector3.forward, dir));
+        GameObject bullet = Instantiate(bulletImpactPrefab, hit.point, Quaternion.LookRotation(Vector3.forward, dir) * Quaternion.Euler(0, 0, 180));
+        if(hit.collider.gameObject.layer == LayerMask.NameToLayer("NPC")){
+            
+            bullet.GetComponent<Animator>().SetBool("BloodSplatter", true);
+            bullet.transform.position = bullet.transform.position + (dir.normalized * 5f);
+           
+        }
     }
 
     public void ChangeSelectedFirearm(InventoryItem firearm){
@@ -443,13 +510,14 @@ public class FirearmScript: MonoBehaviour
         weaponType = selectedFirearm.itemData.weaponType;
         fireMode = selectedFirearm.GetFiremode();
         MuzzleFlashOffsetSelector();
+        selectedFirearm.boltOpen = false;
         if(selectedFirearm.itemData.weaponLength == 0){
-            this.transform.localPosition = new Vector3(0, 0.6f, 0);
+            this.transform.localPosition = new Vector3(-0.015f, 0.53f, 0);
         }else if(selectedFirearm.itemData.weaponLength == 1){
-            this.transform.localPosition = new Vector3(0, 0.75f, 0);
+            this.transform.localPosition = new Vector3(-0.015f, 0.68f, 0);
         }else{
             //Prepared for different weapon lengths
-            this.transform.localPosition = new Vector3(0, 0.75f, 0);
+            this.transform.localPosition = new Vector3(-0.015f, 0.75f, 0);
         }
 
         
@@ -496,6 +564,7 @@ public class FirearmScript: MonoBehaviour
         reloading = true;
         reloadedFirearm = selectedFirearm;
         triggerEnabled = false;
+        noiseOrigin.GenerateNoise(20f);
         if(selectedFirearm.itemData.usesMagazines){
             if(selectedFirearm.hasMagazine){
                 inventoryController.ReloadRemoveMagazine(selectedFirearm);
@@ -510,35 +579,55 @@ public class FirearmScript: MonoBehaviour
                 inventoryController.AttachMagazine(selectedFirearm, true);
             }
         }else{
+            //Todo: no animation for open bolt yet, load round animation is used instead
+            if(!selectedFirearm.isChambered){
+                playerAnimationController.OpenBoltAnimation(selectedFirearm);
+                selectedFirearm.boltOpen = true;
+                yield return new WaitForSeconds(rackWeaponSpeed);
+            }
             while(selectedFirearm.ammoCount < selectedFirearm.currentMagazineSize){
+                
                 playerAnimationController.LoadRoundAnimation(selectedFirearm);
                 yield return new WaitForSeconds(loadRoundSpeed);
                 if(!inventoryController.LoadRound(selectedFirearm)){
                     break;
                 }
             }
+            
         }
-        
-        
-        if(!selectedFirearm.isChambered){
-            playerAnimationController.RackAnimation(selectedFirearm);
-            yield return new WaitForSeconds(rackWeaponSpeed);
-            inventoryController.RackFirearm(selectedFirearm);
-        }
+        noiseOrigin.GenerateNoise(20f);
         reloading = false;
         reloadedFirearm = null;
         triggerEnabled = true;
 
     }
 
-    private IEnumerator RackFirearm(){
+    //RackDelay for manually chambered weapons so that the racking starts a bit later after taking a shot
+    private IEnumerator RackFirearm(bool rackDelay = false){
         racking = true;
         reloadedFirearm = selectedFirearm;
         triggerEnabled = false;
-        
+        if(rackDelay){
+            yield return new WaitForSeconds(0.2f);
+        }
+        noiseOrigin.GenerateNoise(20f);
         playerAnimationController.RackAnimation(selectedFirearm);
         yield return new WaitForSeconds(rackWeaponSpeed);
         inventoryController.RackFirearm(selectedFirearm);
+        racking = false;
+        reloadedFirearm = null;
+        triggerEnabled = true;
+        selectedFirearm.shellInChamber = false;
+    }
+
+    private IEnumerator CloseBolt(){
+        racking = true;
+        reloadedFirearm = selectedFirearm;
+        triggerEnabled = false;
+        noiseOrigin.GenerateNoise(20f);
+        playerAnimationController.CloseBoltAnimation(selectedFirearm);
+        yield return new WaitForSeconds(loadRoundSpeed);
+        inventoryController.CloseBolt(selectedFirearm);
         racking = false;
         reloadedFirearm = null;
         triggerEnabled = true;
@@ -547,6 +636,11 @@ public class FirearmScript: MonoBehaviour
 
     public void InventoryOpened(){
         triggerPressed = false;
+        inventoryBlock = true;
+    }
+
+    public void InventoryClosed(){
+        inventoryBlock = false;
     }
 
     public void SwitchFiremode(){

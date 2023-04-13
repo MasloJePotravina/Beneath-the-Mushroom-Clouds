@@ -88,9 +88,9 @@ public class RestMenu : MonoBehaviour
         thirstAfterValue.text = thirstAfter.ToString();
         tirednessAfterValue.text = tirednessAfter.ToString();
 
-        float wellRestedTime = WellRestedTimeInRealSeconds(playerStatus.playerTiredness, playerStatus.baseTirednessRegen);
+        float wellRestedTime = WellRestedTimeInGameSeconds(playerStatus.playerTiredness, playerStatus.baseTirednessRegen);
 
-        float hoursUntilRested = Mathf.RoundToInt(RealSecondsToGameHours(wellRestedTime));
+        float hoursUntilRested = wellRestedTime / 3600f;
 
         int untilRestedHungerAfter = (int)CalculateAfterValue(playerStatus.playerHunger, hoursUntilRested, playerStatus.hungerDrain);
         int untilRestedThirstAfter = (int)CalculateAfterValue(playerStatus.playerThirst, hoursUntilRested, playerStatus.thirstDrain);
@@ -100,7 +100,7 @@ public class RestMenu : MonoBehaviour
         untilRestedThirstAfterValue.text = untilRestedThirstAfter.ToString();
         untilRestedTirednessAfterValue.text = "100";
 
-        estimatedTimeText.text = "(~" + hoursUntilRested.ToString() + " hours)";
+        estimatedTimeText.text = "(~" + Mathf.RoundToInt(hoursUntilRested).ToString() + " hours)";
 
         hungerDifference = currentHunger - hungerAfter;
         thirstDifference = currentThirst - thirstAfter;
@@ -111,17 +111,10 @@ public class RestMenu : MonoBehaviour
 
     }
 
-    private float GameHoursToRealSeconds(float hours){
-        return (hours/20) * 60 * 60;
-    }
-
-    private float RealSecondsToGameHours(float seconds){
-        return (seconds / 60 / 60) * 20;
-    }
 
     //Use negative drain for tiredness
     private float CalculateAfterValue(float currentValue, float hours, float drain){
-        float afterValue = currentValue - (GameHoursToRealSeconds(hours) * drain);
+        float afterValue = currentValue - (hours * 3600f * drain);
         if(afterValue < 0){
             afterValue = 0;
         }
@@ -131,7 +124,7 @@ public class RestMenu : MonoBehaviour
         return afterValue;
     }
 
-    private float WellRestedTimeInRealSeconds(float currentTiredness, float regen){
+    private float WellRestedTimeInGameSeconds(float currentTiredness, float regen){
         float wellRestedTime = 0;
         float pointsToRegen = 100f - currentTiredness;
         wellRestedTime = pointsToRegen / regen;
@@ -152,16 +145,12 @@ public class RestMenu : MonoBehaviour
     }
 
     public void RestUntilRested(){
-        float wellRestedTime = WellRestedTimeInRealSeconds(playerStatus.playerTiredness, playerStatus.baseTirednessRegen);
-        float hoursUntilRested = RealSecondsToGameHours(wellRestedTime);
-        hudController.Rest(hours);
+        float wellRestedTime = WellRestedTimeInGameSeconds(playerStatus.playerTiredness, playerStatus.baseTirednessRegen);
+        float hoursUntilRested = wellRestedTime / 3600f;
+        hudController.Rest(hoursUntilRested);
     }
 
-    public void ApplySleepEffects(){
-        playerStatus.IncreaseHunger(-hungerDifference);
-        playerStatus.IncreaseThirst(-thirstDifference);
-        playerStatus.IncreaseTiredness(tirednessDifference);
-    }
+
 
     
 

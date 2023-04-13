@@ -132,7 +132,7 @@ public class InventoryWindow : MonoBehaviour
     /// Loads the information about the item needed for the Info Window.
     /// </summary>
     public void LoadItemInfo(){
-        itemImage.sprite = item.itemData.inventorySprite;
+        itemImage.sprite = item.itemData.inventorySprites[0];
         itemName.text = item.itemData.itemName;
         itemDescription.text = item.itemData.description;
         CreateSlots();

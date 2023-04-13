@@ -9,12 +9,12 @@ using TMPro;
 public class HUDController : MonoBehaviour
 {
 
-    public GameObject player;
+    private GameObject player;
 
     /// <summary>
-    /// Reference to the player status script.
+    /// Reference to the player playerStatus script.
     /// </summary>
-    public PlayerStatus status;
+    private PlayerStatus playerStatus;
 
 
     /// <summary>
@@ -57,9 +57,11 @@ public class HUDController : MonoBehaviour
     /// </summary>
     void Awake()
     {
+        player = GameObject.Find("Player");
         interactTextScript = interactText.GetComponent<InteractText>();
         cursorController = GameObject.Find("GameManager").GetComponent<CursorController>();
         worldStatus = GameObject.Find("GameManager").GetComponent<WorldStatus>();
+        playerStatus = player.GetComponent<PlayerStatus>();
     }
 
     void Update(){
@@ -133,18 +135,15 @@ public class HUDController : MonoBehaviour
         StartCoroutine(RestTransition(hours));
     }
 
-    public IEnumerator ActivateRestScreen(float hours){
+    public IEnumerator ActivateRestScreen(){
         restScreen.SetAlpha(0f);
         restScreen.gameObject.SetActive(true);
-        restScreen.Init(hours);
         StartCoroutine(RestScreenFade(true));
         yield return new WaitForSecondsRealtime(3f);
-        restScreen.Activate();
         
     }
 
     public IEnumerator DeactivateRestScreen(){
-        restScreen.Deactivate();
         StartCoroutine(RestScreenFade(false));
         yield return new WaitForSecondsRealtime(3f);
         restScreen.gameObject.SetActive(false);
@@ -162,17 +161,30 @@ public class HUDController : MonoBehaviour
         }
     }
 
+
+
     private IEnumerator RestTransition(float hours){
         DeactivateRestMenu();
         worldStatus.StopTime();
-        StartCoroutine(ActivateRestScreen(hours));
-        yield return new WaitForSecondsRealtime(5.5f);
-        worldStatus.TimeSkip(hours);
-        restMenu.ApplySleepEffects();
-        yield return new WaitForSecondsRealtime(2.5f);
+        float timeMultiplier = CalculateTimemultiplier(hours);
+        StartCoroutine(ActivateRestScreen());
+        yield return new WaitForSecondsRealtime(3f);
+        playerStatus.isResting = true;
+        worldStatus.SetTimeMultiplier(timeMultiplier);
+        worldStatus.StartTime();
+        yield return new WaitForSecondsRealtime(5f);
+        worldStatus.StopTime();
+        playerStatus.isResting = false;
+        worldStatus.SetTimeMultiplier(20f);
         StartCoroutine(DeactivateRestScreen());
         yield return new WaitForSecondsRealtime(3f);
         worldStatus.StartTime();
         
+    }
+
+    private float CalculateTimemultiplier(float hours){
+        float realSeconds = (hours) * 3600f;
+        return (realSeconds/5f);
+
     }
 }

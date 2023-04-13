@@ -27,7 +27,7 @@ public class UIControls : MonoBehaviour
     /// <summary>
     /// Reference to the Player Animation Controller.
     /// </summary>
-    private PlayerAnimationController playerAnimationController;
+    private HumanAnimationController playerAnimationController;
 
     /// <summary>
     /// Reference to the Firearm Script.
@@ -42,8 +42,8 @@ public class UIControls : MonoBehaviour
     void Awake(){
         playerInput = GetComponent<PlayerInput>();
         inventoryController = inventoryScreen.GetComponent<InventoryController>();
-        playerAnimationController = GetComponent<PlayerAnimationController>();
-        firearmScript = transform.Find("PlayerFirearm").GetComponent<FirearmScript>();
+        playerAnimationController = GetComponent<HumanAnimationController>();
+        firearmScript = transform.Find("Firearm").GetComponent<FirearmScript>();
     }
 
     /// <summary>
@@ -65,6 +65,7 @@ public class UIControls : MonoBehaviour
     {
         playerInput.SwitchCurrentActionMap("Player");
         inventoryController.CloseInventory();
+        firearmScript.InventoryClosed();
         playerAnimationController.ResetQuickWeaponChangeTriggers();
     }
 

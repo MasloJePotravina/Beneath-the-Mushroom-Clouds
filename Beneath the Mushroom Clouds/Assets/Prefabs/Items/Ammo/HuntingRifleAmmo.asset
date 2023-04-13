@@ -16,6 +16,11 @@ MonoBehaviour:
   itemName: Hunting Rifle Ammo
   width: 1
   height: 1
+  weight: 0
+  value: 0
+  description: 
+  visibleOnDrop: 0
+  dropSizeMultiplier: 0
   equipment: 0
   equipmentType: 0
   clothing: 0
@@ -27,20 +32,27 @@ MonoBehaviour:
   weapon: 0
   firearm: 0
   manuallyChambered: 0
+  fireModes: []
   usesMagazines: 0
   internalMagSize: 0
   weaponType: HuntingRifle
+  weaponLength: 0
   weaponHUDOutlineSprite: {fileID: 0}
   ammoBarFullSprite: {fileID: 0}
   ammoBarEmptySprite: {fileID: 0}
+  weaponAnimationController: {fileID: 0}
   ammoItemData: {fileID: 0}
   magazineItemData: {fileID: 0}
   ammo: 1
   magazine: 0
   magazineSize: 0
   usable: 0
+  thirst: 0
+  hunger: 0
+  tiredness: 0
   stackable: 1
   maxStack: 30
   itemSubtextPrefab: {fileID: 7965834515029828087, guid: 9b695b4cc89c56f4292c39b2d0d38a68, type: 3}
-  inventorySprite: {fileID: 21300000, guid: a42a53e286bc9f147a01e88e17e971eb, type: 3}
+  inventorySprites:
+  - {fileID: 21300000, guid: a42a53e286bc9f147a01e88e17e971eb, type: 3}
   inventorySpriteSecondary: {fileID: 0}

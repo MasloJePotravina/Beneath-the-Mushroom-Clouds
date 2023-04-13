@@ -41,7 +41,7 @@ public class WatchHUD : MonoBehaviour
     public void Update(){
         timeString = worldStatus.hour.ToString("00") + ":" + worldStatus.minute.ToString("00");
 
-        dateString = worldStatus.day.ToString("00") + "/" + worldStatus.month.ToString("00") + "/" + "28";
+        dateString = worldStatus.day.ToString("00") + "/" + worldStatus.month.ToString("00") + "/" + worldStatus.year.ToString("00");
         dayString = dayShortcuts[worldStatus.dayOfWeek];
 
         //I know this is terrible but updating the font is a considerable amount of work at this point

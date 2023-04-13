@@ -65,8 +65,12 @@ MonoBehaviour:
   magazine: 0
   magazineSize: 0
   usable: 0
+  thirst: 0
+  hunger: 0
+  tiredness: 0
   stackable: 0
   maxStack: 0
   itemSubtextPrefab: {fileID: 0}
-  inventorySprite: {fileID: 21300000, guid: dbc75825f8dbc2347a273a9873c3b2cf, type: 3}
+  inventorySprites:
+  - {fileID: 21300000, guid: dbc75825f8dbc2347a273a9873c3b2cf, type: 3}
   inventorySpriteSecondary: {fileID: 0}

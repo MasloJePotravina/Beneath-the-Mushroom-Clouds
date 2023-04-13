@@ -55,7 +55,7 @@ public class InventoryController : MonoBehaviour
     /// <summary>
     /// Player animation controller component attached to the player GameObject.
     /// </summary>
-    private PlayerAnimationController playerAnimationController;
+    private HumanAnimationController playerAnimationController;
 
     /// <summary>
     /// Dictionary of references to equipped items based on the equipment slot.
@@ -114,6 +114,8 @@ public class InventoryController : MonoBehaviour
     /// Reference to the grid on the right side of the inventory screen.
     /// </summary>
     [SerializeField] private ItemGrid containerGrid;
+
+    [SerializeField] private TextMeshProUGUI containerName;
 
     /// <summary>
     /// Prefab for inventory container windows.
@@ -271,6 +273,8 @@ public class InventoryController : MonoBehaviour
 
     private CursorController cursorController;
 
+    private AudioManager audioManager;
+
     
 
     /// <summary>
@@ -280,13 +284,14 @@ public class InventoryController : MonoBehaviour
         highlighter = GameObject.FindObjectOfType<InventoryHighlight>();
         firearmScript = playerFirearm.GetComponent<FirearmScript>();
         hudController = hudCanvas.GetComponent<HUDController>();
-        playerAnimationController = player.GetComponent<PlayerAnimationController>();
+        playerAnimationController = player.GetComponent<HumanAnimationController>();
         debugSpawnerDropdown = GameObject.FindObjectOfType<DebugDropdownSpawner>().gameObject.GetComponent<TMP_Dropdown>();
         interactRange = GameObject.FindObjectOfType<PlayerInteract>().gameObject;
         itemPickUp = interactRange.GetComponent<ItemPickUp>();
         cursorController = GameObject.FindObjectOfType<CursorController>();
         canvasTransform = GetComponent<RectTransform>();
         playerStatus = player.GetComponent<PlayerStatus>();
+        audioManager = GameObject.FindObjectOfType<AudioManager>();
         SetUpDebugDropdown();
 
         //Since awake is not called on disabled objects but the inventory screen has to be disabled at the start,
@@ -338,6 +343,7 @@ public class InventoryController : MonoBehaviour
         cursorController.SwitchToDefaultCursor();
         this.gameObject.SetActive(true);
         containerGrid.Init(9, 14, true);
+        containerName.text = "Ground";
         containerGrid.LoadItemsFromGround(itemPickUp);
     }
 
@@ -370,6 +376,7 @@ public class InventoryController : MonoBehaviour
         containerObject = container;
         containerGrid.Init(container.gridWidth, container.gridHeight);
         containerGrid.LoadItemsFromContainerObject(container);
+        containerName.text = container.containerType;
     }
 
     /// <summary>
@@ -425,7 +432,7 @@ public class InventoryController : MonoBehaviour
 
         //If the item is stackable, set the stack to a random number between 1 and the max stack
         if(item.itemData.stackable){
-            item.SetStack(UnityEngine.Random.Range(1, item.itemData.maxStack));
+            item.SetStack(item.itemData.maxStack);
         }
 
     }
@@ -703,8 +710,10 @@ public class InventoryController : MonoBehaviour
     /// <param name="posY">Y position of the tile onto which the item is being placed (upper left corner tile of the item is used as reference point).</param>
     private void PlaceItemToGrid(int posX, int posY){
         if(selectedGrid.PlaceItem(selectedItem, posX, posY)){
+            PlayInventoryAudio(selectedItem.itemData.name + "PlaceSound");
             selectedItem = null;
             HighlightSlot(false);
+            
         }
         
     }
@@ -1183,6 +1192,7 @@ public class InventoryController : MonoBehaviour
                 }
                 
                 grid.PlaceItem(transferedItem, posX, posY);
+                PlayInventoryAudio(transferedItem.itemData.name + "PlaceSound");
                 return true;
             }
         }
@@ -1645,6 +1655,8 @@ public class InventoryController : MonoBehaviour
 
         Destroy(magazine.gameObject);
 
+        PlayInventoryAudio(firearm.itemData.weaponType + "LoadMagazine");
+
         if(firearm.isEquipped && firearm.isSelectedWeapon){
             hudController.UpdateWeaponHUD(firearm);
         }
@@ -1664,6 +1676,8 @@ public class InventoryController : MonoBehaviour
         if(firearm.isEquipped && firearm.isSelectedWeapon){
             hudController.UpdateWeaponHUD(firearm);
         }
+
+        PlayInventoryAudio(firearm.itemData.weaponType + "UnloadMagazine");
 
     }
 
@@ -1693,6 +1707,31 @@ public class InventoryController : MonoBehaviour
         }
 
         
+    }
+
+    public void OpenBolt(InventoryItem firearm){
+        if(firearm == null)
+            return;
+        if(firearm.OpenBolt()){
+            InventoryItem ammo = SpawnItem(firearm.itemData.ammoItemData);
+            ammo.SetStack(1);
+        }
+        if(firearm.isEquipped && firearm.isSelectedWeapon){
+            hudController.UpdateWeaponHUD(firearm);
+        }
+
+        PlayInventoryAudio(firearm.itemData.weaponType + "BoltOpen");
+    }
+
+    public void CloseBolt(InventoryItem firearm){
+        if(firearm == null)
+            return;
+        firearm.CloseBolt();
+        if(firearm.isEquipped && firearm.isSelectedWeapon){
+            hudController.UpdateWeaponHUD(firearm);
+        }
+
+        PlayInventoryAudio(firearm.itemData.weaponType + "BoltClose");
     }
 
     /// <summary>
@@ -1730,6 +1769,9 @@ public class InventoryController : MonoBehaviour
         firearm.ClearChamber();
         InventoryItem ammo = SpawnItem(firearm.itemData.ammoItemData);
         ammo.SetStack(1);
+        if(firearm.isEquipped && firearm.isSelectedWeapon){
+            hudController.UpdateWeaponHUD(firearm);
+        }
     }
 
     /// <summary>
@@ -1740,11 +1782,19 @@ public class InventoryController : MonoBehaviour
         if(firearm == null){
             return;
         }
+        if(firearm.isChambered){
+            firearm.ClearChamber();
+            InventoryItem ammo = SpawnItem(firearm.itemData.ammoItemData);
+            ammo.SetStack(1);
+        }
         firearm.ChamberFromMagazine();
+
 
         if(firearm.isEquipped && firearm.isSelectedWeapon){
             hudController.UpdateWeaponHUD(firearm);
         }
+
+        PlayInventoryAudio(firearm.itemData.weaponType + "Rack");
     }
 
     public void UseItem(InventoryItem item){
@@ -1990,5 +2040,11 @@ public class InventoryController : MonoBehaviour
 
     public void PickUpItem(InventoryItem item){
         itemPickUp.DestroyItemObject(item);
+    }
+
+    private void PlayInventoryAudio(string name){
+        if(inventoryOpen){
+            audioManager.Play(name, this.gameObject);
+        }
     }
 }

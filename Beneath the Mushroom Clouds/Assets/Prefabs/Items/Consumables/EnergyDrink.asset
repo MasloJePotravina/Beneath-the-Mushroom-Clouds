@@ -53,5 +53,6 @@ MonoBehaviour:
   stackable: 0
   maxStack: 0
   itemSubtextPrefab: {fileID: 0}
-  inventorySprite: {fileID: 21300000, guid: e45090c59f9fdd54b809ed7258a4bffc, type: 3}
+  inventorySprites:
+  - {fileID: 21300000, guid: e45090c59f9fdd54b809ed7258a4bffc, type: 3}
   inventorySpriteSecondary: {fileID: 0}

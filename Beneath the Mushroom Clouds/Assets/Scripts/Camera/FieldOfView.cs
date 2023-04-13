@@ -96,6 +96,8 @@ public class FieldOfView : MonoBehaviour
     /// </summary>
     public float fopDistance = 10f;
 
+    private int newFovRayCount = 0;
+
 
 
     /// <summary>
@@ -116,9 +118,16 @@ public class FieldOfView : MonoBehaviour
     /// Each frame, calculate and draw the FOV mesh.
     /// </summary>
     private void Update()
-    {
+    {   
+        //When the FOV ray count is changed, it cannot be changed immediately as it would break the mesh calculation
+        //Therefore it is changed at the start of a new frame
+        if(newFovRayCount > 0)
+        {
+            fovRayCount = newFovRayCount;
+            newFovRayCount = 0;
+        }
         //Determine the angle and distance of the fov raycasts based on whether the player is aiming or not
-        if (playerStatus.playerAiming)
+        if (playerStatus.isAiming)
         {
             fovAngle = fovAngleAiming;
             fovDistance = fovDistanceAiming;
@@ -130,7 +139,7 @@ public class FieldOfView : MonoBehaviour
         }
 
         //Determine the layer mask based on whether the player is crouched or not
-        if (playerStatus.playerCrouched)
+        if (playerStatus.isCrouched)
             layerMask = layerMaskCrouched;
         else
             layerMask = layerMaskStanding;
@@ -171,9 +180,10 @@ public class FieldOfView : MonoBehaviour
         triangles[1] = 1;
         triangles[2] = 2;
 
-        mesh.vertices = vertices;
-        mesh.uv = uv;
-        mesh.triangles = triangles;
+        mesh.Clear();
+        mesh.SetVertices(vertices);
+        mesh.SetUVs(0, uv);
+        mesh.SetTriangles(triangles, 0);
 
     }
 
@@ -221,7 +231,7 @@ public class FieldOfView : MonoBehaviour
                 {
                     if (hit.transform.CompareTag("NPC"))
                     {
-                        hit.transform.GetComponent<NPCStatus>().HitByFov();
+                        hit.transform.root.GetComponent<NPCStatus>().HitByFov();
                         continue;
                     }
                     else
@@ -261,6 +271,11 @@ public class FieldOfView : MonoBehaviour
             }
 
         }
+    }
+
+    public void SetFOVRayCount(int count)
+    {
+        newFovRayCount = count;
     }
 
 }

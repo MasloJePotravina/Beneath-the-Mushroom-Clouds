@@ -45,7 +45,7 @@ public class CameraMovement : MonoBehaviour
     /// </summary>
     void FixedUpdate()
     {
-        if (status.playerAiming)
+        if (status.isAiming)
         {
             //Get the world coordinates of the mouse
             Vector2 mouseWorldPos = Camera.main.ScreenToWorldPoint(mousePosition);

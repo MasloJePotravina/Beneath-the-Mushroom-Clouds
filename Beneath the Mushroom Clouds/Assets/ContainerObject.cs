@@ -6,7 +6,7 @@ public class ContainerObject : MonoBehaviour
 {
     public bool wasOpened = false;
     public bool isOpen = false;
-    [SerializeField] private string containerType;
+    public string containerType;
     [SerializeField] private ItemData[] possibleItems;
     public int gridWidth;
     public int gridHeight;
@@ -24,7 +24,7 @@ public class ContainerObject : MonoBehaviour
     [SerializeField] private AnimatorOverrideController animatorOverrideController;
 
     void Awake(){
-        inventoryController = GameObject.FindObjectOfType<InventoryController>();
+        inventoryController = GameObject.FindObjectOfType<InventoryController>(true);
         uiControls = GameObject.FindObjectOfType<UIControls>();
         animator = GetComponent<Animator>();
         animator.runtimeAnimatorController = animatorOverrideController;
@@ -51,13 +51,14 @@ public class ContainerObject : MonoBehaviour
         }
     }
 
-    private bool BoundaryCheck(int x, int y){
+   private bool BoundaryCheck(int x, int y){
         if(x >= gridWidth || y >= gridHeight){
             return false;
         }
         return true;
     }
 
+    //We only need width here since item are placed row by row
     private bool OverlapCheck(int x, int y, int width){
         for(int i = 0; i < width; i++){
             if(items[x + i, y] != null){
@@ -72,7 +73,7 @@ public class ContainerObject : MonoBehaviour
         item.Set(itemData);
         for(int i = 0; i < itemData.width; i++){
             for(int j = 0; j < itemData.height; j++){
-                items[x + i, y - j] = item;
+                items[x + i, y + j] = item;
             }
         }
 
