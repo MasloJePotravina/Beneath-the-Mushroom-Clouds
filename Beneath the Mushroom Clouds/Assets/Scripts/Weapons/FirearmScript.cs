@@ -25,10 +25,8 @@ public class FirearmScript: MonoBehaviour
     private bool triggerEnabled = true;
 
 
-    public float initialDeviation; //Worst case initial bullet deviaiton (degrees)
-    public float bulletDevIncrement; //How many degrees does another fired bullet add at most
-
-    private float shooterAbility;
+    private float initialAccuracy; //Worst case initial bullet deviaiton (degrees)
+    private float bulletAccuracyDecrement; //How many degrees does another fired bullet add at most
 
     private Coroutine reloadCoroutine;
     private Coroutine rackCoroutine;
@@ -85,8 +83,7 @@ public class FirearmScript: MonoBehaviour
     void Start()
     {
         playerStatus = player.GetComponent<PlayerStatus>();
-        shooterAbility = playerStatus.shooterAbility;
-        UpdateConeLines(shooterAbility * (initialDeviation/2));
+        UpdateConeLines(playerStatus.shootingAbility * (initialAccuracy/2));
         inventoryController = inventoryScreen.GetComponent<InventoryController>();
         playerAnimationController = player.GetComponent<HumanAnimationController>();
 
@@ -342,7 +339,7 @@ public class FirearmScript: MonoBehaviour
         //Debug.Log("Headshot: " + headShot + " TorsoShot: " + torsoShot + " LegsShot: " + legsShot + " LeftArmShot: " + leftArmShot + " RightArmShot: " + rightArmShot);
 
         if(hitNPCHitbox != null){
-            hitNPCHitbox.BulletHit(0.5f, headShot, torsoShot, legsShot, leftArmShot, rightArmShot);
+            hitNPCHitbox.BulletHit(selectedFirearm.itemData.damage, headShot, torsoShot, legsShot, leftArmShot, rightArmShot);
         } 
     }
 
@@ -356,9 +353,9 @@ public class FirearmScript: MonoBehaviour
 
         //Summary: The weapon is less accurate with more consecutive shots, this stops after 10 rounds
         // The best shooter is twice as good at controling recoil than the worst shooter
-        float consecShotsModifier = (bulletDevIncrement - 0.5f*(1 - shooterAbility)) * consecShots;
+        float consecShotsModifier = (bulletAccuracyDecrement - 0.5f*(1 - playerStatus.shootingAbility)) * consecShots;
 
-        float degrees = initialDeviation * shooterAbility + consecShotsModifier;
+        float degrees = initialAccuracy * playerStatus.shootingAbility + consecShotsModifier;
 
         //Degrees are halved here before returining (half the degrees to each side)
         degrees *= 0.5f;
@@ -510,7 +507,6 @@ public class FirearmScript: MonoBehaviour
         weaponType = selectedFirearm.itemData.weaponType;
         fireMode = selectedFirearm.GetFiremode();
         MuzzleFlashOffsetSelector();
-        selectedFirearm.boltOpen = false;
         if(selectedFirearm.itemData.weaponLength == 0){
             this.transform.localPosition = new Vector3(-0.015f, 0.53f, 0);
         }else if(selectedFirearm.itemData.weaponLength == 1){
@@ -519,6 +515,11 @@ public class FirearmScript: MonoBehaviour
             //Prepared for different weapon lengths
             this.transform.localPosition = new Vector3(-0.015f, 0.75f, 0);
         }
+
+        initialAccuracy = selectedFirearm.itemData.initialAccuracy;
+        bulletAccuracyDecrement = selectedFirearm.itemData.bulletAccuracyDecrement;
+
+        UpdateConeLines(CalcAimCone());
 
         
     }

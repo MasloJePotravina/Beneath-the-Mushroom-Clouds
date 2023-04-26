@@ -19,6 +19,7 @@ public class NPCBehaviourHostile : MonoBehaviour
     
     public float lookAroundMinAngle = -29f;
     public float lookAroundMaxAngle = 29f;
+    private float lookAroundRandomAngle;
     public float lookAroundLerpSpeed = 5f;
     public float waitBetweenLookAroundMin = 3f;
     public float waitBetweenLookAroundMax = 8f;
@@ -64,6 +65,11 @@ public class NPCBehaviourHostile : MonoBehaviour
 
     private GameObject interactRange;
 
+    private Vector3 moveDirection;
+
+    private Vector3 previousPosition;
+
+
     
 
 
@@ -92,6 +98,9 @@ public class NPCBehaviourHostile : MonoBehaviour
 
         interactRange = transform.Find("InteractRange").gameObject;
 
+        previousPosition = transform.position;
+        moveDirection = transform.position - previousPosition;
+
         
 
     }
@@ -106,6 +115,7 @@ public class NPCBehaviourHostile : MonoBehaviour
                 Debug.DrawLine(currentPath[i], currentPath[i+1], Color.green);
             }
         }
+
         
         if(currentState == "Idle"){
             Idle();
@@ -144,12 +154,16 @@ public class NPCBehaviourHostile : MonoBehaviour
                 }
             }
         }
+
+
+        moveDirection = transform.position - previousPosition;
+        previousPosition = transform.position;
         
     }
 
     void LateUpdate(){
         animationController.animateTorso();
-        animationController.animateLegs(new Vector2(transform.rotation.eulerAngles.x, transform.rotation.eulerAngles.y));
+        animationController.animateLegs(new Vector2(moveDirection.x, moveDirection.y));
         animationController.setFirearmAnimatorMovementBools();
     }
 
@@ -158,8 +172,8 @@ public class NPCBehaviourHostile : MonoBehaviour
     private void RandomLookAround(){
         if (!isLookingAround)
         {
-            float randomAngle = Random.Range(lookAroundMinAngle, lookAroundMaxAngle);
-            endRotation = Quaternion.Euler(transform.eulerAngles + new Vector3(0f, 0f, randomAngle));
+            lookAroundRandomAngle = Random.Range(lookAroundMinAngle, lookAroundMaxAngle);
+            endRotation = Quaternion.Euler(transform.eulerAngles + new Vector3(0f, 0f, lookAroundRandomAngle));
             isLookingAround = true;
             
         }
@@ -181,14 +195,13 @@ public class NPCBehaviourHostile : MonoBehaviour
                     endRotation = originalRotation;
                     
                 }else{
-                    float randomAngle;
                     isLookingAround = true;
-                    if(Quaternion.Angle(transform.rotation, originalRotation) < 0.1f){
-                        randomAngle = Random.Range(0, lookAroundMaxAngle);
+                    if(lookAroundRandomAngle < 0){
+                        lookAroundRandomAngle = Random.Range(-lookAroundRandomAngle, -lookAroundRandomAngle + lookAroundMaxAngle);
                     }else{
-                        randomAngle = Random.Range(lookAroundMinAngle, 0);
+                        lookAroundRandomAngle = Random.Range(lookAroundMinAngle - lookAroundRandomAngle, -lookAroundRandomAngle);
                     }
-                    endRotation = Quaternion.Euler(transform.eulerAngles + new Vector3(0f, 0f, randomAngle));
+                    endRotation = Quaternion.Euler(transform.eulerAngles + new Vector3(0f, 0f, lookAroundRandomAngle));
                 }
             }
         }
@@ -262,11 +275,11 @@ public class NPCBehaviourHostile : MonoBehaviour
 
         Vector2 direction = Vector2.zero;
 
+        
         if(targetVisible){
             direction = (targetTransform.position - transform.position).normalized;
-            transform.rotation = Quaternion.LookRotation(Vector3.forward, direction);
+            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(Vector3.forward, direction), 10f * Time.deltaTime); 
         }
-        
 
         
 
@@ -275,6 +288,8 @@ public class NPCBehaviourHostile : MonoBehaviour
             AttackPosition();
             return;
         }
+
+        
 
 
         float distance = Vector2.Distance(transform.position, targetTransform.position);
@@ -374,11 +389,15 @@ public class NPCBehaviourHostile : MonoBehaviour
             return true;
         }
 
+
         npcStatus.isMoving = true;
         if (path.Count == 0){
             npcStatus.isMoving = false;
             return true;
         }
+
+
+
         Vector3 targetPosition = path[0]; 
         Vector3 direction = targetPosition - transform.position;
         transform.position += direction.normalized * moveSpeed * Time.deltaTime; 
@@ -462,7 +481,7 @@ public class NPCBehaviourHostile : MonoBehaviour
     }
 
     private void SearchLocation(){
-        if(searchTimer < 3f){
+        if(searchTimer < 10f){
             searchTimer += Time.deltaTime;
             RandomLookAround();
         }else{
@@ -499,7 +518,7 @@ public class NPCBehaviourHostile : MonoBehaviour
     }
 
     public void HeardNoise(Vector3 noisePosition){
-        if(currentState == "Attack" || currentState == "Chase")
+        if(currentState == "Attack")
             return;
         
         if(npcStatus.selectedWeapon == null){
@@ -524,7 +543,7 @@ public class NPCBehaviourHostile : MonoBehaviour
     }
 
     public void ReceiveTargetNotification(Transform targetTransform){
-        if(currentState == "Attack" || currentState == "Chase")
+        if(currentState == "Attack")
             return;
         
         if(npcStatus.selectedWeapon == null){

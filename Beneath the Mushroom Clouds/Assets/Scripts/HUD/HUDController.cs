@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.InputSystem;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -115,20 +116,26 @@ public class HUDController : MonoBehaviour
 
     public void ActivateInteractText(){
         interactText.SetActive(true);
+        
     }
 
     public void DeactivateInteractText(){
         interactText.SetActive(false);
+        
     }
 
     public void ActivateRestMenu(){
         restMenu.gameObject.SetActive(true);
         cursorController.SwitchToDefaultCursor();
+        PlayerInput playerInput = GameObject.FindObjectOfType<PlayerInput>(true);
+        playerInput.SwitchCurrentActionMap("UI");
     }
 
     public void DeactivateRestMenu(){
         restMenu.gameObject.SetActive(false);
         cursorController.SwitchToCrosshairCursor();
+        PlayerInput playerInput = GameObject.FindObjectOfType<PlayerInput>(true);
+        playerInput.SwitchCurrentActionMap("Player");
     }
 
     public void Rest(float hours){

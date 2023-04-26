@@ -179,6 +179,7 @@ public class HumanHitbox : MonoBehaviour
     private Dictionary<string, float> GetMainBodyPartProbabilities(bool headShot, bool torsoShot, bool legsShot){
             
             Dictionary<string, float> mainBodyPartsProbabilities = new Dictionary<string, float>();
+
     
             if(headShot){
                 mainBodyPartsProbabilities.Add("Head", headBaseProbability);
@@ -216,11 +217,12 @@ public class HumanHitbox : MonoBehaviour
         return mainBodyPartsProbabilitiesRedistributed;
     }
     
-    private Dictionary<string, bool> RandomMainBodyPartHits(Dictionary<string, float> mainBodyPartsProbabilitiesRedistributed, bool leftArmShot, bool rightArmShot){
+    private Dictionary<string, bool> RandomMainBodyPartHits(Dictionary<string, float> mainBodyPartsProbabilitiesRedistributed){
         Dictionary<string, bool> bodyPartHits = new Dictionary<string, bool>(){
             {"Head", false},
             {"Torso", false},
-            {"Legs", false},
+            {"LeftLeg", false},
+            {"RightLeg", false},
             {"LeftArm", false},
             {"RightArm", false}  
         };
@@ -232,42 +234,62 @@ public class HumanHitbox : MonoBehaviour
             currentProbability += mainBodyPartsProbabilitiesRedistributed[bodyPart];
 
             if(randomValue <= currentProbability){
-                bodyPartHits[bodyPart] = true;
+                if(bodyPart == "Legs"){
+                    float randomLegValue = Random.Range(0.0f, 1.0f);
+                    if(randomLegValue <= 0.5f){
+                        bodyPartHits["LeftLeg"] = true;
+                    }else{
+                        bodyPartHits["RightLeg"] = true;
+                    }
+                }else{
+                    bodyPartHits[bodyPart] = true;
+                }
                 break;
             }
         }
 
+
+        
+
         return bodyPartHits;
     }
 
-    private Dictionary<string, bool> RandomArmHits(Dictionary<string, bool> bodyPartHits, bool leftArmShot, bool rightArmShot, float probabilitySum){
-        float armProbability = 0.0f;
-
-        if(probabilitySum == 0.0f){
-            armProbability = 0.5f;
-        }else{
-            armProbability = 0.2f;
-        }
-
-        float leftArmProbability = leftArmShot ? armProbability: 0.0f;
-        float rightArmProbability = leftArmShot ? armProbability: 0.0f;
+    private Dictionary<string, bool> RandomArmHits(Dictionary<string, bool> bodyPartHits, bool leftArmShot, bool rightArmShot, bool mainBodyPartWasHit){
         
-        float randomArmValue = Random.Range(0.0f, 1.0f);
-        if(randomArmValue <= leftArmProbability){
-            bodyPartHits["LeftArm"] = true;
-        }
-        randomArmValue = Random.Range(0.0f, 1.0f);
-        if(randomArmValue <= rightArmProbability){
-            bodyPartHits["RightArm"] = true;
-        }
+        bool torsoWasHit = bodyPartHits["Torso"];
 
-        if(probabilitySum == 0.0f){
-            if(!bodyPartHits["LeftArm"] && !bodyPartHits["RightArm"]){
-                if(Random.Range(0.0f, 1.0f) <= 0.5f){
+        if(mainBodyPartWasHit && !torsoWasHit){//If one of the main body parts was hit but it was not torso, then arms couldn't be hit
+            bodyPartHits["LeftArm"] = false;
+            bodyPartHits["RightArm"] = false;
+        }else if(mainBodyPartWasHit && torsoWasHit){//If a main body part was hit and it was torso, then arms could be hit, with a 50% probability each (if raycast passed through it)
+            float armProbability = 0.5f;
+            if(leftArmShot){
+                float randomArmValue = Random.Range(0.0f, 1.0f);
+                if(randomArmValue <= armProbability){
                     bodyPartHits["LeftArm"] = true;
-                }else{
+                }
+            }
+            if(rightArmShot){
+                float randomArmValue = Random.Range(0.0f, 1.0f);
+                if(randomArmValue <= armProbability){
                     bodyPartHits["RightArm"] = true;
                 }
+            }
+        }else if(!mainBodyPartWasHit){//If no main body part was hit, then arms has to be hit, if raycast passed through both, they have 50 % chance each, if only through one, that was the hit arm
+            if(leftArmShot && rightArmShot){
+                float armProbability = 0.5f;
+                float randomArmValue = Random.Range(0.0f, 1.0f);
+                if(randomArmValue <= 0.5f){
+                    bodyPartHits["LeftArm"] = true;
+                }
+                randomArmValue = Random.Range(0.0f, 1.0f);
+                if(randomArmValue <= 0.5f){
+                    bodyPartHits["RightArm"] = true;
+                }
+            }else if(leftArmShot){
+                bodyPartHits["LeftArm"] = true;
+            }else if(rightArmShot){
+                bodyPartHits["RightArm"] = true;
             }
         }
 
@@ -283,10 +305,32 @@ public class HumanHitbox : MonoBehaviour
         float probabilitySum = 0.0f;
         mainBodyPartsProbabilities = GetMainBodyPartProbabilities(headShot, torsoShot, legsShot);
         mainBodyPartsProbabilitiesRedistributed = RedistributeMainBodyPartProbabilities(mainBodyPartsProbabilities, out probabilitySum);
-        bodyPartHits = RandomMainBodyPartHits(mainBodyPartsProbabilitiesRedistributed, leftArmShot, rightArmShot);
-        bodyPartHits = RandomArmHits(bodyPartHits, leftArmShot, rightArmShot, probabilitySum);
+        bodyPartHits = RandomMainBodyPartHits(mainBodyPartsProbabilitiesRedistributed);
 
-        
+        bool mainBodyPartWasHit = false;
+        if(probabilitySum > 0.0f){
+            mainBodyPartWasHit = true;
+        }
+
+        bodyPartHits = RandomArmHits(bodyPartHits, leftArmShot, rightArmShot, mainBodyPartWasHit);
+
+        if(transform.parent.CompareTag("Player")){
+            PlayerStatus playerStatus = transform.parent.GetComponent<PlayerStatus>();
+            foreach(string bodyPart in bodyPartHits.Keys){
+                if(bodyPartHits[bodyPart]){
+                    playerStatus.GotShot(damage, bodyPart);
+                }
+            }
+        }else if(transform.parent.CompareTag("NPC")){
+            NPCStatus npcStatus = transform.parent.GetComponent<NPCStatus>();
+            foreach(string bodyPart in bodyPartHits.Keys){
+                if(bodyPartHits[bodyPart]){
+                    npcStatus.GotShot(damage, bodyPart);
+                }
+            }
+        }
+
+
 
         /*
         Debug.Log("Redistributed probabilities: Head" + mainBodyPartsProbabilitiesRedistributed["Head"] + " Torso: " + mainBodyPartsProbabilitiesRedistributed["Torso"] + " Legs: " + mainBodyPartsProbabilitiesRedistributed["Legs"]); 

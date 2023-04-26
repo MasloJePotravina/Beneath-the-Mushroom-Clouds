@@ -133,6 +133,17 @@ public class ItemData : ScriptableObject
     /// Whether the item is manually chambered.
     /// </summary>
     public bool manuallyChambered;
+
+    /// <summary>
+    /// Damage of the weapon.
+    /// </summary>
+    public float damage;
+
+    public float initialAccuracy;
+
+    public float bulletAccuracyDecrement;
+    
+    
     /// <summary>
     /// Array of strings which contain the names of the fire modes of the weapon.
     /// </summary>
@@ -190,18 +201,21 @@ public class ItemData : ScriptableObject
     /// </summary>
     public int magazineSize;
 
-    [Header("Usable")]
+    [Header("Consumable")]
     /// <summary>
     /// Whether the item is usable (not yet implemented).
     /// </summary>
-    public bool usable;
+    public bool consumable;
 
     public float thirst;
     public float hunger;
     public float tiredness;
 
+   
+
 
     [Header("Misc")]
+    public bool healthItem;
     /// <summary>
     /// Whether the item is stackable.
     /// </summary>
@@ -218,4 +232,6 @@ public class ItemData : ScriptableObject
     /// List of sprites in inventory (some items such as weapons have multiple while most have just one)
     /// </summary>
     public Sprite[] inventorySprites;
+
+    
 }

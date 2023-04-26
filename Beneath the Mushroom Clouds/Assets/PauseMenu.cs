@@ -1,22 +1,28 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PauseMenu : MonoBehaviour
 {
-
+    public bool isPaused = false;
+    private string prevActionMap = "Player";
 
     public void TogglePauseMenu()
     {
+        PlayerInput playerInput = GameObject.FindObjectOfType<PlayerInput>(true);
         gameObject.SetActive(!gameObject.activeSelf);
-        if (Time.timeScale == 0)
-        {
+        if(isPaused){
             Time.timeScale = 1;
-        }
-        else
-        {
+            isPaused = false;
+            playerInput.SwitchCurrentActionMap(prevActionMap);
+        }else{
+            prevActionMap = playerInput.currentActionMap.name;
             Time.timeScale = 0;
+            isPaused = true;
+            playerInput.SwitchCurrentActionMap("UI");
         }
+        
     }
 
     public void Resume()

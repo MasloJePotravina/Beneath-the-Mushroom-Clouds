@@ -133,7 +133,7 @@ public class ContextMenu : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                 menuOptions["SplitStack"] = true;
         }
 
-        if(item.itemData.usable){
+        if(item.itemData.consumable){
             menuOptions["Use"] = true;
         }
 

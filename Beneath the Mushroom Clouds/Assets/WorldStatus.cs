@@ -16,6 +16,11 @@ public class WorldStatus : MonoBehaviour
 
     public float gameSecondsInDay = 0f;
 
+    public float secondsFromStart = 0;
+
+    [SerializeField] private GameObject eveningLight;
+    [SerializeField] private UnityEngine.Rendering.Universal.Light2D eveningLightComponent;
+
     private Dictionary<int,int> daysInMonth = new Dictionary<int, int>(){
         {1, 31},
         {2, 28},
@@ -118,14 +123,21 @@ public class WorldStatus : MonoBehaviour
 
     private Color CalculateLightColor(){
         Color lightColor = new Color(1f, 1f, 1f);
+        float valueMultiplier = 0f;
 
         //Recreate above code using gameSecondsInDay (0-86400)
         if(gameSecondsInDay >= 36000f && gameSecondsInDay < 61200f){ //36000 = 10:00, 61200 = 17:00 //White light
             lightColor = new Color(1f, 1f, 1f);
         }else if(gameSecondsInDay >= 61200f && gameSecondsInDay < 77400f){//61200 = 17:00, 77400f = 21:30 //White to orange fade
-            lightColor = new Color(1f, 1f, 1f) - (new Color(0f, 0.5f, 1f) * (gameSecondsInDay - 61200f) / 14400f);
+            valueMultiplier = (gameSecondsInDay - 61200f) / 16200f;
+            lightColor = new Color(1f, 1f, 1f) - (new Color(0f, 0.5f, 1f) * valueMultiplier);
+            eveningLightComponent.intensity = 0.15f * valueMultiplier;
+            eveningLight.transform.position = new Vector3(-300f + 540f*valueMultiplier, eveningLight.transform.position.y, eveningLight.transform.position.z);
         }else if(gameSecondsInDay >= 77400f && gameSecondsInDay < 79200f){//77400f = 21:30, 79200 = 22:00 //Orange to white fade
-            lightColor = new Color(1f, 1f, 1f) - (new Color(0f, 0.5f, 1f) * (79200f - gameSecondsInDay) / 1800);
+            valueMultiplier = (79200f - gameSecondsInDay) / 1800f;
+            lightColor = new Color(1f, 1f, 1f) - (new Color(0f, 0.5f, 1f) * valueMultiplier);
+            eveningLightComponent.intensity = 0.15f * valueMultiplier;
+            eveningLight.transform.position = new Vector3(240f + 60f*(1-valueMultiplier),eveningLight.transform.position.y, eveningLight.transform.position.z);
         }else if(gameSecondsInDay >= 79200f || gameSecondsInDay < 18000f){//79200 = 22:00, 18000 = 5:00 //White light
             lightColor = new Color(1f, 1f, 1f);
         }else if(gameSecondsInDay >= 18000f && gameSecondsInDay < 19800f){//18000 = 5:00, 19800 = 5:30 //White to orange fade
@@ -162,10 +174,12 @@ public class WorldStatus : MonoBehaviour
         second += Time.deltaTime * timeMultiplier;
 
         gameSecondsInDay += Time.deltaTime * timeMultiplier;
+        secondsFromStart += Time.deltaTime * timeMultiplier;
         if(gameSecondsInDay >= 86400f){
             gameSecondsInDay = 0f;
             UpdateDate();
         }
+       
 
         UpdateTime();  
     }  
@@ -173,7 +187,6 @@ public class WorldStatus : MonoBehaviour
     private void UpdateTime(){
         hour = (int)(gameSecondsInDay / 3600f);
         minute = (int)((gameSecondsInDay - (hour * 3600f)) / 60f);
-
     }
 
     private void UpdateDate(){

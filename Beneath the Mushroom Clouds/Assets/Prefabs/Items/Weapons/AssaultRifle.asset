@@ -34,6 +34,9 @@ MonoBehaviour:
   weapon: 1
   firearm: 1
   manuallyChambered: 0
+  damage: 30
+  initialAccuracy: 10
+  bulletAccuracyDecrement: 2
   fireModes:
   - automatic
   - semi-auto
@@ -50,10 +53,11 @@ MonoBehaviour:
   ammo: 0
   magazine: 0
   magazineSize: 0
-  usable: 0
+  consumable: 0
   thirst: 0
   hunger: 0
   tiredness: 0
+  healthItem: 0
   stackable: 0
   maxStack: 0
   itemSubtextPrefab: {fileID: 7965834515029828087, guid: 9b695b4cc89c56f4292c39b2d0d38a68, type: 3}
@@ -62,4 +66,3 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e165b432527bc6d46a494ee1c5d5edf0, type: 3}
   - {fileID: 21300000, guid: 662f2ba6edb27fa4aa05f19e42d54b34, type: 3}
   - {fileID: 21300000, guid: e165b432527bc6d46a494ee1c5d5edf0, type: 3}
-  inventorySpriteSecondary: {fileID: 21300000, guid: e165b432527bc6d46a494ee1c5d5edf0, type: 3}

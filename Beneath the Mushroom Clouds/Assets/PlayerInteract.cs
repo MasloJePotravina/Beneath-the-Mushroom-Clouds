@@ -53,10 +53,6 @@ public class PlayerInteract : MonoBehaviour
         if (other.gameObject.CompareTag("Interactable"))
         {
             interactableObjects.Remove(other.gameObject);
-            if(other.gameObject.GetComponent<InteractableBehaviour>().interactableTag == "Bed")
-            {
-               hudController.DeactivateRestMenu();
-            }
         }
     }
 

@@ -51,29 +51,26 @@ public class LowerStatusHUD : MonoBehaviour
     void Update()
     {
 
-        int hungerInt = (int) status.playerHunger;
-        int thirstInt = (int) status.playerThirst;
-        int tirednessInt = (int) status.playerTiredness;
 
         hungerBarFillImage.fillAmount = status.playerHunger / 100;
         thirstBarFillImage.fillAmount = status.playerThirst / 100;
         tirednessBarFillImage.fillAmount = status.playerTiredness / 100;
 
-        if(hungerInt <= 20){
+        if(status.playerHunger <= 20){
             hungerBarFillImage.color = new Color32(255, 0, 0, 255);
         }else{
             //Brown
             hungerBarFillImage.color = new Color32(168, 106, 0, 255);
         }
 
-        if(thirstInt <= 20){
+        if(status.playerThirst <= 20){
             thirstBarFillImage.color = new Color32(255, 0, 0, 255);
         }else{
             //Blue
             thirstBarFillImage.color = new Color32(112, 255, 240, 255);
         }
 
-        if(tirednessInt <= 20){
+        if(status.playerTiredness <= 20){
             tirednessBarFillImage.color = new Color32(255, 0, 0, 255);
         }else{
             //Purple
@@ -81,9 +78,9 @@ public class LowerStatusHUD : MonoBehaviour
         }
 
 
-        hungerBarText.text = hungerInt.ToString();
-        thirstBarText.text = thirstInt.ToString();
-        tirednessBarText.text = tirednessInt.ToString();
+        hungerBarText.text = status.playerHunger.ToString("F0");
+        thirstBarText.text = status.playerThirst.ToString("F0");
+        tirednessBarText.text = status.playerTiredness.ToString("F0");
     }
 
     public void StanceCrouch(){

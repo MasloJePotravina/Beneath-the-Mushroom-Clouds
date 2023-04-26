@@ -114,7 +114,9 @@ public class InventoryWindow : MonoBehaviour
         int childCount = grids.transform.childCount;
         for(int i = 0; i < childCount; i++){
             Transform child = grids.transform.GetChild(i);
-            child.GetComponent<ItemGrid>().parentItem = item;
+            ItemGrid itemGrid = child.GetComponent<ItemGrid>();
+            itemGrid.parentItem = item;
+            itemGrid.LoadItemsFromContainerItem();
         }
 
         //Find the irst child of the container grid, which is the name of the item and disable it as it is not displayed in the container window

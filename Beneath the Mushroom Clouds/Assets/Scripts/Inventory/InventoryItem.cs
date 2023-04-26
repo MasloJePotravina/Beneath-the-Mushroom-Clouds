@@ -19,6 +19,9 @@ public class InventoryItem : MonoBehaviour
     /// </summary>
     public InventoryItem[][,] itemGrids;
 
+
+    public float currentWeight;
+
     /// <summary>
     /// X position of the item in the inventory grid.
     /// </summary>
@@ -87,6 +90,9 @@ public class InventoryItem : MonoBehaviour
     /// </summary>
     private int currentFireModeIndex;
 
+
+    private float bandageCleanliness = 0;
+
     /// <summary>
     /// Height of the item in the inventory. If the item is rotated, the width is returned as the height of the item.
     /// </summary>
@@ -146,8 +152,25 @@ public class InventoryItem : MonoBehaviour
             currentFireModeIndex = 0;
         }
 
+        if(itemData.healthItem){
+            if(itemData.itemName == "Clean Bandage"){
+                bandageCleanliness = 100;
+            }else if(itemData.itemName == "Dirty Bandage"){
+                bandageCleanliness = 0;
+            }
+
+        }
+
+        //set current weight
+        if(itemData.stackable){
+            currentWeight = itemData.weight * currentStack;
+        }else{
+            currentWeight = itemData.weight;
+        }
+
         
     }
+
 
     /// <summary>
     /// Loads the item's grid data from the itemGrids array.
@@ -164,17 +187,32 @@ public class InventoryItem : MonoBehaviour
     /// <param name="gridID">ID of the grid to save.</param>
     /// <param name="items">Two dimensional array of inventory item references to items that are currently stored in the grid.</param>
     public void SaveGrid(int gridID, InventoryItem[,] items){
-
+        List<InventoryItem> uniqueItems = new List<InventoryItem>();
+        currentWeight = itemData.weight;
 
         itemGrids[gridID] = items;
 
+        foreach(InventoryItem item in itemGrids[gridID]){
+            if(item != null){
+                if(!uniqueItems.Contains(item)){
+                    uniqueItems.Add(item);
+                }
+            }
+        }
+
+        foreach(InventoryItem item in uniqueItems){
+            currentWeight += item.currentWeight;
+        }
+        
+    }
+
+    public void HideGridItems(int gridID){
         foreach(InventoryItem item in itemGrids[gridID]){
             if(item != null){
                 item.transform.SetParent(transform);
                 item.gameObject.SetActive(false);
             }
         }
-        
     }
 
 
@@ -203,6 +241,7 @@ public class InventoryItem : MonoBehaviour
     public void SetStack(int count){
         currentStack = count;
         UpdateStackText();
+        UdpateCurrentWeight();
     }
 
     /// <summary>
@@ -221,6 +260,7 @@ public class InventoryItem : MonoBehaviour
             amountAdded = count;
         }
         UpdateStackText();
+        UdpateCurrentWeight();
         return amountAdded;
     }
 
@@ -242,6 +282,7 @@ public class InventoryItem : MonoBehaviour
 
 
         UpdateStackText();
+        UdpateCurrentWeight();
         return currentStack;
 
     }
@@ -270,6 +311,7 @@ public class InventoryItem : MonoBehaviour
             ammoCount += count;
             ammoLoaded =  count;
         }
+        UdpateCurrentWeight();
         UpdateFirearmText();
         return ammoLoaded;    
     }
@@ -281,6 +323,7 @@ public class InventoryItem : MonoBehaviour
     public int UnloadAmmoFromInternalMagazine(){
         int ammoUnloaded = ammoCount;
         ammoCount = 0;
+        UdpateCurrentWeight();
         UpdateFirearmText();
         return ammoUnloaded;
     }
@@ -301,6 +344,7 @@ public class InventoryItem : MonoBehaviour
             ammoCount += count;
             amountAdded = count;
         }
+        UdpateCurrentWeight();
         UpdateMagazineText();
         return amountAdded;
     }
@@ -312,6 +356,7 @@ public class InventoryItem : MonoBehaviour
     public int RemoveAllFromMagazine(){
         int count = ammoCount;
         ammoCount = 0;
+        UdpateCurrentWeight();
         UpdateMagazineText();
         return count;
     }
@@ -376,6 +421,7 @@ public class InventoryItem : MonoBehaviour
         }else{
             FirearmSelectSprite("MagBoltClosed");
         }
+        UdpateCurrentWeight();
         return true;
     }
 
@@ -394,6 +440,7 @@ public class InventoryItem : MonoBehaviour
         }else{
             FirearmSelectSprite("NoMagBoltClosed");
         }
+        UdpateCurrentWeight();
         return count;
     }
 
@@ -407,6 +454,7 @@ public class InventoryItem : MonoBehaviour
         }
         isChambered = true;
         UpdateFirearmText();
+        UdpateCurrentWeight();
         return true;
     }
 
@@ -420,6 +468,7 @@ public class InventoryItem : MonoBehaviour
         }
         isChambered = false;
         UpdateFirearmText();
+        UdpateCurrentWeight();
         return true;
     }
 
@@ -438,6 +487,7 @@ public class InventoryItem : MonoBehaviour
             }
         }
         UpdateFirearmText();
+        UdpateCurrentWeight();
         return true;
     }
 
@@ -452,6 +502,7 @@ public class InventoryItem : MonoBehaviour
         isChambered = true;
         ammoCount--;
         UpdateFirearmText();
+        UdpateCurrentWeight();
         return true;
     }
 
@@ -467,6 +518,7 @@ public class InventoryItem : MonoBehaviour
 
         if(isChambered){
             isChambered = false;
+            UdpateCurrentWeight();
             UpdateFirearmText();
             return true;
         }else{
@@ -487,6 +539,7 @@ public class InventoryItem : MonoBehaviour
         if(ammoCount > 0 && !isChambered){
             ammoCount--;
             isChambered = true;
+            UdpateCurrentWeight();
             UpdateFirearmText();
         }
     }
@@ -532,6 +585,41 @@ public class InventoryItem : MonoBehaviour
     /// <returns>Current fire mode of the item (firearm).</returns>
     public string GetFiremode(){
         return itemData.fireModes[currentFireModeIndex];
+    }
+
+    public float BandageDeterioration(float value){
+        if(itemData.itemName == "Clean Bandage"){
+            bandageCleanliness -= value;
+            
+        }
+        return bandageCleanliness;
+    }
+
+    private void UdpateCurrentWeight(){
+        if(itemData.magazine){
+            currentWeight = itemData.weight + (ammoCount * itemData.ammoItemData.weight);
+        }
+
+        if(itemData.firearm){
+            if(itemData.usesMagazines){
+                if(hasMagazine){
+                    currentWeight = itemData.weight + itemData.magazineItemData.weight + (ammoCount * itemData.ammoItemData.weight);
+                }else{
+                    currentWeight = itemData.weight;
+                }
+                
+            }else{
+                currentWeight = itemData.weight + (ammoCount * itemData.ammoItemData.weight);
+            }
+
+            if(isChambered){
+                currentWeight += itemData.ammoItemData.weight;
+            }
+        }
+
+        if(itemData.stackable){
+            currentWeight = itemData.weight * currentStack;
+        }
     }
     
 

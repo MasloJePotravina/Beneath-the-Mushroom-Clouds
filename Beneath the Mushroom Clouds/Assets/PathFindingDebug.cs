@@ -36,7 +36,7 @@ public class PathFindingDebug : MonoBehaviour
         if(currentPlayerPositionOnGrid != previousPlayerPositionOnGrid){
             previousPlayerPositionOnGrid = currentPlayerPositionOnGrid;
             Vector3 newDebugGridPosition = grid.GridToWorldPosition(currentPlayerPositionOnGrid);
-            this.transform.position = new Vector3(newDebugGridPosition.x-5f, newDebugGridPosition.y-5f, -1);
+            this.transform.position = new Vector3(newDebugGridPosition.x-5f, newDebugGridPosition.y-5f, -20);
             UpdatePathFindingTiles(currentPlayerPositionOnGrid);
         }
 
@@ -45,7 +45,7 @@ public class PathFindingDebug : MonoBehaviour
     
 
     private void InstantiateText(Vector2Int gridPosition){
-        Vector2 localPosition = new Vector2((gridPosition.x-debugGridOffset)*10, (gridPosition.y-debugGridOffset)*10);
+        Vector3 localPosition = new Vector3((gridPosition.x-debugGridOffset)*10, (gridPosition.y-debugGridOffset)*10, -20);
         GameObject text = Instantiate(pathFindingTilePrefab, localPosition, Quaternion.identity, this.transform);
         TextMesh textElement = text.transform.Find("Text").GetComponent<TextMesh>();
         tileTextList.Add(textElement);

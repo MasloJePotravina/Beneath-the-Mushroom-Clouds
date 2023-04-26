@@ -1,4 +1,4 @@
-//Taken from: https://www.youtube.com/watch?v=alU04hvz6L4
+//Based on: https://www.youtube.com/watch?v=alU04hvz6L4
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -35,7 +35,9 @@ public class PathFinding
         }
         else{
             InterpolatePath(vectorPath);
-            vectorPath[vectorPath.Count - 1] += new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), 0);
+            vectorPath[vectorPath.Count - 1] += new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), 0);
+            //Remove the first position as that is the NPC's current position and therefore not needed
+            vectorPath.RemoveAt(0);
             return vectorPath;
         }
         
@@ -51,14 +53,14 @@ public class PathFinding
             Vector3 start = vectorPath[startIndex];
             Vector3 end = vectorPath[endIndex];
             RaycastHit2D hit = Physics2D.Linecast(start, end, LayerMask.GetMask(blockingLayers));
-            bool hasObstacle = hit.collider != null;
 
-            if (!hasObstacle)
+            if (hit.collider == null)
             {
                 // Remove all the positions in between start and end
                 vectorPath.RemoveRange(startIndex + 1, endIndex - startIndex - 1);
-                // Update endIndex
-                endIndex = startIndex + 1;
+                // Update endIndex, reset startIndex
+                endIndex = startIndex;
+                startIndex = 0;
                 
             }
             else
@@ -99,11 +101,6 @@ public class PathFinding
             }
         }
 
-        
-
-        openList = new List<PathNode>(){startNode};
-        closedList = new HashSet<PathNode>();
-        openList.Add(startNode);
 
 
         for(int x = 0; x < grid.width; x++){
@@ -114,6 +111,10 @@ public class PathFinding
             }
         }
 
+
+        openList = new List<PathNode>(){startNode};
+        closedList = new HashSet<PathNode>();
+        openList.Add(startNode);
         startNode.gCost = 0;
         startNode.hCost = GetDistance(startNode, endNode);
 
@@ -123,20 +124,26 @@ public class PathFinding
                 return CalculatePath(endNode);
             }
 
+            //Limit F cost to 1000 to prevent too long or complex paths
+            if(currentNode.fCost > 1000){
+                return null;
+            }
+
+
             openList.Remove(currentNode);
             closedList.Add(currentNode);
-
-            foreach(PathNode neighbourNode in GetNeighbourList(currentNode)){
+            List <PathNode> neighbourList = GetNeighbourList(currentNode);
+            foreach(PathNode neighbourNode in neighbourList){
                 if(closedList.Contains(neighbourNode)) continue;
-                if(!neighbourNode.isWalkable){
+                if(!neighbourNode.isWalkable || neighbourNode.isOccupied){
                     closedList.Add(neighbourNode);
                     continue;
                 }
 
-                int tentativeGCost = currentNode.gCost + GetDistance(currentNode, neighbourNode);
-                if(tentativeGCost < neighbourNode.gCost){
+                int potentialGCost = currentNode.gCost + GetDistance(currentNode, neighbourNode);
+                if(potentialGCost < neighbourNode.gCost){
                     neighbourNode.cameFromNode = currentNode;
-                    neighbourNode.gCost = tentativeGCost;
+                    neighbourNode.gCost = potentialGCost;
                     neighbourNode.hCost = GetDistance(neighbourNode, endNode);
 
                     if(!openList.Contains(neighbourNode)){
@@ -202,6 +209,7 @@ public class PathFinding
         return neighbourList;
     }
 
+    //Heuristic function
     private int GetDistance(PathNode a, PathNode b){
         int xDistance = Mathf.Abs(a.x - b.x);
         int yDistance = Mathf.Abs(a.y - b.y);

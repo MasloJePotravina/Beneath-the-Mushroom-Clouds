@@ -32,6 +32,13 @@ Ammo - prefix 05
 050005 - Huning Rifle Ammo
 
 Health Items - prefix 06
+060001 - Clean Bandage
+060002 - Dirty Bandage
+060003 - Suture Needle
+060004 - Antibiotics
+060005 - Antiseptic
+060006 - Painkillers
 
 Quest Items - prefix 07
 
+aksdjaklsksksdjsjdjsnas

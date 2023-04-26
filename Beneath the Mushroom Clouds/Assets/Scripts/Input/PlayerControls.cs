@@ -143,6 +143,7 @@ public class PlayerControls : MonoBehaviour
         firearmScript = playerWeapon.GetComponent<FirearmScript>();
 
         inventoryController = inventoryScreen.GetComponent<InventoryController>();
+
     }
 
 
@@ -403,5 +404,21 @@ public class PlayerControls : MonoBehaviour
             pauseMenu.TogglePauseMenu();
         }
     }
+
+    /// <summary>
+    /// Method called by the InputSystem when the player attempts to open the inventory.
+    /// </summary>
+    public void OnOpenInventory()
+    {
+        if(pauseMenu.isPaused)
+            return;
+        playerInput.SwitchCurrentActionMap("UI");
+        inventoryController.OpenInventory();
+        firearmScript.InventoryOpened();
+        playerAnimationController.DisableMovementBools();
+             
+    }
+
+    
 
 }

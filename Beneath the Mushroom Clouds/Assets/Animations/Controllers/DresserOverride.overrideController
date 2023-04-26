@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!221 &22100000
+AnimatorOverrideController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: DresserOverride
+  m_Controller: {fileID: 9100000, guid: 9daed4b6ab845c44a9312c6c1c4824b1, type: 2}
+  m_Clips:
+  - m_OriginalClip: {fileID: 7400000, guid: 76c9b9e7ea017f843b679dfff4c4d5a6, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 0eab8f99acc2874478b630ab46453363, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: a71fa25c060d35745a5d826e5df94aca, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 79859778a38d3c84197730e677721f05, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 88fb6d4557cede74f9972054f1e56511, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 0cf2fa4c2ee9b2a4a8293ea8ffd783c6, type: 2}

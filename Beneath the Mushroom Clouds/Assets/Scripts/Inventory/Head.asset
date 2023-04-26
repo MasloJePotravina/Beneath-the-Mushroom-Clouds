@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba3faf11c9b92d34d9ad7f5cdfff7194, type: 3}
+  m_Name: Head
+  m_EditorClassIdentifier: 
+  bleeding: {fileID: 2800000, guid: 2490443689d2aa743b5ac19c000f6778, type: 3}
+  bandageClean: {fileID: 2800000, guid: 3351ce2b03f671f4ca61078ded5df239, type: 3}
+  bandageDirty: {fileID: 2800000, guid: f1d5c38504bec744eb9204b1fe5d302a, type: 3}
+  stitchedWound: {fileID: 2800000, guid: 8dff945754c998740b1821ccd1989d96, type: 3}
+  infection: {fileID: 2800000, guid: 8434ff144fe7c80429ead3983cb5dfb7, type: 3}

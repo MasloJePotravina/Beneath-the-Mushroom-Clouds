@@ -99,6 +99,10 @@ public class AudioManager : MonoBehaviour
     private IEnumerator ResetAudioSource(AudioSource source, AudioClip clip)
     {
         yield return new WaitForSeconds(source.clip.length);
+        //Protection against GameObjects that were destroyed trying to play sounds
+        if(source == null){
+            yield break;
+        }
         //Protection against accidentaly resetting the audio source of another sound
         if(source.clip == clip)
         {

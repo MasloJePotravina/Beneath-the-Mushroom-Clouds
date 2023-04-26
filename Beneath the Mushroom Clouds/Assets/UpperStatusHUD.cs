@@ -12,6 +12,8 @@ public class UpperStatusHUD : MonoBehaviour
 
     private RectTransform healthBarFillRect;
     private RectTransform staminaBarFillRect;
+    private RectTransform healthBarFillDisabledRect;
+    private RectTransform staminaBarFillDisabledRect;
 
     private GameObject[] healthArrows;
     private GameObject[] staminaArrows;
@@ -20,13 +22,17 @@ public class UpperStatusHUD : MonoBehaviour
     private TextMeshProUGUI healthBarText;
     private GameObject bodyTempCursor;
 
-    private PlayerStatus status;
+    private PlayerStatus playerStatus;
+
+    
 
 
     void Awake()
     {
         GameObject healthBarFill = GameObject.Find("HealthBarFill");
         GameObject staminaBarFill = GameObject.Find("StaminaBarFill");
+        GameObject healthBarFillDisabled = GameObject.Find("HealthBarFillDisabled");
+        GameObject staminaBarFillDisabled = GameObject.Find("StaminaBarFillDisabled");
         GameObject bodyTempFill = GameObject.Find("BodyTempFill");
 
         healthBarFillImage = healthBarFill.GetComponent<Image>();
@@ -34,6 +40,9 @@ public class UpperStatusHUD : MonoBehaviour
 
         healthBarFillRect = healthBarFill.GetComponent<RectTransform>();
         staminaBarFillRect = staminaBarFill.GetComponent<RectTransform>();
+        healthBarFillDisabledRect = healthBarFillDisabled.GetComponent<RectTransform>();
+        staminaBarFillDisabledRect = staminaBarFillDisabled.GetComponent<RectTransform>();
+
 
         healthBarText = GameObject.Find("HealthBarText").GetComponent<TextMeshProUGUI>();
         bodyTempCursor = GameObject.Find("BodyTempCursor");
@@ -48,14 +57,14 @@ public class UpperStatusHUD : MonoBehaviour
             bodyTempArrows[i] = bodyTempFill.transform.Find("Arrow" + (i+1)).gameObject;
         }
 
-        status = GameObject.Find("Player").GetComponent<PlayerStatus>();
+        playerStatus = GameObject.Find("Player").GetComponent<PlayerStatus>();
     }
 
     public void Update()
     {
         
-        UpdateStamina(status.playerStamina, status.staminaDrain);
-        UpdateHealth(status.playerHealth, status.healthDrain);
+        UpdateStamina(playerStatus.playerStamina, playerStatus.staminaDrain);
+        UpdateHealth(playerStatus.playerHealth, playerStatus.healthDrain);
         //UpdateBodyTemp(bodyTempDrain);
 
     }
@@ -100,6 +109,7 @@ public class UpperStatusHUD : MonoBehaviour
     /// <param name="drain"></param>
     public void UpdateStamina(float stamina, float drain){
         staminaBarFillRect.offsetMax = UpdateUpperBarFillRectSize(stamina);
+        staminaBarFillDisabledRect.offsetMin = -UpdateUpperBarFillRectSize(100-playerStatus.maxPlayerStamina);
         if(stamina <= 20)
             staminaBarFillImage.color = new Color32(255, 0, 0, 255);
         else
@@ -116,6 +126,7 @@ public class UpperStatusHUD : MonoBehaviour
 
     public void UpdateHealth(float health, float drain){
         healthBarFillRect.offsetMax = UpdateUpperBarFillRectSize(health);
+        healthBarFillDisabledRect.offsetMin = -UpdateUpperBarFillRectSize(100-playerStatus.maxPlayerHealth);
         if(health <= 20)
             healthBarFillImage.color = new Color32(255, 0, 0, 255);
         else
@@ -128,6 +139,8 @@ public class UpperStatusHUD : MonoBehaviour
         }
 
         ArrowEdges("health", health);
+
+        healthBarText.text = health.ToString("F0");
     }
 
 
@@ -140,7 +153,7 @@ public class UpperStatusHUD : MonoBehaviour
         staminaArrows[4].SetActive(false);
         staminaArrows[5].SetActive(false);
         for(int i = 0; i < 3; i++){
-            if(drain > i*status.baseStaminaDrain){
+            if(drain > i*playerStatus.baseStaminaDrain){
                 staminaArrows[i].SetActive(true);
             }else{
                 staminaArrows[i].SetActive(false);
@@ -157,7 +170,7 @@ public class UpperStatusHUD : MonoBehaviour
         healthArrows[4].SetActive(false);
         healthArrows[5].SetActive(false);
         for(int i = 0; i < 3; i++){
-            if(drain > i*status.baseHealthDrain){
+            if(drain > i*playerStatus.baseHealthDrain){
                 healthArrows[i].SetActive(true);
             }else{
                 healthArrows[i].SetActive(false);
@@ -174,7 +187,7 @@ public class UpperStatusHUD : MonoBehaviour
         staminaArrows[1].SetActive(false);
         staminaArrows[2].SetActive(false);
         for(int i = 3; i < 6; i++){
-            if(drain < -((i-3)*status.baseStaminaRegen)){
+            if(drain < -((i-3)*playerStatus.baseStaminaRegen)){
                 staminaArrows[i].SetActive(true);
             }else{
                 staminaArrows[i].SetActive(false);
@@ -190,8 +203,14 @@ public class UpperStatusHUD : MonoBehaviour
         healthArrows[0].SetActive(false);
         healthArrows[1].SetActive(false);
         healthArrows[2].SetActive(false);
+        if(drain == 0f){
+            healthArrows[3].SetActive(false);
+            healthArrows[4].SetActive(false);
+            healthArrows[5].SetActive(false);
+            return;
+        }
         for(int i = 3; i < 6; i++){
-            if(drain < -((i-3)*status.baseHealthRegen)){
+            if(drain < -((i-3)*playerStatus.baseHealthRegen)){
                 healthArrows[i].SetActive(true);
             }else{
                 healthArrows[i].SetActive(false);

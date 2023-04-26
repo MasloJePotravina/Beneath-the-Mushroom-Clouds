@@ -20,16 +20,16 @@ TagManager:
   - 
   - Water
   - UI
-  - 
-  - FOV
+  - FOW
+  - FOVFixLayer
   - Enemy
   - FullObstacle
-  - HalfObstacle
+  - FOV
   - PathFindPadding
   - Player
   - NPC
   - NoiseReceiver
-  - 
+  - HalfObstacle
   - 
   - 
   - 

@@ -38,6 +38,7 @@ public class RestMenu : MonoBehaviour
     private float thirstDifference;
     private float tirednessDifference;
 
+
     void Awake(){
         playerStatus = GameObject.Find("Player").GetComponent<PlayerStatus>();
         worldStatus = GameObject.Find("GameManager").GetComponent<WorldStatus>();
@@ -48,6 +49,7 @@ public class RestMenu : MonoBehaviour
 
     void Update(){
         UpdateSleepEffects();
+
     }
 
     

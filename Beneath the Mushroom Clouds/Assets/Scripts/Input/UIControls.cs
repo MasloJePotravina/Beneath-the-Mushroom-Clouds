@@ -33,7 +33,9 @@ public class UIControls : MonoBehaviour
     /// Reference to the Firearm Script.
     /// </summary>
     private FirearmScript firearmScript;
-
+    
+    private PauseMenu pauseMenu;
+    private GameObject restMenu;
 
 
     /// <summary>
@@ -44,30 +46,11 @@ public class UIControls : MonoBehaviour
         inventoryController = inventoryScreen.GetComponent<InventoryController>();
         playerAnimationController = GetComponent<HumanAnimationController>();
         firearmScript = transform.Find("Firearm").GetComponent<FirearmScript>();
+        pauseMenu = GameObject.FindObjectOfType<PauseMenu>(true);
+        restMenu = GameObject.FindObjectOfType<RestMenu>(true).gameObject;
     }
 
-    /// <summary>
-    /// Method called by the InputSystem when the player attempts to open the inventory.
-    /// </summary>
-    public void OnOpenInventory()
-    {
-        playerInput.SwitchCurrentActionMap("UI");
-        inventoryController.OpenInventory();
-        firearmScript.InventoryOpened();
-        playerAnimationController.DisableMovementBools();
-             
-    }
-
-    /// <summary>
-    /// Method called by the InputSystem when the player attempts to close the inventory.
-    /// </summary>
-    void OnCloseInventory()
-    {
-        playerInput.SwitchCurrentActionMap("Player");
-        inventoryController.CloseInventory();
-        firearmScript.InventoryClosed();
-        playerAnimationController.ResetQuickWeaponChangeTriggers();
-    }
+    
 
     /// <summary>
     /// Method called by the InputSystem when the player left clicks within the inventory.
@@ -123,6 +106,19 @@ public class UIControls : MonoBehaviour
     /// <param name="value">Input Value sent by the Input System</param>
     void OnQuickEquip(InputValue value){
         inventoryController.QuickEquipHotkey(value);
+    }
+
+    /// <summary>
+    /// Method called by the InputSystem when the player attempts to close the inventory.
+    /// </summary>
+    void OnCloseInventory()
+    {
+        if(pauseMenu.isPaused || restMenu.activeSelf)
+            return;
+        playerInput.SwitchCurrentActionMap("Player");
+        inventoryController.CloseInventory();
+        firearmScript.InventoryClosed();
+        playerAnimationController.ResetQuickWeaponChangeTriggers();
     }
 
 }

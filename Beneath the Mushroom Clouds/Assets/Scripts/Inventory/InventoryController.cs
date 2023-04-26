@@ -1,3 +1,4 @@
+//Inventory system based on: https://www.youtube.com/watch?v=2ajD1GDbEzA
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -275,6 +276,10 @@ public class InventoryController : MonoBehaviour
 
     private AudioManager audioManager;
 
+    private HealthStatusUI playerStatusUI;
+
+    private TextMeshProUGUI carryWeightText;
+
     
 
     /// <summary>
@@ -292,7 +297,11 @@ public class InventoryController : MonoBehaviour
         canvasTransform = GetComponent<RectTransform>();
         playerStatus = player.GetComponent<PlayerStatus>();
         audioManager = GameObject.FindObjectOfType<AudioManager>();
+        playerStatusUI = GameObject.FindObjectOfType<HealthStatusUI>(true);
+        carryWeightText = transform.Find("Tab/InventorySection/WeightInfo/WeightText").GetComponent<TextMeshProUGUI>();
         SetUpDebugDropdown();
+
+
 
         //Since awake is not called on disabled objects but the inventory screen has to be disabled at the start,
         // the inventory screen is enabled, variables are set up, and then the inventory screen is disabled again.
@@ -305,6 +314,9 @@ public class InventoryController : MonoBehaviour
     /// Each frame handles the dragging of items, the highlighting of items, and the dragging of windows.
     /// </summary>
     private void Update(){
+
+
+
         if(!inventoryOpen){
             return;
         }
@@ -332,6 +344,8 @@ public class InventoryController : MonoBehaviour
 
         //Highlight the item that the mouse is over
         HighlightItem();
+
+        UpdateCarryWeight();
         
     }
 
@@ -345,6 +359,10 @@ public class InventoryController : MonoBehaviour
         containerGrid.Init(9, 14, true);
         containerName.text = "Ground";
         containerGrid.LoadItemsFromGround(itemPickUp);
+
+        splitStackButtonPressed = false;
+        quickTransferButtonPressed = false;
+        quickEquipButtonPressed = false;
     }
 
     public void CloseInventory(){
@@ -369,6 +387,10 @@ public class InventoryController : MonoBehaviour
         int openWindowCnt = openWindows.Count;
         for(int i = openWindowCnt - 1; i >= 0; i--){
             openWindows[i].GetComponent<InventoryWindow>().CloseWindow();
+        }
+
+        if(contextMenuOpen){
+            CloseContextMenu();
         }
     }
 
@@ -403,6 +425,7 @@ public class InventoryController : MonoBehaviour
 
         int selectedItemID = UnityEngine.Random.Range(0, items.Count);
         InventoryItem item = SpawnItem(items[selectedItemID]);
+        
 
         if(item == null){
             return;
@@ -412,6 +435,8 @@ public class InventoryController : MonoBehaviour
         if(item.itemData.stackable){
             item.SetStack(UnityEngine.Random.Range(1, item.itemData.maxStack));
         }
+
+        selectedItem = item;
 
     }
 
@@ -426,6 +451,7 @@ public class InventoryController : MonoBehaviour
 
         InventoryItem item = SpawnItem(items[itemID]);
 
+
         if(item == null){
             return;
         }
@@ -434,6 +460,8 @@ public class InventoryController : MonoBehaviour
         if(item.itemData.stackable){
             item.SetStack(item.itemData.maxStack);
         }
+
+        selectedItem = item;
 
     }
 
@@ -444,7 +472,6 @@ public class InventoryController : MonoBehaviour
     /// <returns>Reference to the spawned item</returns>
     public InventoryItem SpawnItem(ItemData itemData){
         InventoryItem item = Instantiate(itemPrefab).GetComponent<InventoryItem>();
-        selectedItem = item;
         selectedItemRectTransform = item.GetComponent<RectTransform>();
         selectedItemRectTransform.SetParent(canvasTransform);
 
@@ -488,6 +515,7 @@ public class InventoryController : MonoBehaviour
         if(contextMenuOpen){
             if(!mouseOverContextMenu){
                 CloseContextMenu();
+                
             }
             return;
         }
@@ -510,6 +538,7 @@ public class InventoryController : MonoBehaviour
                     if(value.isPressed){
                         QuickTransfer(selectedGrid.GetItem(tilePosition.x, tilePosition.y), selectedGrid, selectedSlot);
                     }
+                    SaveInventoryGrids();
                     return;
                 }
                 //If the player is attempting a quick equip
@@ -518,6 +547,7 @@ public class InventoryController : MonoBehaviour
                     if(value.isPressed){
                         QuickEquip(selectedGrid.GetItem(tilePosition.x, tilePosition.y), selectedGrid);
                     }
+                    SaveInventoryGrids();
                     return;
                 }
                 //If the player is not attempting any quick actions, grab the item from the grid
@@ -537,6 +567,7 @@ public class InventoryController : MonoBehaviour
                     if(value.isPressed){
                         QuickTransfer(selectedSlot.GetItem(), selectedGrid, selectedSlot);
                     }
+                    SaveInventoryGrids();
                     return;
                 }
                 //If not, grab the item from the slot
@@ -546,6 +577,9 @@ public class InventoryController : MonoBehaviour
                 PlaceItemToSlot();
             }
         }
+        SaveInventoryGrids();
+
+        
 
     }
 
@@ -624,7 +658,7 @@ public class InventoryController : MonoBehaviour
             //If an item was removed from the slot, remove potential container grids,
             // remove the potential image from the outline, unset the item as equipped and remove the
             // item from the equipped items dictionary
-            //If it was a erapon, also update weapon selection
+            //If it was a weapon, also update weapon selection
             if(selectedItem != null){
                 selectedItemRectTransform = selectedItem.GetComponent<RectTransform>();
                 selectedItemRectTransform.SetAsLastSibling();
@@ -634,6 +668,10 @@ public class InventoryController : MonoBehaviour
                 RemoveEquippedItemFromDict(selectedItem);
                 if(selectedItem.itemData.weapon){
                     WeaponSelectUpdate();
+                }
+
+                if(selectedItem.itemData.healthItem){
+                    HealthItemRemove();
                 }
             }
         }
@@ -651,14 +689,27 @@ public class InventoryController : MonoBehaviour
         if(selectedSlot.PlaceItem(selectedItem)){
             ToggleContainerGrid(selectedItem, true);
             AddOutlineSprite(selectedItem);
-            selectedItem.isEquipped = true;
-            AddEquippedItemToDict(selectedItem);
+            if(selectedItem.itemData.equipment){
+                selectedItem.isEquipped = true;
+                AddEquippedItemToDict(selectedItem);
+            }
+            
             if(selectedItem.itemData.weapon){
                 WeaponSelectUpdate();
             }
             
+            if(selectedSlot.isHealthStatusSlot){
+                ApplyHealthItemToSlot();
+            }
+
+            if(selectedItem.itemData.magazine){
+                DestroyItem(selectedItem);
+            }
+
             //The item is no longer selected and the slot is no longer highlighted
-            selectedItem = null;
+            if(!selectedItem.itemData.stackable){
+                selectedItem = null;
+            }
             HighlightSlot(false);
 
         }
@@ -683,6 +734,7 @@ public class InventoryController : MonoBehaviour
                 //If the player attempted to split the stack, split the stack, otherwise just grab the item
                 if(SplittingStack(clickedItem)){
                     SplitStack(clickedItem);
+                    SaveInventoryGrids();
                 }else{
                     selectedItem = selectedGrid.GrabItem(posX, posY);
                 }
@@ -713,6 +765,7 @@ public class InventoryController : MonoBehaviour
             PlayInventoryAudio(selectedItem.itemData.name + "PlaceSound");
             selectedItem = null;
             HighlightSlot(false);
+            selectedGrid.SaveItems();
             
         }
         
@@ -727,6 +780,10 @@ public class InventoryController : MonoBehaviour
             for(int i = 1; i < itemSlots.Length; i++){
                 itemSlots[i].GetComponent<Image>().color = Color.white;
             }
+
+            foreach(string bodyPart in playerStatusUI.bodyPartHighlightObjects.Keys){
+                playerStatusUI.BodyPartHighlight(bodyPart, false);
+            }
             return;
         
         }
@@ -734,11 +791,20 @@ public class InventoryController : MonoBehaviour
             return;
         }
 
-        if(!selectedItem.itemData.equipment){
+        if(!selectedItem.itemData.equipment && !selectedItem.itemData.healthItem){
             return;
         }
+    
 
-        itemSlots[selectedItem.itemData.equipmentType].GetComponent<Image>().color = Color.green;
+        if(selectedItem.itemData.healthItem){
+            List<string> highlightedBodyParts = playerStatus.GetRelevantBodyParts(selectedItem.itemData.itemName);
+            foreach(string bodyPart in highlightedBodyParts){
+                playerStatusUI.BodyPartHighlight(bodyPart, true);
+            }
+        }else{
+            itemSlots[selectedItem.itemData.equipmentType].GetComponent<Image>().color = Color.green;
+        }
+        
 
 
     }
@@ -859,6 +925,9 @@ public class InventoryController : MonoBehaviour
     /// </summary>
     /// <param name="item">Reference to the item</param>
     public void RemoveEquippedItemFromDict(InventoryItem item){
+        if(item.itemData.equipmentType == 0){
+            return;
+        }
         if(equippedItems.ContainsKey(equipmentTypes[item.itemData.equipmentType])){
             equippedItems[equipmentTypes[item.itemData.equipmentType]] = null;
         }
@@ -888,7 +957,9 @@ public class InventoryController : MonoBehaviour
             int childCount = grids.transform.childCount;
             for(int i = 0; i < childCount; i++){
                 Transform child = grids.transform.GetChild(i);
-                child.GetComponent<ItemGrid>().parentItem = item;
+                ItemGrid itemGrid = child.GetComponent<ItemGrid>();
+                itemGrid.parentItem = item;
+                itemGrid.LoadItemsFromContainerItem();
                 
             }
 
@@ -974,6 +1045,7 @@ public class InventoryController : MonoBehaviour
             Transform child = grids.transform.GetChild(i);
             ItemGrid grid = child.GetComponent<ItemGrid>(); 
             grid.SaveItems();
+            grid.HideItems();
         }
     }
 
@@ -1013,6 +1085,7 @@ public class InventoryController : MonoBehaviour
         Destroy(contextMenu);
         contextMenuOpen = false;
         Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
+        SaveInventoryGrids();
     }
 
 
@@ -1024,6 +1097,7 @@ public class InventoryController : MonoBehaviour
         InventoryItem newItem = SpawnItem(item.itemData);
         newItem.SetStack(item.currentStack/2);
         item.RemoveFromStack(newItem.currentStack);
+        selectedItem = newItem;
     }
 
     //
@@ -1192,6 +1266,7 @@ public class InventoryController : MonoBehaviour
                 }
                 
                 grid.PlaceItem(transferedItem, posX, posY);
+                grid.SaveItems();
                 PlayInventoryAudio(transferedItem.itemData.name + "PlaceSound");
                 return true;
             }
@@ -1402,6 +1477,7 @@ public class InventoryController : MonoBehaviour
         int removedAmount = magazine.RemoveAllFromMagazine();
         InventoryItem ammo = SpawnItem(magazine.itemData.ammoItemData);
         ammo.SetStack(removedAmount);
+        selectedItem = ammo;
     }
 
     /// <summary>
@@ -1418,6 +1494,7 @@ public class InventoryController : MonoBehaviour
         int removedAmount = firearm.UnloadAmmoFromInternalMagazine();
         InventoryItem ammo = SpawnItem(firearm.itemData.ammoItemData);
         ammo.SetStack(removedAmount);
+        selectedItem = ammo;
 
         //If the firearm is equipped and selected, update the weapon HUD
         if(firearm.isEquipped && firearm.isSelectedWeapon){
@@ -1622,10 +1699,10 @@ public class InventoryController : MonoBehaviour
     public void ReloadRemoveMagazine(InventoryItem firearm){
         int ammoCount = firearm.RemoveMagazine();
         InventoryItem magazine = SpawnItem(firearm.itemData.magazineItemData);
-        //In this case the removed magazine should not be the selected item but should be automatically transfered to pockets
-        selectedItem = null;
+       
         magazine.AddToMagazine(ammoCount);
 
+        //In this case the removed magazine should not be the selected item but should be automatically transfered to pockets
         if(!AttemptMagPlaceToInventory(magazine)){
             AttemptTransferToContainer(magazine, null, null, false);
         }
@@ -1671,6 +1748,7 @@ public class InventoryController : MonoBehaviour
     public void RemoveMagazine(InventoryItem firearm){
         int ammoCount = firearm.RemoveMagazine();
         InventoryItem magazine = SpawnItem(firearm.itemData.magazineItemData);
+        selectedItem = magazine;
         magazine.AddToMagazine(ammoCount);
 
         if(firearm.isEquipped && firearm.isSelectedWeapon){
@@ -1715,6 +1793,7 @@ public class InventoryController : MonoBehaviour
         if(firearm.OpenBolt()){
             InventoryItem ammo = SpawnItem(firearm.itemData.ammoItemData);
             ammo.SetStack(1);
+            selectedItem = ammo;
         }
         if(firearm.isEquipped && firearm.isSelectedWeapon){
             hudController.UpdateWeaponHUD(firearm);
@@ -1769,6 +1848,7 @@ public class InventoryController : MonoBehaviour
         firearm.ClearChamber();
         InventoryItem ammo = SpawnItem(firearm.itemData.ammoItemData);
         ammo.SetStack(1);
+        selectedItem = ammo;
         if(firearm.isEquipped && firearm.isSelectedWeapon){
             hudController.UpdateWeaponHUD(firearm);
         }
@@ -1786,6 +1866,7 @@ public class InventoryController : MonoBehaviour
             firearm.ClearChamber();
             InventoryItem ammo = SpawnItem(firearm.itemData.ammoItemData);
             ammo.SetStack(1);
+            selectedItem = ammo;
         }
         firearm.ChamberFromMagazine();
 
@@ -1802,12 +1883,22 @@ public class InventoryController : MonoBehaviour
             return;
         }
 
-        if(item.itemData.usable){
+        if(item.itemData.consumable){
             playerStatus.IncreaseHunger(item.itemData.hunger);
             playerStatus.IncreaseThirst(item.itemData.thirst);
             playerStatus.IncreaseTiredness(item.itemData.tiredness);
 
-            DestroyItem(item);
+            if(item.itemData.healthItem){
+                playerStatus.UseHealthItem(item.itemData);
+            }
+
+            if(item.itemData.stackable){
+                if(item.RemoveFromStack(1) == 0){
+                    DestroyItem(item);
+                }
+            }else{
+                DestroyItem(item);
+            }
         }
     }
 
@@ -2012,6 +2103,7 @@ public class InventoryController : MonoBehaviour
     private void ReturnItem(InventoryItem item){
         if(previousGrid != null){
             previousGrid.PlaceItem(item, previousGridPosition.x, previousGridPosition.y);
+            previousGrid.SaveItems();
             previousGrid = null;
             previousGridPosition = Vector2Int.zero;
             return;
@@ -2045,6 +2137,67 @@ public class InventoryController : MonoBehaviour
     private void PlayInventoryAudio(string name){
         if(inventoryOpen){
             audioManager.Play(name, this.gameObject);
+        }
+    }
+
+    private void HealthItemRemove(){
+        if(selectedItem.itemData.itemName == "Clean Bandage" || selectedItem.itemData.itemName == "Dirty Bandage"){
+            playerStatus.RemoveBandage(selectedSlot.bodyPart);
+        }
+    }
+
+    private void ApplyHealthItemToSlot(){
+        if(selectedItem.itemData.itemName == "Clean Bandage"){
+            playerStatus.ApplyBandage(selectedSlot.bodyPart, selectedItem);
+        }
+
+        if(selectedItem.itemData.itemName == "Dirty Bandage"){
+            playerStatus.ApplyBandage(selectedSlot.bodyPart, selectedItem);
+        }
+
+        if(selectedItem.itemData.itemName == "Suture Needle"){
+            playerStatus.StitchWound(selectedSlot.bodyPart);
+        }
+
+        if(selectedItem.itemData.itemName == "Antiseptic"){
+            playerStatus.Disinfect(selectedSlot.bodyPart);  
+        }
+    }
+
+    public void SwapForDirtyBandage(string bodyPart, ItemData dirtyBandageItemData){
+        GameObject healthItemSlotObject = playerStatusUI.gameObject.transform.Find("Outline/OutlineSlots/" + bodyPart + "Slot").gameObject;
+        ItemSlot healthItemSlot = healthItemSlotObject.GetComponent<ItemSlot>();
+
+        //just in case
+        if(healthItemSlot.GetItem().itemData.itemName == "Clean Bandage"){
+            healthItemSlot.DeleteItem();
+            playerStatus.RemoveBandage(bodyPart);
+            InventoryItem dirtyBandage = SpawnItem(dirtyBandageItemData);
+            healthItemSlot.PlaceItem(dirtyBandage);
+            playerStatus.ApplyBandage(bodyPart, dirtyBandage);
+        }
+    }
+
+    private void UpdateCarryWeight(){
+        float carryWeight = 0;
+        foreach(InventoryItem item in equippedItems.Values){
+            if(item != null){
+                carryWeight += item.currentWeight;
+            }
+        }
+
+        playerStatus.currentCarryWeight = carryWeight;
+        float carryWeightRounded = Mathf.Round(carryWeight * 1000f) / 1000f;
+        float maxCarryWeightRounded = Mathf.Round(playerStatus.maxCarryWeight * 1000f) / 1000f;
+        carryWeightText.text = carryWeightRounded + "/" + maxCarryWeightRounded;
+    }
+
+    private void SaveInventoryGrids(){
+        foreach(Transform equippedItem in inventoryContent.transform){
+            GameObject grids = equippedItem.transform.GetChild(1).gameObject;
+            foreach(Transform grid in grids.transform){
+                grid.GetComponent<ItemGrid>().SaveItems();
+            }
         }
     }
 }

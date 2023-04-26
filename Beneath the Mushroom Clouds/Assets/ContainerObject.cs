@@ -8,6 +8,7 @@ public class ContainerObject : MonoBehaviour
     public bool isOpen = false;
     public string containerType;
     [SerializeField] private ItemData[] possibleItems;
+    [SerializeField] private bool animated;
     public int gridWidth;
     public int gridHeight;
     private InventoryItem[,] items;
@@ -17,7 +18,7 @@ public class ContainerObject : MonoBehaviour
     private InventoryController inventoryController;
 
 
-    private UIControls uiControls;
+    private PlayerControls playerControls;
 
     private Animator animator;
 
@@ -25,9 +26,10 @@ public class ContainerObject : MonoBehaviour
 
     void Awake(){
         inventoryController = GameObject.FindObjectOfType<InventoryController>(true);
-        uiControls = GameObject.FindObjectOfType<UIControls>();
+        playerControls = GameObject.FindObjectOfType<PlayerControls>();
         animator = GetComponent<Animator>();
-        animator.runtimeAnimatorController = animatorOverrideController;
+        if(animated)
+            animator.runtimeAnimatorController = animatorOverrideController;
     }
 
 
@@ -70,6 +72,9 @@ public class ContainerObject : MonoBehaviour
 
     private void SpawnItem(ItemData itemData, int x, int y){
         InventoryItem item = Instantiate(itemPrefab, transform).GetComponent<InventoryItem>();
+        RectTransform itemTransform = item.GetComponent<RectTransform>();
+        itemTransform.localScale = Vector2.zero;
+        itemTransform.rotation = Quaternion.identity;
         item.Set(itemData);
         for(int i = 0; i < itemData.width; i++){
             for(int j = 0; j < itemData.height; j++){
@@ -83,8 +88,7 @@ public class ContainerObject : MonoBehaviour
         if(itemData.stackable){
             item.SetStack(Random.Range(1, itemData.maxStack));
         }
-        RectTransform itemTransform = item.GetComponent<RectTransform>();
-        itemTransform.localScale = Vector2.zero;
+        
     }
 
     public void Open(){
@@ -94,12 +98,12 @@ public class ContainerObject : MonoBehaviour
             GenerateRandomItems();
         }
 
-        uiControls.OnOpenInventory();
+        playerControls.OnOpenInventory();
         inventoryController.OpenContainer(this);
-        animator.ResetTrigger("close");
-        animator.SetTrigger("open");
-
-
+        if(animated){
+            animator.ResetTrigger("close");
+            animator.SetTrigger("open");
+        }
     }
 
     public InventoryItem[,] LoadGrid(){
@@ -120,8 +124,12 @@ public class ContainerObject : MonoBehaviour
 
     public void Close(){
         isOpen = false;
-        animator.ResetTrigger("open");
-        animator.SetTrigger("close");
+        if(animated){
+            animator.ResetTrigger("open");
+            animator.SetTrigger("close");
+        }
     }
+
+
 
 }

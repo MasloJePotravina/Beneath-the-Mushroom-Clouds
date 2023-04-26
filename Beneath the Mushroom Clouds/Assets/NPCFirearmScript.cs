@@ -313,7 +313,7 @@ public class NPCFirearmScript : MonoBehaviour
         //Debug.Log("Headshot: " + headShot + " TorsoShot: " + torsoShot + " LegsShot: " + legsShot + " LeftArmShot: " + leftArmShot + " RightArmShot: " + rightArmShot);
 
         if(hitPlayerHitbox != null){
-            hitPlayerHitbox.BulletHit(0.5f, headShot, torsoShot, legsShot, leftArmShot, rightArmShot);
+            hitPlayerHitbox.BulletHit(weapon.itemData.damage, headShot, torsoShot, legsShot, leftArmShot, rightArmShot);
         } 
     }
         
@@ -326,9 +326,9 @@ public class NPCFirearmScript : MonoBehaviour
 
         //Summary: The weapon is less accurate with more consecutive shots, this stops after 10 rounds
         // The best shooter is twice as good at controling recoil than the worst shooter
-        float consecShotsModifier = (bulletDevIncrement - 0.5f*(1 - status.shooterAbility)) * consecShots;
+        float consecShotsModifier = (bulletDevIncrement - 0.5f*(1 - status.shootingAbility)) * consecShots;
 
-        float degrees = initialDeviation * status.shooterAbility + consecShotsModifier;
+        float degrees = initialDeviation * status.shootingAbility + consecShotsModifier;
 
         //Degrees are halved here before returining (half the degrees to each side)
         degrees *= 0.5f;
@@ -408,6 +408,12 @@ public class NPCFirearmScript : MonoBehaviour
     {
         Vector3 dir = hit.point - new Vector2(muzzlePos.x, muzzlePos.y);
         GameObject bullet = Instantiate(bulletImpactPrefab, hit.point, Quaternion.LookRotation(Vector3.forward, dir));
+        if(hit.collider.gameObject.layer == LayerMask.NameToLayer("Player")){
+            
+            bullet.GetComponent<Animator>().SetBool("BloodSplatter", true);
+            bullet.transform.position = bullet.transform.position + (dir.normalized * 5f);
+           
+        }
     }
 
     public float ApplyCoverToEnemy(float halfWallDistance, RaycastHit2D hit)

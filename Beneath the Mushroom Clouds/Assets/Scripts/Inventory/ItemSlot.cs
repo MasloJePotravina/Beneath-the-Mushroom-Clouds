@@ -55,6 +55,11 @@ public class ItemSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     /// </summary>
     public int equipmentType;
 
+    public bool isHealthStatusSlot;
+    public string bodyPart;
+
+    private PlayerStatus playerStatus;
+
     /// <summary>
     /// Detects when the mouse enters a slot and sets the slot as the selected slot in the Inventory Controller.
     /// </summary>
@@ -84,6 +89,9 @@ public class ItemSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         slotWidth = rectTransform.sizeDelta.x - 0.20f * rectTransform.sizeDelta.x;
         slotHeight = rectTransform.sizeDelta.y - 0.20f * rectTransform.sizeDelta.y;
         slotRatio = slotWidth / slotHeight;
+        if(isHealthStatusSlot){
+            playerStatus = GameObject.FindObjectOfType<PlayerStatus>();
+        }
     }
 
     /// <summary>
@@ -99,7 +107,6 @@ public class ItemSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
                 if(placedItem.itemData.magazine){
                     if(item.itemData.weaponType == placedItem.itemData.weaponType){
                         if(item.AttachMagazine(placedItem)){
-                            Destroy(placedItem.gameObject);
                             return true;
                         }else{
                             return false;
@@ -111,20 +118,16 @@ public class ItemSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
                     if(item.itemData.weaponType == placedItem.itemData.weaponType){
                         if(!item.itemData.usesMagazines){
                             if(item.ChamberRound()){
-                                if(placedItem.RemoveFromStack(1) == 0){
-                                    return true; 
-                                }
+                                placedItem.RemoveFromStack(1);
+                                return true; 
                             }
                             int amountTransfered = item.LoadAmmoIntoInternalMagazine(placedItem.currentStack);
-                            if(placedItem.RemoveFromStack(amountTransfered) == 0){
-                                return true;
-                            }else{
-                                return false;
-                            }
+                            placedItem.RemoveFromStack(amountTransfered);
+                            return true;
                         }else{
                             if(item.ChamberRound()){
                                 placedItem.RemoveFromStack(1);
-                                return false;
+                                return true;
                             }
                         }
                         
@@ -139,6 +142,19 @@ public class ItemSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         if(placedItem.itemData.equipmentType != equipmentType){
             return false;
         }
+
+
+        if(isHealthStatusSlot){
+            List<string> relevantBodyParts = playerStatus.GetRelevantBodyParts(placedItem.itemData.itemName);
+            if(!relevantBodyParts.Contains(bodyPart)){
+                return false;
+            }
+            if(placedItem.itemData.stackable){
+                placedItem.RemoveFromStack(1);
+                return true;
+            }
+        }
+        
         
         //Place item into the slot
         item = placedItem;
@@ -148,7 +164,11 @@ public class ItemSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         itemRectTransform.localPosition = Vector2.zero;
 
         PlaceResizeItem(placedItem);
-        
+
+        if(isHealthStatusSlot){
+            
+            item.gameObject.SetActive(false);
+        }
 
         return true;
     }
@@ -160,7 +180,11 @@ public class ItemSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     public InventoryItem GrabItem(){
         InventoryItem item = this.item;
         this.item = null;
-        GrabResizeItem(item);
+        if(item != null){
+            GrabResizeItem(item);
+            item.gameObject.SetActive(true);
+        }
+        
         return item;
     }
 
@@ -209,9 +233,6 @@ public class ItemSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     /// </summary>
     /// <param name="item">Grabbed item.</param>
     private void GrabResizeItem(InventoryItem item){
-        if(item == null){
-            return;
-        }
         RectTransform itemRectTransform = item.GetComponent<RectTransform>();
         itemRectTransform.sizeDelta = new Vector2(item.Width * ItemGrid.tileDimension, item.Height * ItemGrid.tileDimension);
     }

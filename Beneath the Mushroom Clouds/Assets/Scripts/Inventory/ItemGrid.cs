@@ -88,8 +88,6 @@ public class ItemGrid : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         inventoryController = inventoryScreen.GetComponent<InventoryController>();
         rectTransform = GetComponent<RectTransform>();
         Init(gridWidth, gridHeight);
-
-        LoadItemsFromContainerItem(parentItem);
     }
 
     /// <summary>
@@ -113,6 +111,7 @@ public class ItemGrid : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         if(container == null)
             return;
         inventorySlots = container.LoadGrid();
+        
         foreach(InventoryItem item in inventorySlots){
             if(item != null){
                 item.transform.SetParent(transform);
@@ -149,8 +148,7 @@ public class ItemGrid : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     /// <summary>
     /// Loads items stored in the parent item of the grid.
     /// </summary>
-    /// <param name="parentItem">Item, which contains the grid.</param>
-    private void LoadItemsFromContainerItem(InventoryItem parentItem)
+    public void LoadItemsFromContainerItem()
     {
         if(parentItem == null)
             return;
@@ -176,6 +174,14 @@ public class ItemGrid : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
             return;
         
         parentItem.SaveGrid(transform.GetSiblingIndex(), inventorySlots);
+    }
+
+    public void HideItems()
+    {
+        if(parentItem == null)
+            return;
+
+        parentItem.HideGridItems(transform.GetSiblingIndex());
     }
 
     
@@ -245,6 +251,7 @@ public class ItemGrid : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         InventoryItem item = inventorySlots[posX, posY];
 
         if(item == null){
+            
             return null;
         }
         
@@ -257,7 +264,7 @@ public class ItemGrid : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         if(isGround){
             inventoryController.PickUpItem(item);
         }
-
+        SaveItems();
         return item;
     }
 
@@ -290,6 +297,7 @@ public class ItemGrid : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
             if(stackableFlag){
                 int amountTransfered = inventorySlots[posX, posY].AddToStack(item.currentStack);
                 if(item.RemoveFromStack(amountTransfered) == 0){
+                    SaveItems();
                     return true;
                 }else{
                     return false;
@@ -301,6 +309,7 @@ public class ItemGrid : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
                     if(overlappingItem.itemData.weaponType == item.itemData.weaponType){
                         int amountTransfered = overlappingItem.AddToMagazine(item.currentStack);
                         if(item.RemoveFromStack(amountTransfered) == 0){
+                            SaveItems();
                             return true;
                         }else{
                             return false;
@@ -312,11 +321,13 @@ public class ItemGrid : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
                         if(!overlappingItem.itemData.usesMagazines){
                             if(overlappingItem.ChamberRound()){
                                 if(item.RemoveFromStack(1) == 0){
+                                    SaveItems();
                                     return true; 
                                 }
                             }
                             int amountTransfered = overlappingItem.LoadAmmoIntoInternalMagazine(item.currentStack);
                             if(item.RemoveFromStack(amountTransfered) == 0){
+                                SaveItems();
                                 return true;
                             }else{
                                 return false;
@@ -325,6 +336,7 @@ public class ItemGrid : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
                         }else{
                             if(overlappingItem.ChamberRound()){
                                 if(item.RemoveFromStack(1) == 0){
+                                    SaveItems();
                                     return true;
                                 }else{
                                     return false;
@@ -342,6 +354,7 @@ public class ItemGrid : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
                     if(overlappingItem.itemData.weaponType == item.itemData.weaponType){
                         if(overlappingItem.AttachMagazine(item)){
                             Destroy(item.gameObject);
+                            SaveItems();
                             return true;
                         }else{
                             return false;

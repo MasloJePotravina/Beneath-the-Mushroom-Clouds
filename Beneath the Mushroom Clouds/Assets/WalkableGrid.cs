@@ -28,33 +28,51 @@ public class WalkableGrid : MonoBehaviour
 
     private void ConstructWalkableGrid(){
         foreach(GameObject obstacle in obstacles){
-            Vector3[] obstacleCorners = new Vector3[4];
+
+            Vector2[] obstacleCorners = new Vector2[4];
             Vector2Int[] obstacleCornersOnGrid = new Vector2Int[4];
-            Bounds spriteBounds = obstacle.GetComponent<SpriteRenderer>().bounds;
 
-            obstacleCorners[0] = new Vector3(spriteBounds.min.x, spriteBounds.min.y, 0);
-            obstacleCorners[1] = new Vector3(spriteBounds.min.x, spriteBounds.max.y, 0);
-            obstacleCorners[2] = new Vector3(spriteBounds.max.x, spriteBounds.max.y, 0);
-            obstacleCorners[3] = new Vector3(spriteBounds.max.x, spriteBounds.min.y, 0);
+            Vector3[] localCorners = new Vector3[4];
 
+            //Local positions
+            Vector2 halfSize = obstacle.transform.localScale / 2f;
+            localCorners[0] = new Vector3(-halfSize.x, -halfSize.y, 0); // Bottom-left
+            localCorners[1] = new Vector3(halfSize.x, -halfSize.y, 0); // Bottom-right
+            localCorners[2] = new Vector3(halfSize.x, halfSize.y, 0); // Top-right
+            localCorners[3] = new Vector3(-halfSize.x, halfSize.y, 0); // Top-left
 
-            System.Array.Sort(obstacleCorners, (a, b) =>
-            {
-                if (a.x != b.x)
-                    return a.x.CompareTo(b.x);
-                else
-                    return a.y.CompareTo(b.y);
+            //Rake rotation into account
+            Quaternion rotation = obstacle.transform.rotation;
+            for (int i = 0; i < 4; i++) {
+                Vector3 worldPosition = obstacle.transform.position + rotation * localCorners[i];
+                obstacleCorners[i] = new Vector2(worldPosition.x, worldPosition.y);
+            }
+
+            System.Array.Sort(obstacleCorners, (a, b) => {
+                int compare = a.x.CompareTo(b.x);
+                if (compare == 0) {
+                    compare = b.y.CompareTo(a.y);
+                }
+                return compare;
             });
 
             for(int i = 0; i < 4; i++){
-                obstacleCornersOnGrid[i] = WorldToGridPosition(obstacleCorners[i]);
+                obstacleCornersOnGrid[i] = WorldToGridPosition(new Vector3(obstacleCorners[i].x, obstacleCorners[i].y, 0));
                 Debug.DrawLine(obstacle.transform.position, obstacleCorners[i], Color.red, 100f);
             }
 
+            //Note: This does not work on diagonal obstacles and therefore, for now, there are no diagonal obstacles allowed when creating a map!
+            Vector2Int minCorner = new Vector2Int(int.MaxValue, int.MaxValue);
+            Vector2Int maxCorner = new Vector2Int(int.MinValue, int.MinValue);
 
-            for(int i = obstacleCornersOnGrid[0].x; i <= obstacleCornersOnGrid[2].x; i++){
-                for(int j = obstacleCornersOnGrid[0].y; j <= obstacleCornersOnGrid[1].y; j++){
-                    grid[i, j] = false;
+            foreach (Vector2Int cornerOnGrid in obstacleCornersOnGrid) {
+                minCorner = Vector2Int.Min(minCorner, cornerOnGrid);
+                maxCorner = Vector2Int.Max(maxCorner, cornerOnGrid);
+            }
+
+            for (int x = minCorner.x; x <= maxCorner.x; x++) {
+                for (int y = minCorner.y; y <= maxCorner.y; y++) {
+                    grid[x, y] = false;
                 }
             }
             
