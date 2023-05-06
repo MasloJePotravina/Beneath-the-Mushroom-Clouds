@@ -15,7 +15,7 @@ public class InventoryController : MonoBehaviour
     /// <summary>
     /// Dropdown item spawner TMP_Dropdown component.
     /// </summary>
-    private TMP_Dropdown debugSpawnerDropdown;
+    //private TMP_Dropdown debugSpawnerDropdown;
 
     /// <summary>
     /// Player gameObject reference.
@@ -260,26 +260,60 @@ public class InventoryController : MonoBehaviour
     /// </summary>
     private InventoryHighlight highlighter;
 
-    private ContainerObject containerObject = null;
+    /// <summary>
+    /// Currently opened container object.
+    /// </summary>
+    public ContainerObject containerObject = null;
 
+    /// <summary>
+    /// Grid from which an object was dragged from.
+    /// </summary>
     private ItemGrid previousGrid = null;
-    private ItemSlot previousSlot = null;
-    private Vector2Int previousGridPosition = new Vector2Int(0, 0);
 
+    /// <summary>
+    /// Slot from which an object was dragged from.
+    /// </summary>
+    private ItemSlot previousSlot = null;
+
+    /// <summary>
+    /// Previous position of the item in a previous grid.
+    /// </summary>
+    private Vector2Int previousGridPosition = new Vector2Int(-1, -1);
+
+    /// <summary>
+    /// Prefab for loose item. Used when an item is dropped on the ground.
+    /// </summary>
     [SerializeField] private GameObject looseItemPrefab;
 
+    /// <summary>
+    /// Reference to the interact range of the player. It is also used as a pickup range.
+    /// </summary>
     private GameObject interactRange;
 
+    /// <summary>
+    /// Reference to the Item Pick Up script.
+    /// </summary>
     private ItemPickUp itemPickUp;
 
+    /// <summary>
+    /// Reference to the cursor controller.
+    /// </summary>
     private CursorController cursorController;
 
+    /// <summary>
+    /// Reference to the Audio Manager.
+    /// </summary>
     private AudioManager audioManager;
 
+    /// <summary>
+    /// Reference to UI representing the current health status of the player (health tab in the inventory).
+    /// </summary>
     private HealthStatusUI playerStatusUI;
 
+    /// <summary>
+    /// Reference to the text displaying encumberance.
+    /// </summary>
     private TextMeshProUGUI carryWeightText;
-
     
 
     /// <summary>
@@ -290,7 +324,7 @@ public class InventoryController : MonoBehaviour
         firearmScript = playerFirearm.GetComponent<FirearmScript>();
         hudController = hudCanvas.GetComponent<HUDController>();
         playerAnimationController = player.GetComponent<HumanAnimationController>();
-        debugSpawnerDropdown = GameObject.FindObjectOfType<DebugDropdownSpawner>().gameObject.GetComponent<TMP_Dropdown>();
+        //debugSpawnerDropdown = GameObject.FindObjectOfType<DebugDropdownSpawner>().gameObject.GetComponent<TMP_Dropdown>();
         interactRange = GameObject.FindObjectOfType<PlayerInteract>().gameObject;
         itemPickUp = interactRange.GetComponent<ItemPickUp>();
         cursorController = GameObject.FindObjectOfType<CursorController>();
@@ -350,7 +384,7 @@ public class InventoryController : MonoBehaviour
     }
 
     /// <summary>
-    /// Opens the inventory.
+    /// Opens the inventory and updates all necessary variables.
     /// </summary>
     public void OpenInventory(){
         inventoryOpen = true;
@@ -358,19 +392,30 @@ public class InventoryController : MonoBehaviour
         this.gameObject.SetActive(true);
         containerGrid.Init(9, 14, true);
         containerName.text = "Ground";
-        containerGrid.LoadItemsFromGround(itemPickUp);
+        if(containerObject == null){
+            containerGrid.LoadItemsFromGround(itemPickUp);
+        }
+        
 
         splitStackButtonPressed = false;
         quickTransferButtonPressed = false;
         quickEquipButtonPressed = false;
+
+        //Just in case
+        selectedItem = null;
+        selectedGrid = null;
+        selectedSlot = null;
     }
 
+    /// <summary>
+    /// Closes the inventory and updates all necessary variables.
+    /// </summary>
     public void CloseInventory(){
         inventoryOpen = false;
         cursorController.SwitchToCrosshairCursor();
         this.gameObject.SetActive(false);
         if(selectedItem != null){
-            ReturnItem(selectedItem);
+            DropItem(selectedItem);
             selectedItem = null;
             HighlightSlot(false);
         }
@@ -394,8 +439,11 @@ public class InventoryController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Opens a container object and loads item from it into the container grid.
+    /// </summary>
+    /// <param name="container">Opened container object.</param>
     public void OpenContainer(ContainerObject container){
-        containerObject = container;
         containerGrid.Init(container.gridWidth, container.gridHeight);
         containerGrid.LoadItemsFromContainerObject(container);
         containerName.text = container.containerType;
@@ -405,13 +453,13 @@ public class InventoryController : MonoBehaviour
     /// Sets up the debug spawn dropdown menu
     /// </summary>
     private void SetUpDebugDropdown(){
-        List<string> itemNames = new List<string>();
+        /*List<string> itemNames = new List<string>();
 
         foreach(ItemData item in items){
             itemNames.Add(item.itemName);
         }
 
-        debugSpawnerDropdown.AddOptions(itemNames);
+        debugSpawnerDropdown.AddOptions(itemNames);*/
     }
 
     //TODO: Debug only, remove later
@@ -575,6 +623,7 @@ public class InventoryController : MonoBehaviour
             }else{
                 //If an item was selected and mouse was either pressed or released, place the item in the slot
                 PlaceItemToSlot();
+                
             }
         }
         SaveInventoryGrids();
@@ -673,6 +722,12 @@ public class InventoryController : MonoBehaviour
                 if(selectedItem.itemData.healthItem){
                     HealthItemRemove();
                 }
+
+                previousSlot = selectedSlot;
+
+                if(selectedItem.itemData.itemName == "Watch"){
+                    hudController.DisableWatch();
+                }
             }
         }
         //The slot is highlighted 
@@ -706,17 +761,23 @@ public class InventoryController : MonoBehaviour
                 DestroyItem(selectedItem);
             }
 
+            if(selectedItem.itemData.itemName == "Watch"){
+                hudController.EnableWatch();
+            }
+
             //The item is no longer selected and the slot is no longer highlighted
             if(!selectedItem.itemData.stackable){
                 selectedItem = null;
             }
             HighlightSlot(false);
+            
 
         }
         
         //Update the weapon HUD regardless of whether an item was placed or not
         //This is done to update the hud when a magazine or ammo is placed in the equipped weapon
         hudController.UpdateWeaponHUD(GetSelectedWeapon());
+        
           
     }
 
@@ -1154,6 +1215,9 @@ public class InventoryController : MonoBehaviour
                 if(item.itemData.equipmentType == 11 || item.itemData.equipmentType == 12){
                     WeaponSelectUpdate();
                 }
+                if(item.itemData.itemName == "Watch"){
+                    hudController.DisableWatch();
+                }
                 return;
             }
         }
@@ -1247,7 +1311,7 @@ public class InventoryController : MonoBehaviour
         for(int i = 0; i < childCount; i++){
             Transform child = grids.transform.GetChild(i);
             ItemGrid grid = child.GetComponent<ItemGrid>();
-            //If the item that is to be transfered is one of the equipped container items, skip it
+            //If the item that is to be transfered is the parent of this grid, it cannot be transfered to itself
             if(grid.parentItem == item){
                 continue;
             }
@@ -1261,10 +1325,20 @@ public class InventoryController : MonoBehaviour
                     if(itemSlot != null){
                         transferedItem = itemSlot.GrabItem();
                     }
+
+                    if(transferedItem == null){
+                        Debug.Log("ERROR: Transfered item was null");
+                        //Large debug with all possible variables
+                        Debug.Log("Transfered item: " + transferedItem + " | Grab item: " + grabItem + " | Item grid: " + itemGrid + " | Item slot: " + itemSlot + " | Item grid position: " + item.gridPositionX + ", " + item.gridPositionY + "new grid position: " + posX + ", " + posY);
+                        return false;
+                    }
+                    
                 }else{
                     transferedItem = item;
                 }
                 
+                //Large debug with all possible variables
+                Debug.Log("Transfered item: " + transferedItem.itemData.name + " | Grab item: " + grabItem + " | Item grid: " + itemGrid + " | Item slot: " + itemSlot + " | Item grid position: " + item.gridPositionX + ", " + item.gridPositionY + "new grid position: " + posX + ", " + posY);
                 grid.PlaceItem(transferedItem, posX, posY);
                 grid.SaveItems();
                 PlayInventoryAudio(transferedItem.itemData.name + "PlaceSound");
@@ -1298,6 +1372,8 @@ public class InventoryController : MonoBehaviour
             CloseContainerItemWindow(item);
         }
 
+        
+
         AttemptToEquipItem(item, itemGrid);
 
     }
@@ -1324,6 +1400,10 @@ public class InventoryController : MonoBehaviour
             //If a weapon was equipped, update weapon select
             if(equippedItem.itemData.equipmentType == 11 || equippedItem.itemData.equipmentType == 12){
                 WeaponSelectUpdate();
+            }
+
+            if(item.itemData.itemName == "Watch"){
+                hudController.EnableWatch();
             }
 
             return true;
@@ -1704,7 +1784,9 @@ public class InventoryController : MonoBehaviour
 
         //In this case the removed magazine should not be the selected item but should be automatically transfered to pockets
         if(!AttemptMagPlaceToInventory(magazine)){
-            AttemptTransferToContainer(magazine, null, null, false);
+            //AttemptTransferToContainer(magazine, null, null, false);
+            Debug.Log("No space in pockets for magazine");
+            DropItem(magazine);
         }
 
         if(firearm.isEquipped && firearm.isSelectedWeapon){
@@ -2068,6 +2150,10 @@ public class InventoryController : MonoBehaviour
                 WeaponSelectUpdate();
             }
 
+            if(item.itemData.itemName == "Watch"){
+                hudController.DisableWatch();
+            }
+
         }
         //Can be safely called without check for containerGrid, if the item was not an item on the ground, nothing happens
         //This check just saves time looping through items on the ground if a container is opened
@@ -2099,25 +2185,10 @@ public class InventoryController : MonoBehaviour
         return firemode;
     }
 
-
-    private void ReturnItem(InventoryItem item){
-        if(previousGrid != null){
-            previousGrid.PlaceItem(item, previousGridPosition.x, previousGridPosition.y);
-            previousGrid.SaveItems();
-            previousGrid = null;
-            previousGridPosition = Vector2Int.zero;
-            return;
-        }
-        if(previousSlot != null){
-            previousSlot.PlaceItem(item);
-            previousSlot = null;
-            return;
-        }
-
-        DestroyItem(item);
-
-    }
-
+    /// <summary>
+    /// Drops an item on the ground.
+    /// </summary>
+    /// <param name="item">Item to be dropped.</param>
     public void DropItem(InventoryItem item){
         //Instantiate a loose item gameobject with random rotation and slight position variation from the player
         //Slight position variation also helps due to the fact that the player can fill the ground grid with items
@@ -2130,22 +2201,36 @@ public class InventoryController : MonoBehaviour
 
     }
 
+    /// <summary>
+    /// Picks up an item from the ground.
+    /// </summary>
+    /// <param name="item">Item to be picked up.</param>
     public void PickUpItem(InventoryItem item){
         itemPickUp.DestroyItemObject(item);
     }
 
+    /// <summary>
+    /// Plays an inventory sound associated with an item.
+    /// </summary>
+    /// <param name="name">Name of the sound.</param>
     private void PlayInventoryAudio(string name){
         if(inventoryOpen){
             audioManager.Play(name, this.gameObject);
         }
     }
 
+    /// <summary>
+    /// Removes a health item from a body part in the Player Status script.
+    /// </summary>
     private void HealthItemRemove(){
         if(selectedItem.itemData.itemName == "Clean Bandage" || selectedItem.itemData.itemName == "Dirty Bandage"){
             playerStatus.RemoveBandage(selectedSlot.bodyPart);
         }
     }
 
+    /// <summary>
+    /// Applies a health item to a body part in the Player Status script.
+    /// </summary>
     private void ApplyHealthItemToSlot(){
         if(selectedItem.itemData.itemName == "Clean Bandage"){
             playerStatus.ApplyBandage(selectedSlot.bodyPart, selectedItem);
@@ -2164,6 +2249,11 @@ public class InventoryController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Swaps a clean bandage for a dirty bandage. This happens due to the natural deterioration of the bandage.
+    /// </summary>
+    /// <param name="bodyPart">On which body part should the bandage be swapped.</param>
+    /// <param name="dirtyBandageItemData">Item Data of a dirty bandage.</param>
     public void SwapForDirtyBandage(string bodyPart, ItemData dirtyBandageItemData){
         GameObject healthItemSlotObject = playerStatusUI.gameObject.transform.Find("Outline/OutlineSlots/" + bodyPart + "Slot").gameObject;
         ItemSlot healthItemSlot = healthItemSlotObject.GetComponent<ItemSlot>();
@@ -2178,6 +2268,25 @@ public class InventoryController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Destroys the bandage on a body part. This happens when the body part is shot while a bandage is applied to it.
+    /// </summary>
+    /// <param name="bodyPart"></param>
+    public void DestroyBandage(string bodyPart){
+        GameObject healthItemSlotObject = playerStatusUI.gameObject.transform.Find("Outline/OutlineSlots/" + bodyPart + "Slot").gameObject;
+        ItemSlot healthItemSlot = healthItemSlotObject.GetComponent<ItemSlot>();
+
+        //just in case
+        if(healthItemSlot.GetItem().itemData.itemName == "Clean Bandage" || healthItemSlot.GetItem().itemData.itemName == "Dirty Bandage"){
+            InventoryItem bandage = healthItemSlot.GrabItem();
+            DestroyItem(bandage);
+            playerStatus.RemoveBandage(bodyPart);
+        }
+    }
+
+    /// <summary>
+    /// Calculates and updates the current carry weight and maximum carry weight of the player.
+    /// </summary>
     private void UpdateCarryWeight(){
         float carryWeight = 0;
         foreach(InventoryItem item in equippedItems.Values){
@@ -2192,7 +2301,17 @@ public class InventoryController : MonoBehaviour
         carryWeightText.text = carryWeightRounded + "/" + maxCarryWeightRounded;
     }
 
+    /// <summary>
+    /// Saves the inventory grids assigned to container items.
+    /// </summary>
     private void SaveInventoryGrids(){
+        //Since saving grids also updates the weight of a container item based on its ocntents,
+        //I first need to reset it before individual grids start saving and accumulate the weight
+        foreach(InventoryItem equippedItem in equippedItems.Values){
+            if(equippedItem != null && equippedItem.itemData.container){
+                equippedItem.ResetContainerWeight();
+            }
+        }
         foreach(Transform equippedItem in inventoryContent.transform){
             GameObject grids = equippedItem.transform.GetChild(1).gameObject;
             foreach(Transform grid in grids.transform){

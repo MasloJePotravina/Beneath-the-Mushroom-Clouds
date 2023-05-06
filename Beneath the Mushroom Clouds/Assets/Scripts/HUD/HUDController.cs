@@ -9,7 +9,9 @@ using TMPro;
 /// </summary>
 public class HUDController : MonoBehaviour
 {
-
+    /// <summary>
+    /// Reference to the player object.
+    /// </summary>
     private GameObject player;
 
     /// <summary>
@@ -33,24 +35,61 @@ public class HUDController : MonoBehaviour
     /// </summary>
     private GameObject geigerCounterSign;
 
-
+    /// <summary>
+    /// Reference to the interact text which is desplayed when the player is near an interactable object.
+    /// </summary>
     [SerializeField] GameObject interactText;
 
+    /// <summary>
+    /// Reference to the script which controls the interact text.
+    /// </summary>
     private InteractText interactTextScript;
 
+    /// <summary>
+    /// Reference to the cursor controller.
+    /// </summary>
     private CursorController cursorController;
 
+    /// <summary>
+    /// Bool which indicates whether the watch is equipped or not.
+    /// </summary>
     public bool watchEquipped = true;
+
+    /// <summary>
+    /// Bool which indicates whether the geiger counter is equipped or not.
+    /// </summary>
     public bool geigerCounterEquipped = false;
 
-
+    /// <summary>
+    /// Reference to the lower status HUD (Hunger, thirst, tiredness and stance).
+    /// </summary>
     [SerializeField] private LowerStatusHUD lowerStatusHUD;
+
+    /// <summary>
+    /// Reference to the weapon HUD.
+    /// </summary>
     [SerializeField] private WeaponHUD weaponHUD;
+
+    /// <summary>
+    /// Reference to the watch HUD.
+    /// </summary>
+    [SerializeField] private GameObject watchHUD;
+
+    /// <summary>
+    /// Reference to rest menu displayed when player interacts with a bed.
+    /// </summary>
     [SerializeField] private RestMenu restMenu;
 
+    /// <summary>
+    /// Reference to the rest screen displayed when the player is resting.
+    /// </summary>
     [SerializeField] private RestScreen restScreen;
 
+    /// <summary>
+    /// Reference to the world status.
+    /// </summary>
     [SerializeField] private WorldStatus worldStatus;
+    
     
 
     /// <summary>
@@ -65,14 +104,15 @@ public class HUDController : MonoBehaviour
         playerStatus = player.GetComponent<PlayerStatus>();
     }
 
+    /// <summary>
+    /// If the interact text is active, move it above the player each frame.
+    /// </summary>
     void Update(){
         if(interactTextScript.isActive){
             interactTextScript.MoveTextAbovePlayer(player.transform.position);
         }
         
     }
-
-    
 
 
     /// <summary>
@@ -110,20 +150,34 @@ public class HUDController : MonoBehaviour
         lowerStatusHUD.StanceCrouch();
     }
 
-    public void SetInteractText(string text){
-        interactTextScript.SetText(text);
+    /// <summary>
+    /// Sets the interact text above the player.
+    /// </summary>
+    /// <param name="interactableTag">Tag or name of the interactable object.</param>
+    /// <param name="text">text describing the action to perform on interaction.</param>
+    public void SetInteractText(string interactableTag, string text){
+        interactTextScript.SetText(interactableTag, text);
     }
 
+    /// <summary>
+    /// Activates the interact text.
+    /// </summary>
     public void ActivateInteractText(){
         interactText.SetActive(true);
         
     }
 
+    /// <summary>
+    /// Deactivates the interact text.
+    /// </summary>
     public void DeactivateInteractText(){
         interactText.SetActive(false);
         
     }
 
+    /// <summary>
+    /// Activates the rest menu when interacting with a bed.
+    /// </summary>
     public void ActivateRestMenu(){
         restMenu.gameObject.SetActive(true);
         cursorController.SwitchToDefaultCursor();
@@ -131,6 +185,9 @@ public class HUDController : MonoBehaviour
         playerInput.SwitchCurrentActionMap("UI");
     }
 
+    /// <summary>
+    /// Deactivates the menu when the player closes it or chooses to rest.
+    /// </summary>
     public void DeactivateRestMenu(){
         restMenu.gameObject.SetActive(false);
         cursorController.SwitchToCrosshairCursor();
@@ -138,10 +195,11 @@ public class HUDController : MonoBehaviour
         playerInput.SwitchCurrentActionMap("Player");
     }
 
-    public void Rest(float hours){
-        StartCoroutine(RestTransition(hours));
-    }
-
+    
+    /// <summary>
+    /// Coroutine which slowly activates the rest screen.
+    /// </summary>
+    /// <returns>Reference to the running coroutine.</returns>
     public IEnumerator ActivateRestScreen(){
         restScreen.SetAlpha(0f);
         restScreen.gameObject.SetActive(true);
@@ -150,12 +208,21 @@ public class HUDController : MonoBehaviour
         
     }
 
+    /// <summary>
+    /// Coroutine which deactivates the rest screen.
+    /// </summary>
+    /// <returns>Reference to the running coroutine.</returns>
     public IEnumerator DeactivateRestScreen(){
         StartCoroutine(RestScreenFade(false));
         yield return new WaitForSecondsRealtime(3f);
         restScreen.gameObject.SetActive(false);
     }
 
+    /// <summary>
+    /// The fade-in or fade-out of the rest screen.
+    /// </summary>
+    /// <param name="fadeIn">Whether the screen should fade in (true) or fade out (false).</param>
+    /// <returns></returns>
     private IEnumerator RestScreenFade(bool fadeIn){
 
         for(float alpha = 0; alpha <= 1; alpha += Time.unscaledDeltaTime/3f){
@@ -169,29 +236,17 @@ public class HUDController : MonoBehaviour
     }
 
 
-
-    private IEnumerator RestTransition(float hours){
-        DeactivateRestMenu();
-        worldStatus.StopTime();
-        float timeMultiplier = CalculateTimemultiplier(hours);
-        StartCoroutine(ActivateRestScreen());
-        yield return new WaitForSecondsRealtime(3f);
-        playerStatus.isResting = true;
-        worldStatus.SetTimeMultiplier(timeMultiplier);
-        worldStatus.StartTime();
-        yield return new WaitForSecondsRealtime(5f);
-        worldStatus.StopTime();
-        playerStatus.isResting = false;
-        worldStatus.SetTimeMultiplier(20f);
-        StartCoroutine(DeactivateRestScreen());
-        yield return new WaitForSecondsRealtime(3f);
-        worldStatus.StartTime();
-        
+    /// <summary>
+    /// Enables the watch HUD.
+    /// </summary>
+    public void EnableWatch(){
+        watchHUD.SetActive(true);
     }
 
-    private float CalculateTimemultiplier(float hours){
-        float realSeconds = (hours) * 3600f;
-        return (realSeconds/5f);
-
+    /// <summary>
+    /// Disables the watch HUD.
+    /// </summary>
+    public void DisableWatch(){
+        watchHUD.SetActive(false);
     }
 }

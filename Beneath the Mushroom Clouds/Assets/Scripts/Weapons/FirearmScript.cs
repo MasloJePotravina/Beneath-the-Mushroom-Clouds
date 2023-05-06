@@ -2,90 +2,256 @@ using UnityEngine;
 using System.Collections;
 using UnityEngine.InputSystem;
 
+/// <summary>
+/// Implements the behaviour of the player's firearm.
+/// </summary>
 public class FirearmScript: MonoBehaviour
 {
 
+    /// <summary>
+    /// Reference to the selected firearm.
+    /// </summary>
     public InventoryItem selectedFirearm;
+
     //Need to cache firearm when reloading, so that if the weapons are switched the reload is interrupted
     //(current selected firearm is not the same as the one that was reloaded)
+    
+    /// <summary>
+    /// Reference to the firearm that was being reloaded.
+    /// </summary>
     private InventoryItem reloadedFirearm;
 
+    /// <summary>
+    /// Reference to the inventory screen.
+    /// </summary>
     [SerializeField] private GameObject inventoryScreen;
-    private InventoryController inventoryController;
-    private HumanAnimationController playerAnimationController;
 
+    /// <summary>
+    /// Reference to the inventory controller.
+    /// </summary>
+    private InventoryController inventoryController;
+
+
+    /// <summary>
+    /// Reference to the human animation controller.
+    /// </summary>
+    private HumanAnimationController humanAnimationController;
+
+    /// <summary>
+    /// Reference to the muzzle of the firearm.
+    /// </summary>
     public GameObject muzzle;
+
+    /// <summary>
+    /// Reference to the player.
+    /// </summary>
     public GameObject player;
+
+    /// <summary>
+    /// Reference to the pivot of the left cone line.
+    /// </summary>
     public GameObject coneLineL;
+
+    /// <summary>
+    /// Reference to the pivot of the right cone line.
+    /// </summary>
     public GameObject coneLineR;
+
+    /// <summary>
+    /// Prefab for bullet impact.
+    /// </summary>
     public GameObject bulletImpactPrefab;
 
+    /// <summary>
+    /// Whether the player is currently reloading.
+    /// </summary>
     private bool reloading = false;
+
+    /// <summary>
+    /// Whether the player is currently racking the weapon.
+    /// </summary>
     private bool racking = false;
+
+    /// <summary>
+    /// Whether the player is currently loading a round into the internal magazine.
+    /// </summary>
     private bool triggerEnabled = true;
 
-
+    /// <summary>
+    /// Initial accuracy of the selected firearm.
+    /// </summary>
     private float initialAccuracy; //Worst case initial bullet deviaiton (degrees)
+
+    /// <summary>
+    /// By how much does accuracy decrease with each consecutive shot.
+    /// </summary>
     private float bulletAccuracyDecrement; //How many degrees does another fired bullet add at most
 
+    /// <summary>
+    /// Currently running reload coroutine.
+    /// </summary>
     private Coroutine reloadCoroutine;
+
+    /// <summary>
+    /// Currently running rack coroutine.
+    /// </summary>
     private Coroutine rackCoroutine;
 
-
+    /// <summary>
+    /// Reference to the status of the player.
+    /// </summary>
     private PlayerStatus playerStatus;
 
+    /// <summary>
+    /// Whether the firearm is active.
+    /// </summary>
     private bool firearmActive;
+
+    /// <summary>
+    /// Weapon type of the selected firearm.
+    /// </summary>
     private string weaponType;
+
+    /// <summary>
+    /// Fire mode of the selected firearm.
+    /// </summary>
     private string fireMode;
 
-
+    /// <summary>
+    /// Fire rate of the selected firearm.
+    /// </summary>
     private float fireRate = 10.0f; //Rounds per second
+
+    /// <summary>
+    /// Fire rate timer.
+    /// </summary>
     private float fireRateTimer = 0.0f;
+    /// <summary>
+    /// When was the last time the weapon fired a shot.
+    /// </summary>
     private float lastShot;
+    /// <summary>
+    /// How many consecutive shots did the gun fire.
+    /// </summary>
     private int consecShots = 0;
+
+    /// <summary>
+    /// Whether the trigger is pressed.
+    /// </summary>
     private bool triggerPressed = false; //Is the trigger pressed
+
+    /// <summary>
+    /// Flag used to regulate the firing of semi-automatic weapons.
+    /// </summary>
     private bool semiBlock = false; //Has a round been fired on this trigger press
+
+    /// <summary>
+    /// Whether the weapon chambers itself automatically.
+    /// </summary>
     private bool autoChamber = false; //Whether the firearm should be chambering a round by itself 
                                       //(e.g. the pistol chambers rounds by itself but shouldn't automatically chamber a round after reload) 
 
+    /// <summary>
+    /// When should the accuracy cooldown start after firing the last shot.
+    /// </summary>
     private float cooldownStart = 0.2f;//After how long after the first shot the recoil starts cooling down
+
+    /// <summary>
+    /// Accuracy cooldown timer.
+    /// </summary>
     private float cooldownStartTimer = 0.0f;
+
+    /// <summary>
+    /// Current accuracy of the firearm.
+    /// </summary>
     private float cooldownRate = 0.1f; //How quickly the firearm recoil cools down
+
+    /// <summary>
+    /// Cooldown timer.
+    /// </summary>
     private float cooldownTimer = 0.0f;
 
+    /// <summary>
+    /// Shotgun spread of a shotgun.
+    /// </summary>
     private float shotgunSpread = 5.0f;
 
+    /// <summary>
+    /// Speed of loading or unloading a magazine.
+    /// </summary>
     private float magLoadSpeed = 1.25f;
+
+    /// <summary>
+    /// Speed of racking the weapon.
+    /// </summary>
     private float rackWeaponSpeed = 1f;
+
+    /// <summary>
+    /// Speed of loading a round into the internal magazine of the weapon.
+    /// </summary>
     private float loadRoundSpeed = 1f;
 
+    /// <summary>
+    /// Reference to the muzzle flash of the weapon.
+    /// </summary>
     [SerializeField] private GameObject muzzleFlash;
 
+    /// <summary>
+    /// Sprite renderer of the muzzle flash.
+    /// </summary>
     private SpriteRenderer muzzleSpriteRenderer;
+
+    /// <summary>
+    /// Light component of the muzzle flash.
+    /// </summary>
     private UnityEngine.Rendering.Universal.Light2D muzzleLight;
 
+    /// <summary>
+    /// Array of different muzzle flash sprites.
+    /// </summary>
     [SerializeField] private Sprite[] muzzleFlashSprites;
 
+    /// <summary>
+    /// Index of which muzzle flash sprite is currently being used.
+    /// </summary>
     private int muzzleFlashCycle = 0;
+
+    /// <summary>
+    /// Offset in the array of muzzle flashes for different weapons.
+    /// </summary>
     private int muzzleFlashOffset = 0;
 
+    /// <summary>
+    /// Reference to the audio manager.
+    /// </summary>
     private AudioManager audioManager;
 
+    /// <summary>
+    /// Whether the use of the firearm is blocked by an open inventory screen.
+    /// </summary>
     public bool inventoryBlock = false;
 
+    /// <summary>
+    /// Layer maksk for the bullet raycast.
+    /// </summary>
     private int layerMask;
 
+    /// <summary>
+    /// Reference to the noise origin component.
+    /// </summary>
     private NoiseOrigin noiseOrigin;
 
 
 
-    // Start is called before the first frame update
+    /// <summary>
+    /// Gets all of the necessary references and intializes the firearm values at the start.
+    /// </summary>
     void Start()
     {
         playerStatus = player.GetComponent<PlayerStatus>();
         UpdateConeLines(playerStatus.shootingAbility * (initialAccuracy/2));
         inventoryController = inventoryScreen.GetComponent<InventoryController>();
-        playerAnimationController = player.GetComponent<HumanAnimationController>();
+        humanAnimationController = player.GetComponent<HumanAnimationController>();
 
         muzzleSpriteRenderer = muzzleFlash.GetComponent<SpriteRenderer>();
         muzzleLight = muzzleFlash.GetComponent<UnityEngine.Rendering.Universal.Light2D>();
@@ -98,7 +264,9 @@ public class FirearmScript: MonoBehaviour
 
     }
 
-    // Update is called once per frame
+    /// <summary>
+    /// Each frame performs various checks to determine whether the weapon can be fired, was fired and calculates the recoil accumulation and cooldown.
+    /// </summary>
     void Update()
     {
         if(reloading || racking){
@@ -172,6 +340,10 @@ public class FirearmScript: MonoBehaviour
         if(semiBlock)
             return;
 
+        if(HandsThroughWallCheck()){
+            return;
+        }
+
         //Attempt to fire a round (if weapon is empty, this will return false)
         if(!inventoryController.FireRound()){
             return;
@@ -214,6 +386,10 @@ public class FirearmScript: MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Cooroutine that simmulates muzzle flash by quickly enabling and disabling the muzzle flash sprite and light.
+    /// </summary>
+    /// <returns>Reference to the coroutine.</returns>
     IEnumerator MuzzleFlash(){
         muzzleSpriteRenderer.sprite = muzzleFlashSprites[muzzleFlashOffset + ((muzzleFlashCycle++) % 3)];
         muzzleLight.enabled = true;
@@ -224,7 +400,10 @@ public class FirearmScript: MonoBehaviour
     }
 
 
-    //Adjusts the rate of fire for weapons that cycle automatically (automatic and semi-automatic)
+    /// <summary>
+    /// Adjusts fire rate for weapons that chamber themselves automatically.
+    /// </summary>
+    /// <returns>True when the weapon is ready to fire.</returns>
     private bool FireRateCheck()
     {
         switch(fireMode){
@@ -246,13 +425,20 @@ public class FirearmScript: MonoBehaviour
     }
 
     
-    /*Enables Firearm for use*/
+    /// <summary>
+    /// Toggles the firearm as active for use.
+    /// </summary>
+    /// <param name="active">Whether the firearm is active or not.</param>
     public void SetFirearmActive(bool active)
     {
         firearmActive = active;
     }
 
 
+    /// <summary>
+    /// Called when the player is attempting to press the trigger.
+    /// </summary>
+    /// <param name="value">Input value of the input action the player performing.</param>
     public void PressTrigger(InputValue value)
     {
 
@@ -271,6 +457,10 @@ public class FirearmScript: MonoBehaviour
         
     }
 
+    /// <summary>
+    /// Fires a bullet in the direction the player is aiming at.
+    /// </summary>
+    /// <param name="BulletDeviation">Deviation of the bullet compared to where the player is aiming.</param>
     private void Shoot(Vector2 BulletDeviation)
     { 
         bool headShot = false;
@@ -282,20 +472,20 @@ public class FirearmScript: MonoBehaviour
         bool npctested = false;
         HumanHitbox hitNPCHitbox = null;
         RaycastHit2D[] hits = Physics2D.RaycastAll(muzzle.transform.position, BulletDeviation, Mathf.Infinity, layerMask);
-        float halfWallDistance = -1.0f;//If the bullet passes a half wall we need to store
-                                       //the distance from the wall for future calculations
+        float halfObstacleDistance = -1.0f;//If the bullet passes a half obstacle we need to store
+                                       //the distance from the obstacle for future calculations
         foreach (RaycastHit2D hit in hits)
         {              
             if(hit.collider.gameObject.layer == LayerMask.NameToLayer("HalfObstacle"))
             {
-                if (!HalfWallPassed(hit.distance)) //If bullet hit the wall draw bullet line
+                if (!HalfObstaclePassed(hit.distance)) //If bullet hit the obstacle draw bullet line
                 {
                     BulletImpact(hit, muzzle.transform.position);
                     break;
                 }
                 else //If not proceed with next collider
                 {
-                    halfWallDistance = hit.distance;
+                    halfObstacleDistance = hit.distance;
                 }
             }
             else if (hit.collider.gameObject.layer == LayerMask.NameToLayer("NPC"))
@@ -303,7 +493,7 @@ public class FirearmScript: MonoBehaviour
 
                 if(!npctested){
                     npctested = true;
-                    if(NPCHit(halfWallDistance, hit)){
+                    if(NPCHit(halfObstacleDistance, hit)){
                         npcHitPossible = true;
                         BulletImpact(hit, muzzle.transform.position);
                         hitNPCHitbox = hit.transform.root.Find("Torso").GetComponent<HumanHitbox>();
@@ -348,6 +538,10 @@ public class FirearmScript: MonoBehaviour
     //Calculate aiming error of player based on the characters shooting ability
     //Better shooting ability -> smaller aim cone
     //shooter ability modifier between 0 and 1
+    /// <summary>
+    /// Caluycles the aim cone of the player based on the characters shooting ability. weapon's initial accuracy and bullet accuracy decrement.
+    /// </summary>
+    /// <returns>Aim cone in degrees.</returns>
     private float CalcAimCone()
     {
 
@@ -363,7 +557,10 @@ public class FirearmScript: MonoBehaviour
         return degrees;
     }
 
-
+    /// <summary>
+    /// Updates the debug cone lines.
+    /// </summary>
+    /// <param name="degrees">Degrees of the cone for each cone line.
     private void UpdateConeLines(float degrees)
     { 
 
@@ -372,12 +569,12 @@ public class FirearmScript: MonoBehaviour
 
     }
 
-    //Applies cover to enemy crouching behind a wall
-    //Enemies STANDING behind a wall have no bonus from this since they already get the implied protection from the bulet hitting the wall
-    //This function is supposed to simulate bulltes flying over half walls and over the heads of the enemy or hitting them based on
-    //the distances of the shooter and the wall and the distance of the enemy and the wall
-    //This happens because of the fact that the gun is shot from a higher place than the halfwall and therefore can still hit enemies that
-    //are too far from the wall to take cover. See ASCII illustration:
+    //Applies cover to enemy crouching behind a obstacle
+    //Enemies STANDING behind a obstacle have no bonus from this since they already get the implied protection from the bulet hitting the obstacle
+    //This function is supposed to simulate bulltes flying over half obstacles and over the heads of the enemy or hitting them based on
+    //the distances of the shooter and the obstacle and the distance of the enemy and the obstacle
+    //This happens because of the fact that the gun is shot from a higher place than the halfobstacle and therefore can still hit enemies that
+    //are too far from the obstacle to take cover. See ASCII illustration:
     //
     //   O
     //   |=====> ----------___________   
@@ -387,35 +584,48 @@ public class FirearmScript: MonoBehaviour
     //__/__\_________________________________________||___________________________________________________________
     //    <---------Shooter-Wall Distance------------><--Safe-><------------Cover loses effect-------------><---No Cover---->
     //
-    //Formulas used to calculate the zones after the wall:
+    //Formulas used to calculate the zones after the obstacle:
     // Safe: between 0 and 0.25 * Shooter-Wall Distance ==> The enemy has zero chance of being hit, full cover
     // Cover loses effect: between 0.25 * SWD and 2 * SWD ==> Linear loss of cover
     // No Cover = 2 * Shooter-Wall Distance and more ==> The enemy is too far behind cover and therefore he is fully visible, no cover
-    public float ApplyCoverToEnemy(float halfWallDistance, RaycastHit2D hit)
+    /// <summary>
+    /// Applies cover to the enely based on half obstacles, stances and distances from the half obstacle.
+    /// </summary>
+    /// <param name="halfObstacleDistance">Distance between the shooter and the half obstacle.</param>
+    /// <param name="hit">Raycast hit.</param>
+    /// <returns>Percentage mulstiplier of whether the victim could or could not be shot.</returns>
+    public float ApplyCoverToEnemy(float halfObstacleDistance, RaycastHit2D hit)
     {
         float percentage;
-        if (halfWallDistance <= 0)
+        if (halfObstacleDistance <= 0)
         {
             percentage = 1.0f;
         }
         else
         {
-            if (hit.distance - halfWallDistance <= 0.25 * halfWallDistance)
+            if (hit.distance - halfObstacleDistance <= 0.25 * halfObstacleDistance)
             {
                 percentage = 0.0f;
             }
-            else if (hit.distance - halfWallDistance >= 2 * halfWallDistance)
+            else if (hit.distance - halfObstacleDistance >= 2 * halfObstacleDistance)
             {
                 percentage = 1.0f;
             }
             else
             {
-                percentage = ((hit.distance - halfWallDistance - 0.25f * halfWallDistance) / (1.75f * halfWallDistance));
+                percentage = ((hit.distance - halfObstacleDistance - 0.25f * halfObstacleDistance) / (1.75f * halfObstacleDistance));
             }
         }
         return percentage;
     }
-    public bool NPCHit(float halfWallDistance, RaycastHit2D hit)
+
+    /// <summary>
+    /// Determines whether a victim should be shot based on the distance of the shooter.
+    /// </summary>
+    /// <param name="halfObstacleDistance">Distance between the shooter and the half obstacle.</param>
+    /// <param name="hit">Raycast hit</param>
+    /// <returns>Whether the NPC was shot or not.</returns>
+    public bool NPCHit(float halfObstacleDistance, RaycastHit2D hit)
     {
 
 
@@ -423,7 +633,7 @@ public class FirearmScript: MonoBehaviour
 
         if (isCrouched)
         {
-            float hitChance = ApplyCoverToEnemy(halfWallDistance, hit);
+            float hitChance = ApplyCoverToEnemy(halfObstacleDistance, hit);
             if (hit.distance <= 50.0f) //A crouched enemy will be hit 100% of the time from distance < 5m
             {
                 if (Random.value < hitChance)
@@ -453,8 +663,12 @@ public class FirearmScript: MonoBehaviour
 
     }
 
-    //distance - distance between the shooter and the wall
-    public bool HalfWallPassed(float distance)
+    /// <summary>
+    /// Determines whether a half obstacle was passed or hit by a bullet.
+    /// </summary>
+    /// <param name="distance">Distance between the shooter and the half obstacle.</param>
+    /// <returns>True if the bullet flew over the half obstacle, false if it hit the half obstacle.</returns>
+    public bool HalfObstaclePassed(float distance)
     {
         if (distance < 50.0f)
         {
@@ -471,20 +685,31 @@ public class FirearmScript: MonoBehaviour
     }
     //Applies the random error within the confines of the cone to the bullet
     //Degrees represent half the angle of the cone (15 degree -> 30degree cone)
-    public Vector2 ApplyAimErrorToRaycast(Vector2 BulletDeviation, float degrees)
+
+    /// <summary>
+    /// Applies the aim error to a raycast compared to its original direction
+    /// </summary>
+    /// <param name="originalDirection">Original direction of the raycast.</param>
+    /// <param name="degrees">By how many degrees the raycast can deviate.</param>
+    /// <returns>New direction of the raycast.</returns>
+    public Vector2 ApplyAimErrorToRaycast(Vector2 originalDirection, float degrees)
     {
 
         degrees = Random.Range(0, degrees);
 
         //The bullet either deviates to the right or the left
         if (Random.value <= 0.5f)
-            return Quaternion.Euler(0, 0, -degrees) * BulletDeviation;
+            return Quaternion.Euler(0, 0, -degrees) * originalDirection;
         else
-            return Quaternion.Euler(0, 0, degrees) * BulletDeviation;
+            return Quaternion.Euler(0, 0, degrees) * originalDirection;
 
     }
 
-    //Creates the bullet raycast
+    /// <summary>
+    /// Creates a bullet impact where the ullet hit an obstacle.
+    /// </summary>
+    /// <param name="hit">Raycast hit.</param>
+    /// <param name="muzzlePos">Position of the muzzle.</param>
     public void BulletImpact(RaycastHit2D hit, Vector3 muzzlePos)
     {
         Vector3 dir = hit.point - new Vector2(muzzlePos.x, muzzlePos.y);
@@ -497,6 +722,10 @@ public class FirearmScript: MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Changes the selected firearm and all variables associated with it.
+    /// </summary>
+    /// <param name="firearm">Reference to the newly selected firearm.</param>
     public void ChangeSelectedFirearm(InventoryItem firearm){
         selectedFirearm = firearm;
         if(selectedFirearm == null){
@@ -524,6 +753,9 @@ public class FirearmScript: MonoBehaviour
         
     }
 
+    /// <summary>
+    /// Selects an offset for the array of muzzle flashes based on the weapon type.
+    /// </summary>
     private void MuzzleFlashOffsetSelector(){
         if(weaponType == "Pistol"){
             muzzleFlashOffset = 0;
@@ -534,6 +766,9 @@ public class FirearmScript: MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Registers an attempt to reload the selected firearm. Activates reloading coroutine if possible.
+    /// </summary>
     public void ReloadButtonPressed(){
         
         if(selectedFirearm == null){
@@ -554,13 +789,13 @@ public class FirearmScript: MonoBehaviour
             }
         }
 
-        
-
-        
-
         reloadCoroutine = StartCoroutine(Reload());
     }
 
+    /// <summary>
+    /// Reloading coroutine. Handles the reload of a selected firearm.
+    /// </summary>
+    /// <returns>Reference to the runnign coroutine.</returns>
     private IEnumerator Reload(){
         reloading = true;
         reloadedFirearm = selectedFirearm;
@@ -569,26 +804,26 @@ public class FirearmScript: MonoBehaviour
         if(selectedFirearm.itemData.usesMagazines){
             if(selectedFirearm.hasMagazine){
                 inventoryController.ReloadRemoveMagazine(selectedFirearm);
-                playerAnimationController.UnloadMagAnimation(selectedFirearm);
+                humanAnimationController.UnloadMagAnimation(selectedFirearm);
                 yield return new WaitForSeconds(magLoadSpeed);
-                playerAnimationController.LoadMagAnimation(selectedFirearm);
+                humanAnimationController.LoadMagAnimation(selectedFirearm);
                 yield return new WaitForSeconds(magLoadSpeed);
                 inventoryController.AttachMagazine(selectedFirearm, true);
             }else{
-                playerAnimationController.LoadMagAnimation(selectedFirearm);
+                humanAnimationController.LoadMagAnimation(selectedFirearm);
                 yield return new WaitForSeconds(magLoadSpeed);
                 inventoryController.AttachMagazine(selectedFirearm, true);
             }
         }else{
             //Todo: no animation for open bolt yet, load round animation is used instead
             if(!selectedFirearm.isChambered){
-                playerAnimationController.OpenBoltAnimation(selectedFirearm);
+                humanAnimationController.OpenBoltAnimation(selectedFirearm);
                 selectedFirearm.boltOpen = true;
                 yield return new WaitForSeconds(rackWeaponSpeed);
             }
             while(selectedFirearm.ammoCount < selectedFirearm.currentMagazineSize){
                 
-                playerAnimationController.LoadRoundAnimation(selectedFirearm);
+                humanAnimationController.LoadRoundAnimation(selectedFirearm);
                 yield return new WaitForSeconds(loadRoundSpeed);
                 if(!inventoryController.LoadRound(selectedFirearm)){
                     break;
@@ -604,6 +839,11 @@ public class FirearmScript: MonoBehaviour
     }
 
     //RackDelay for manually chambered weapons so that the racking starts a bit later after taking a shot
+    /// <summary>
+    /// Racking coroutine. Handles the racking of a selected firearm.
+    /// </summary>
+    /// <param name="rackDelay">Whether the racking should be delayed. Used for racks after shooting.</param>
+    /// <returns>Reference to the running coroutine.</returns>
     private IEnumerator RackFirearm(bool rackDelay = false){
         racking = true;
         reloadedFirearm = selectedFirearm;
@@ -612,7 +852,7 @@ public class FirearmScript: MonoBehaviour
             yield return new WaitForSeconds(0.2f);
         }
         noiseOrigin.GenerateNoise(20f);
-        playerAnimationController.RackAnimation(selectedFirearm);
+        humanAnimationController.RackAnimation(selectedFirearm);
         yield return new WaitForSeconds(rackWeaponSpeed);
         inventoryController.RackFirearm(selectedFirearm);
         racking = false;
@@ -621,12 +861,16 @@ public class FirearmScript: MonoBehaviour
         selectedFirearm.shellInChamber = false;
     }
 
+    /// <summary>
+    /// Closing bolt coroutine. Handles the closing of a selected firearm's bolt.
+    /// </summary>
+    /// <returns>Reference to the running coroutine.</returns>
     private IEnumerator CloseBolt(){
         racking = true;
         reloadedFirearm = selectedFirearm;
         triggerEnabled = false;
         noiseOrigin.GenerateNoise(20f);
-        playerAnimationController.CloseBoltAnimation(selectedFirearm);
+        humanAnimationController.CloseBoltAnimation(selectedFirearm);
         yield return new WaitForSeconds(loadRoundSpeed);
         inventoryController.CloseBolt(selectedFirearm);
         racking = false;
@@ -634,18 +878,48 @@ public class FirearmScript: MonoBehaviour
         triggerEnabled = true;
     }
 
-
+    /// <summary>
+    /// Registers an opened inventory and disables the trigger.
+    /// </summary>
     public void InventoryOpened(){
         triggerPressed = false;
         inventoryBlock = true;
     }
 
+    /// <summary>
+    /// Registers a closed inventory and enables the trigger.
+    /// </summary>
     public void InventoryClosed(){
         inventoryBlock = false;
     }
 
+    /// <summary>
+    /// Switches the fire mode of the firearm if possible.
+    /// </summary>
     public void SwitchFiremode(){
         fireMode = inventoryController.SwitchFiremode(selectedFirearm);
+    }
+
+    /// <summary>
+    /// Checks whether the player's hands are protruding thoruhg an obstacle when attempting to shoot.
+    /// </summary>
+    /// <returns>True if the player;s hands are protruding through an obstacle, false otherwise.</returns>
+    private bool HandsThroughWallCheck(){
+        //Shoot raycast from player's position to the weapon's position, if blocked by a Full Obstacle, cannot shoot
+        Vector3 dir = this.transform.position - player.transform.position;
+        RaycastHit2D hit;
+        if(playerStatus.isCrouched){
+            hit = Physics2D.Raycast(player.transform.position, dir, dir.magnitude, LayerMask.GetMask("FullObstacle", "HalfObstacle"));
+        }else{
+            hit = Physics2D.Raycast(player.transform.position, dir, dir.magnitude, LayerMask.GetMask("FullObstacle"));
+        }
+        
+        if(hit.collider != null){
+            return true;
+        }else{
+            return false;
+        }
+
     }
 
 }

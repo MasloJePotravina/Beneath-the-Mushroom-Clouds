@@ -52,8 +52,14 @@ public class ItemData : ScriptableObject
     /// </summary>
     [TextAreaAttribute] public string description;
 
+    /// <summary>
+    /// Whether the item is visible when dropped. If false, the item is too small and a small item star is displayed instead.
+    /// </summary>
     public bool visibleOnDrop;
 
+    /// <summary>
+    /// Multiplier of the size of the item when dropped compared to the inventory size.
+    /// </summary>
     public float dropSizeMultiplier;
 
     [Header("Equipment")]
@@ -139,8 +145,14 @@ public class ItemData : ScriptableObject
     /// </summary>
     public float damage;
 
+    /// <summary>
+    /// Initial accuracy of the weapon (first shot).
+    /// </summary>
     public float initialAccuracy;
 
+    /// <summary>
+    /// Accuracy decrement per shot fired from the weapon.
+    /// </summary>
     public float bulletAccuracyDecrement;
     
     
@@ -207,8 +219,19 @@ public class ItemData : ScriptableObject
     /// </summary>
     public bool consumable;
 
-    public float thirst;
+    /// <summary>
+    /// How much hunger the item restores/drains.
+    /// </summary>
     public float hunger;
+
+    /// <summary>
+    /// How much thirst the item restores/drains.
+    /// </summary>
+    public float thirst;
+
+    /// <summary>
+    /// How much tiredness the item restores/drains.
+    /// </summary>
     public float tiredness;
 
    

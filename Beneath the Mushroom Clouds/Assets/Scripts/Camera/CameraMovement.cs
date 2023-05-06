@@ -67,7 +67,10 @@ public class CameraMovement : MonoBehaviour
         }
     }
 
-
+    /// <summary>
+    /// Sets the position of the camera. Called from Player Controls script.
+    /// </summary>
+    /// <param name="mousePosition">Position of the mouse on the screen.</param>
     public void SetMousePosition(Vector2 mousePosition)
     {
         this.mousePosition = mousePosition;

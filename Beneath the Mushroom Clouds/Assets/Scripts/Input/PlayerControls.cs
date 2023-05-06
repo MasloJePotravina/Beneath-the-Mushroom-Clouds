@@ -113,10 +113,19 @@ public class PlayerControls : MonoBehaviour
     /// </summary>
     [SerializeField] private HUDController hudController;
 
+    /// <summary>
+    /// Reference to the Interact Range of the player.
+    /// </summary>
     [SerializeField] private GameObject interactRange;
 
+    /// <summary>
+    /// Reference to the Player Interact script.
+    /// </summary>
     private PlayerInteract playerInteract;
 
+    /// <summary>
+    /// Reference to the Pause Menu script.
+    /// </summary>
     private PauseMenu pauseMenu;
 
     /// <summary>
@@ -390,7 +399,10 @@ public class PlayerControls : MonoBehaviour
         weaponChangeEnabled = true;
     }
 
-
+    /// <summary>
+    /// Method called by the InputSystem when the player attempts to interact with the environment. Calls the Interact method of the PlayerInteract script.
+    /// </summary>
+    /// <param name="value"></param>
     public void OnInteract(InputValue value)
     {
         if(value.isPressed)
@@ -399,23 +411,35 @@ public class PlayerControls : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Method called by the InputSystem when the player attempts to pause the game. Prepares the game for a pause and pauses the game.
+    /// </summary>
+    /// <param name="value"></param>
     public void OnPauseGame(InputValue value){
         if(value.isPressed){
-            pauseMenu.TogglePauseMenu();
+            if(inventoryController.inventoryOpen){
+                playerInput.SwitchCurrentActionMap("Player");
+                inventoryController.CloseInventory();
+                firearmScript.InventoryClosed();
+                playerAnimationController.ResetQuickWeaponChangeTriggers();
+            }else{
+                pauseMenu.TogglePauseMenu();
+            }
         }
     }
 
     /// <summary>
-    /// Method called by the InputSystem when the player attempts to open the inventory.
+    /// Method called by the InputSystem when the player attempts to open the inventory. Prepares the game for an inventory open and opens the inventory.
     /// </summary>
     public void OnOpenInventory()
     {
         if(pauseMenu.isPaused)
             return;
         playerInput.SwitchCurrentActionMap("UI");
-        inventoryController.OpenInventory();
         firearmScript.InventoryOpened();
         playerAnimationController.DisableMovementBools();
+        inventoryController.OpenInventory();
+        status.InventoryOpened();
              
     }
 

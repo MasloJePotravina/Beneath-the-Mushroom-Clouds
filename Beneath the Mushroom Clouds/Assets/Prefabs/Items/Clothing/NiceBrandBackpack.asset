@@ -16,9 +16,9 @@ MonoBehaviour:
   itemName: NiceBrandBackpack
   width: 5
   height: 6
-  weight: 0
-  value: 0
-  description: 
+  weight: 0.6
+  value: 15600
+  description: 'A relatively small "Nice" backpack. '
   visibleOnDrop: 1
   dropSizeMultiplier: 2
   equipment: 1
@@ -35,6 +35,9 @@ MonoBehaviour:
   weapon: 0
   firearm: 0
   manuallyChambered: 0
+  damage: 0
+  initialAccuracy: 0
+  bulletAccuracyDecrement: 0
   fireModes: []
   usesMagazines: 0
   internalMagSize: 0
@@ -49,13 +52,13 @@ MonoBehaviour:
   ammo: 0
   magazine: 0
   magazineSize: 0
-  usable: 0
+  consumable: 0
   thirst: 0
   hunger: 0
   tiredness: 0
+  healthItem: 0
   stackable: 0
   maxStack: 0
   itemSubtextPrefab: {fileID: 0}
   inventorySprites:
   - {fileID: 21300000, guid: fa7c095ad93afd4488588052a39970cd, type: 3}
-  inventorySpriteSecondary: {fileID: 0}

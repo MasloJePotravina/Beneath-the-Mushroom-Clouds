@@ -18,7 +18,7 @@ MonoBehaviour:
   height: 2
   weight: 0
   value: 0
-  description: 
+  description: (UNUSED ITEM)
   visibleOnDrop: 1
   dropSizeMultiplier: 3
   equipment: 0

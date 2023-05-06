@@ -18,7 +18,7 @@ MonoBehaviour:
   height: 2
   weight: 0.3
   value: 1000
-  description: 
+  description: A bottle of antiseptic used to disinfect wounds.
   visibleOnDrop: 1
   dropSizeMultiplier: 3
   equipment: 0

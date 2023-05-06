@@ -16,9 +16,9 @@ MonoBehaviour:
   itemName: Pistol
   width: 2
   height: 1
-  weight: 0
-  value: 0
-  description: 
+  weight: 0.94
+  value: 15900
+  description: 'A semi-automatic handgun, commonly used as a sidearm. '
   visibleOnDrop: 1
   dropSizeMultiplier: 4
   equipment: 1

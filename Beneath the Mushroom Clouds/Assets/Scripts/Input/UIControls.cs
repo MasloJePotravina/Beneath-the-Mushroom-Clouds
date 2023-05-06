@@ -34,7 +34,14 @@ public class UIControls : MonoBehaviour
     /// </summary>
     private FirearmScript firearmScript;
     
+    /// <summary>
+    /// Reference to the Pause Menu.
+    /// </summary>
     private PauseMenu pauseMenu;
+
+    /// <summary>
+    /// Reference to the Rest Menu.
+    /// </summary>
     private GameObject restMenu;
 
 
@@ -67,7 +74,7 @@ public class UIControls : MonoBehaviour
     /// </summary>
     void OnDebugSpawnItem()
     {
-        inventoryController.QuickSpawnItem();
+        //inventoryController.QuickSpawnItem();
     }
 
     /// <summary>

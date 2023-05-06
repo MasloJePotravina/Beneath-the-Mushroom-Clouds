@@ -75,7 +75,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 17a444c6a88476c48b35565726383c3b, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.5849056, g: 0.5849056, b: 0.5849056, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -112,9 +112,11 @@ GameObject:
   - component: {fileID: 6858770750042509909}
   - component: {fileID: 6858770750042509908}
   - component: {fileID: 6858770750042509911}
+  - component: {fileID: 6987319886511254180}
   - component: {fileID: 6858770750042509910}
   - component: {fileID: 6858770750042509905}
   - component: {fileID: 6858770750042509904}
+  - component: {fileID: 6729452254646067011}
   m_Layer: 0
   m_Name: DeadBody
   m_TagString: Interactable
@@ -205,16 +207,59 @@ MonoBehaviour:
   wasOpened: 0
   isOpen: 0
   containerType: Dead Body
-  possibleItems:
-  - {fileID: 11400000, guid: 031552737fb8c574998a810c1499ef8a, type: 2}
-  - {fileID: 11400000, guid: 4b9c1d0b84d80f1439314a2ebba8b6c6, type: 2}
-  - {fileID: 11400000, guid: d2354e761d1b3c74799dca1da466979a, type: 2}
-  - {fileID: 11400000, guid: 1ed4751ec0103774f82ac241d741510e, type: 2}
   animated: 0
   gridWidth: 7
   gridHeight: 12
   itemPrefab: {fileID: 1363816757530145063, guid: 492f289920cea464cb73ff005445af78, type: 3}
   animatorOverrideController: {fileID: 22100000, guid: 1b6c1a51ff0c1354c80c1071f1036552, type: 2}
+--- !u!114 &6987319886511254180
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6858770750042509907}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6367bc246f77c8f44afac698d8455740, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  possibleItems:
+  - itemData: {fileID: 11400000, guid: 4ef6ac035cdf3c34ca4d7cd43f13de13, type: 2}
+    spawnProbabilityPerRoll: 0.01
+    unique: 1
+  - itemData: {fileID: 11400000, guid: 3e6e3906eec292d45ab684872f4d6ceb, type: 2}
+    spawnProbabilityPerRoll: 0.005
+    unique: 1
+  - itemData: {fileID: 11400000, guid: e1738fce9a4dba748bb7a6426c8882c3, type: 2}
+    spawnProbabilityPerRoll: 0.01
+    unique: 1
+  - itemData: {fileID: 11400000, guid: 319e704905b54ae46a792047bf71799c, type: 2}
+    spawnProbabilityPerRoll: 0.01
+    unique: 1
+  - itemData: {fileID: 11400000, guid: 25c1141e44e5f8041aa90ee00e2d6325, type: 2}
+    spawnProbabilityPerRoll: 0.01
+    unique: 1
+  - itemData: {fileID: 11400000, guid: 4c5fee71319a9e64c8031cbd466cd90a, type: 2}
+    spawnProbabilityPerRoll: 0.005
+    unique: 1
+  - itemData: {fileID: 11400000, guid: 735ce1b879e8c8840993435c653ddf82, type: 2}
+    spawnProbabilityPerRoll: 0.02
+    unique: 0
+  - itemData: {fileID: 11400000, guid: f43438ffba3f4c04380753871982b1bc, type: 2}
+    spawnProbabilityPerRoll: 0.02
+    unique: 0
+  - itemData: {fileID: 11400000, guid: c3363cab3d36e534999355c8a37d650b, type: 2}
+    spawnProbabilityPerRoll: 0.01
+    unique: 0
+  - itemData: {fileID: 11400000, guid: e2cf72ba9033af04e96e7318ea4515bb, type: 2}
+    spawnProbabilityPerRoll: 0.005
+    unique: 0
+  - itemData: {fileID: 11400000, guid: ff90d4194cfcf8740a899841d3201f8b, type: 2}
+    spawnProbabilityPerRoll: 0.01
+    unique: 0
+  forcedItems: []
+  maxRolls: 10
 --- !u!114 &6858770750042509910
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -275,3 +320,16 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!114 &6729452254646067011
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6858770750042509907}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe4cdeb3503945341b66a1eeb3bf7f7d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  timeToDestruction: 300

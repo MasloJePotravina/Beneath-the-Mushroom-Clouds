@@ -176,6 +176,9 @@ public class ItemGrid : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         parentItem.SaveGrid(transform.GetSiblingIndex(), inventorySlots);
     }
 
+    /// <summary>
+    ///Hides the items from the grid.
+    /// </summary>
     public void HideItems()
     {
         if(parentItem == null)
@@ -276,13 +279,16 @@ public class ItemGrid : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     /// <param name="posY">Y position of the tile where the item is being placed (top left tile).</param>
     /// <returns>True if the item was placed successfully, false otherwise.</returns>
     public bool PlaceItem(InventoryItem item, int posX, int posY){
-
+        if(item == null){
+            return false;
+        }
         //Forbid placing an item within itself (a bit redundant as selecting an open item destroys the grid but just in case)
         if(parentItem != null){
             if(item == parentItem){
                 return false;
             }
         }
+
 
         //If the item does protrudes outside of the grid return false.
         if(!BoundaryCheck(posX, posY, item.Width, item.Height)){
@@ -572,6 +578,9 @@ public class ItemGrid : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         return null;
     }
 
+    /// <summary>
+    /// Disables all items in the grid
+    /// </summary>
     public void DisableItemsInGrid(){
         foreach(InventoryItem item in inventorySlots){
             if(item != null){

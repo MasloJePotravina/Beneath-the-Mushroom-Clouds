@@ -16,9 +16,11 @@ MonoBehaviour:
   itemName: Hunting Rifle
   width: 6
   height: 1
-  weight: 0
-  value: 0
-  description: 
+  weight: 4.2
+  value: 8500
+  description: A hunting version of a bolt action rifle. It was likely used by a
+    local hunter to hunt medium game. It has no scope but it seems to be well sighted
+    and accurate.
   visibleOnDrop: 1
   dropSizeMultiplier: 4
   equipment: 1

@@ -96,17 +96,23 @@ public class FieldOfView : MonoBehaviour
     /// </summary>
     public float fopDistance = 10f;
 
+
+    /// <summary>
+    /// New FOV raycount set in the options menu. The ray count will be changed at the start of the next frame.
+    /// </summary>
     private int newFovRayCount = 0;
 
 
 
     /// <summary>
-    /// Initialize the FOV values on start.
+    /// Initializes the FOV references and values at start.
     /// </summary>
     void Start()
     {
         mesh = new Mesh();
         GetComponent<MeshFilter>().mesh = mesh;
+        //FOV mask is used to hide footprints and bloodtrails of enemies that are not in the FOV, it uses the same mesh as dov but divverent material
+        GameObject.Find("FOVMask").GetComponent<MeshFilter>().mesh = mesh;
         playerStatus = player.GetComponent<PlayerStatus>();
         fovAngle = fovAngleStandard;
         fovDistance = fovDistanceStandard;
@@ -115,7 +121,7 @@ public class FieldOfView : MonoBehaviour
     }
 
     /// <summary>
-    /// Each frame, calculate and draw the FOV mesh.
+    /// Each frame, calculates and draws the FOV mesh.
     /// </summary>
     private void Update()
     {   
@@ -191,7 +197,7 @@ public class FieldOfView : MonoBehaviour
     //fov == 1 -> calculating FOV
     //fov == 0 -> calculating FOP
     /// <summary>
-    /// Calculate the mesh for the FOV or FOP.
+    /// Calculates the mesh for the FOV or FOP.
     /// </summary>
     /// <param name="fov">True if calculating FOV, false if calculating FOP.</param>
     /// <param name="origin">Origin of the raycasts (player's position).</param>
@@ -273,6 +279,11 @@ public class FieldOfView : MonoBehaviour
         }
     }
 
+
+    /// <summary>
+    /// Sets the number of the FOV raycasts. Will be set at the beginning of the next frame.
+    /// </summary>
+    /// <param name="count">New amount of fov raycasts.</param>
     public void SetFOVRayCount(int count)
     {
         newFovRayCount = count;

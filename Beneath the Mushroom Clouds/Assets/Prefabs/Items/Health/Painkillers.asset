@@ -18,7 +18,7 @@ MonoBehaviour:
   height: 1
   weight: 0.03
   value: 600
-  description: 
+  description: Perscription painkillers. Relief pain for a limited time.
   visibleOnDrop: 0
   dropSizeMultiplier: 3
   equipment: 0

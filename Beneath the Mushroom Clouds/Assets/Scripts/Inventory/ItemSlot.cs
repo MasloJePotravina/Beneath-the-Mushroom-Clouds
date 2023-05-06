@@ -55,9 +55,19 @@ public class ItemSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     /// </summary>
     public int equipmentType;
 
+    /// <summary>
+    /// Whether this item slot is used in the Health tab of the inventory to hold bandages (it is a health item slot).
+    /// </summary>
     public bool isHealthStatusSlot;
+
+    /// <summary>
+    /// Which body part does this item slot belong to if it is a health item slot.
+    /// </summary>
     public string bodyPart;
 
+    /// <summary>
+    /// Reference to the Player Status script.
+    /// </summary>
     private PlayerStatus playerStatus;
 
     /// <summary>
@@ -165,6 +175,7 @@ public class ItemSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
         PlaceResizeItem(placedItem);
 
+        //Bandage item is not visible if this is a health status slot
         if(isHealthStatusSlot){
             
             item.gameObject.SetActive(false);

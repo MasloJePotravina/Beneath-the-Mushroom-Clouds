@@ -16,9 +16,9 @@ MonoBehaviour:
   itemName: ChestRigSmall
   width: 2
   height: 2
-  weight: 0
-  value: 0
-  description: 
+  weight: 0.35
+  value: 9570
+  description: A small chest rig designed to carry up to 6 magazines.
   visibleOnDrop: 1
   dropSizeMultiplier: 4
   equipment: 1
@@ -50,6 +50,9 @@ MonoBehaviour:
   weapon: 0
   firearm: 0
   manuallyChambered: 0
+  damage: 0
+  initialAccuracy: 0
+  bulletAccuracyDecrement: 0
   fireModes: []
   usesMagazines: 0
   internalMagSize: 0
@@ -64,13 +67,13 @@ MonoBehaviour:
   ammo: 0
   magazine: 0
   magazineSize: 0
-  usable: 0
+  consumable: 0
   thirst: 0
   hunger: 0
   tiredness: 0
+  healthItem: 0
   stackable: 0
   maxStack: 0
   itemSubtextPrefab: {fileID: 0}
   inventorySprites:
   - {fileID: 21300000, guid: dbc75825f8dbc2347a273a9873c3b2cf, type: 3}
-  inventorySpriteSecondary: {fileID: 0}

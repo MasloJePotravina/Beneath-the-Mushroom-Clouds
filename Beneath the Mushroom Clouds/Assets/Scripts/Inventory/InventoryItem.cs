@@ -19,7 +19,9 @@ public class InventoryItem : MonoBehaviour
     /// </summary>
     public InventoryItem[][,] itemGrids;
 
-
+    /// <summary>
+    /// Current weight of the item.
+    /// </summary>
     public float currentWeight;
 
     /// <summary>
@@ -76,8 +78,14 @@ public class InventoryItem : MonoBehaviour
     /// </summary>
     public bool isChambered = false;
 
+    /// <summary>
+    /// Whether a firearm as an empty casing in the chamber (firearms)
+    /// </summary>
     public bool shellInChamber = false;
 
+    /// <summary>
+    /// Whether the firearm's bolt is open (firearms)
+    /// </summary>
     public bool boltOpen = false;
 
     /// <summary>
@@ -90,7 +98,9 @@ public class InventoryItem : MonoBehaviour
     /// </summary>
     private int currentFireModeIndex;
 
-
+    /// <summary>
+    /// Level of cleanliness of a bandage
+    /// </summary>
     private float bandageCleanliness = 0;
 
     /// <summary>
@@ -188,7 +198,6 @@ public class InventoryItem : MonoBehaviour
     /// <param name="items">Two dimensional array of inventory item references to items that are currently stored in the grid.</param>
     public void SaveGrid(int gridID, InventoryItem[,] items){
         List<InventoryItem> uniqueItems = new List<InventoryItem>();
-        currentWeight = itemData.weight;
 
         itemGrids[gridID] = items;
 
@@ -206,6 +215,10 @@ public class InventoryItem : MonoBehaviour
         
     }
 
+    /// <summary>
+    /// Hides all items in a grid belonging to an item (assignes their transform to itself and disables them).
+    /// </summary>
+    /// <param name="gridID">ID of the grid (child index)</param>
     public void HideGridItems(int gridID){
         foreach(InventoryItem item in itemGrids[gridID]){
             if(item != null){
@@ -506,6 +519,10 @@ public class InventoryItem : MonoBehaviour
         return true;
     }
 
+    /// <summary>
+    /// Open the bolt of the item (firearm) if it is closed.
+    /// </summary>
+    /// <returns>True if a round was ejected, false if the chamber was empty.</returns>
     public bool OpenBolt(){
         if(!boltOpen){
             boltOpen = true;
@@ -526,6 +543,9 @@ public class InventoryItem : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Close the bolt of the item (firearm) if it is open.
+    /// </summary>
     public void CloseBolt(){
         if(boltOpen){
             boltOpen = false;
@@ -587,6 +607,11 @@ public class InventoryItem : MonoBehaviour
         return itemData.fireModes[currentFireModeIndex];
     }
 
+    /// <summary>
+    /// Updates the bandage cleanliness of a bandage item.
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
     public float BandageDeterioration(float value){
         if(itemData.itemName == "Clean Bandage"){
             bandageCleanliness -= value;
@@ -595,6 +620,9 @@ public class InventoryItem : MonoBehaviour
         return bandageCleanliness;
     }
 
+    /// <summary>
+    /// Updates the current weight of an item.
+    /// </summary>
     private void UdpateCurrentWeight(){
         if(itemData.magazine){
             currentWeight = itemData.weight + (ammoCount * itemData.ammoItemData.weight);
@@ -620,6 +648,13 @@ public class InventoryItem : MonoBehaviour
         if(itemData.stackable){
             currentWeight = itemData.weight * currentStack;
         }
+    }
+
+    /// <summary>
+    /// Resets the weight of a container item before it is calculated.
+    /// </summary>
+    public void ResetContainerWeight(){
+        currentWeight = itemData.weight;
     }
     
 

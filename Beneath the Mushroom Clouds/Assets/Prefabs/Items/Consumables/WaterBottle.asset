@@ -18,7 +18,7 @@ MonoBehaviour:
   height: 2
   weight: 0.5
   value: 800
-  description: 
+  description: 0.5L plastic bottle filled with clean water.
   visibleOnDrop: 1
   dropSizeMultiplier: 3
   equipment: 0
@@ -33,6 +33,8 @@ MonoBehaviour:
   firearm: 0
   manuallyChambered: 0
   damage: 0
+  initialAccuracy: 0
+  bulletAccuracyDecrement: 0
   fireModes: []
   usesMagazines: 0
   internalMagSize: 0

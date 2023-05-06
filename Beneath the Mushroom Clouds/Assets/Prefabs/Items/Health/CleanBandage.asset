@@ -16,9 +16,10 @@ MonoBehaviour:
   itemName: Clean Bandage
   width: 1
   height: 1
-  weight: 0.05
+  weight: 0.002
   value: 200
-  description: 
+  description: A sterile piece of cloth used to stop bleeding. Lowers the chance
+    of infection.
   visibleOnDrop: 1
   dropSizeMultiplier: 3
   equipment: 0

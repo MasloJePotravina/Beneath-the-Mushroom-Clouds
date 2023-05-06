@@ -18,7 +18,7 @@ MonoBehaviour:
   height: 1
   weight: 0.03
   value: 1000
-  description: 
+  description: Perscription antibiotics used to treat various infections.
   visibleOnDrop: 0
   dropSizeMultiplier: 3
   equipment: 0
@@ -50,7 +50,7 @@ MonoBehaviour:
   magazine: 0
   magazineSize: 0
   consumable: 1
-  thirst: 5
+  thirst: -5
   hunger: 0
   tiredness: 0
   healthItem: 1
