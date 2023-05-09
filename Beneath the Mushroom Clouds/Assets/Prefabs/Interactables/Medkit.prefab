@@ -79,7 +79,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: -493310232, guid: a925f01521a965546bb5e37bab0db944, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.5377358, g: 0.5377358, b: 0.5377358, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -102,6 +102,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   wasOpened: 0
+  respawnsLoot: 1
   isOpen: 0
   containerType: Medkit
   animated: 1
@@ -138,7 +139,7 @@ MonoBehaviour:
     spawnProbabilityPerRoll: 0.2
     unique: 0
   forcedItems: []
-  maxRolls: 5
+  rollCount: 5
 --- !u!114 &3680300786776015808
 MonoBehaviour:
   m_ObjectHideFlags: 0

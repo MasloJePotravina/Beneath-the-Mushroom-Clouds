@@ -1327,18 +1327,12 @@ public class InventoryController : MonoBehaviour
                     }
 
                     if(transferedItem == null){
-                        Debug.Log("ERROR: Transfered item was null");
-                        //Large debug with all possible variables
-                        Debug.Log("Transfered item: " + transferedItem + " | Grab item: " + grabItem + " | Item grid: " + itemGrid + " | Item slot: " + itemSlot + " | Item grid position: " + item.gridPositionX + ", " + item.gridPositionY + "new grid position: " + posX + ", " + posY);
                         return false;
                     }
                     
                 }else{
                     transferedItem = item;
                 }
-                
-                //Large debug with all possible variables
-                Debug.Log("Transfered item: " + transferedItem.itemData.name + " | Grab item: " + grabItem + " | Item grid: " + itemGrid + " | Item slot: " + itemSlot + " | Item grid position: " + item.gridPositionX + ", " + item.gridPositionY + "new grid position: " + posX + ", " + posY);
                 grid.PlaceItem(transferedItem, posX, posY);
                 grid.SaveItems();
                 PlayInventoryAudio(transferedItem.itemData.name + "PlaceSound");

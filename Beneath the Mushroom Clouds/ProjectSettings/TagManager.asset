@@ -14,6 +14,7 @@ TagManager:
   - PathBlock
   - NoiseReceiver
   - Trail
+  - WoodenFloor
   layers:
   - Default
   - TransparentFX

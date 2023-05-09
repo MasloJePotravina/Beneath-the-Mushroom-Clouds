@@ -254,6 +254,13 @@ public class UpperStatusHUD : MonoBehaviour
                 staminaArrows[i].SetActive(false);
             }
         }
+
+        //Prevents regen arrows from showing when the stamina is full.
+        if(playerStatus.playerStamina == playerStatus.maxPlayerStamina){
+            staminaArrows[3].SetActive(false);
+            staminaArrows[4].SetActive(false);
+            staminaArrows[5].SetActive(false);
+        }
     }
 
     /// <summary>
@@ -276,6 +283,13 @@ public class UpperStatusHUD : MonoBehaviour
             }else{
                 healthArrows[i].SetActive(false);
             }
+        }
+
+        //Prevent regen arrows from showing when health is full
+        if(playerStatus.playerHealth == playerStatus.maxPlayerHealth){
+            healthArrows[3].SetActive(false);
+            healthArrows[4].SetActive(false);
+            healthArrows[5].SetActive(false);
         }
     }
 

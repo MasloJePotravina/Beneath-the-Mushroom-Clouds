@@ -577,12 +577,6 @@ public class PlayerStatus : MonoBehaviour
         }
 
 
-        //Avoids a regeneration arrow on full health in the hud
-        if(playerHealth >= maxPlayerHealth && healthDrain <= 0f){
-            healthDrain = 0f;
-        }
-
-
     }
 
     /// <summary>
@@ -1289,6 +1283,8 @@ public class PlayerStatus : MonoBehaviour
         //Disabling rigidbody makes sure enemies no longer target the player
         GetComponent<Rigidbody2D>().simulated = false;
 
+        //Desable player's firearm
+        this.transform.Find("Firearm").GetComponent<FirearmScript>().SetFirearmActive(false);
         this.enabled = false;
     }
 

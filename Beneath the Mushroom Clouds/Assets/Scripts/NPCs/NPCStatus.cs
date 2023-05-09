@@ -299,12 +299,14 @@ public class NPCStatus : MonoBehaviour
         }
         itemGenerator.forcedItems.Add(weapon.itemData.ammoItemData);
 
-        deadBody.GetComponent<DestroyObjectOutOfView>().timeToDestruction = 3600f;//TODO: Change
+        deadBody.GetComponent<DestroyObjectOutOfView>().timeToDestruction = 3600f;
 
         //Unoccupy last destination node
         NPCBehaviourHostile behaviour = GetComponent<NPCBehaviourHostile>();
         behaviour.UnoccupyLastNode();
-        
+        //Mark emitters for destruction, but do nto destroy because then all of the particles would be instantly destroyed
+        transform.Find("BloodTrailEmitter").GetComponent<ParticleSystemDestructor>().enabled = true;
+        transform.Find("Torso/Legs/FootprintEmitter").GetComponent<ParticleSystemDestructor>().enabled = true; 
         Destroy(gameObject);
     }
 
@@ -334,6 +336,7 @@ public class NPCStatus : MonoBehaviour
 
         return deadBody;
     }
+
 
     
 }

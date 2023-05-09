@@ -21,6 +21,19 @@ public class Footprints : MonoBehaviour
     /// Old position of the gameObject to which the footprints are attached (kegs of the character).
     /// </summary>
     private Vector3 oldPosition;
+
+    /// <summary>
+    /// Whether the particle system should emit snow footprints.
+    /// </summary>
+    private bool snowFootPrintsEnabled = true;
+
+    /// <summary>
+    /// Emission module of the particle system.
+    /// </summary>
+    ParticleSystem.EmissionModule emission;
+
+
+
     
     /// <summary>
     /// Get reference to the particle system and save the old position.
@@ -29,6 +42,7 @@ public class Footprints : MonoBehaviour
     {
         particleSystem = GetComponent<ParticleSystem>();
         oldPosition = transform.position;
+        emission = particleSystem.emission;
 
     }
 
@@ -47,18 +61,45 @@ public class Footprints : MonoBehaviour
         }
         oldPosition = transform.position;
         UpdateFootstepColor();
+
+        if(!snowFootPrintsEnabled && bloodySoleDistance <= 0f){
+            emission.enabled = false;
+        }else{
+            emission.enabled = true;
+        }
+
         
     }
 
     /// <summary>
-    /// When the trigger on the legs enters a blood puddle, make the soles bloody.
+    /// When the trigger on the footprint emitter enters a blood puddle, make the soles bloody. When it leaves wooden floor, enable snow footprints.
     /// </summary>
-    /// <param name="other">The object which triggered the legs collider.</param>
+    /// <param name="other">The collider of the object which left the area of the footprint emitter's collider.</param>
     void OnTriggerExit2D(Collider2D other)
     {
         if (other.gameObject.name == "BloodPuddle")
         {
             bloodySoleDistance = 100f;    
+        }
+
+        if (other.gameObject.CompareTag("WoodenFloor"))
+        {
+            snowFootPrintsEnabled = true;
+        }
+
+    }
+
+    /// <summary>
+    /// While the footprint emitter of the character are within a wooden floor, the foorprints will only show if the character stepped in blood.
+    /// </summary>
+    /// <param name="other">The collider of the object which is currently within the area of the footprint emitter's collider.</param>
+    void OnTriggerStay2D(Collider2D other)
+    {
+
+        
+        if (other.gameObject.CompareTag("WoodenFloor"))
+        {
+            snowFootPrintsEnabled = false;
         }
     }
 
@@ -69,4 +110,6 @@ public class Footprints : MonoBehaviour
         float bloodMultiplier = 1 - (bloodySoleDistance / 100f);
         particleSystem.startColor = new Color(0.5f - bloodMultiplier * 0.5f, 0f , 0f, 0.9f - bloodMultiplier * 0.3f);
     }
+
+    
 }

@@ -79,7 +79,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: -943163775, guid: 384fe16a745590a4587897c087679052, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.4716981, g: 0.4716981, b: 0.4716981, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -102,6 +102,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   wasOpened: 0
+  respawnsLoot: 1
   isOpen: 0
   containerType: Ammo Crate
   animated: 1
@@ -195,4 +196,4 @@ MonoBehaviour:
     spawnProbabilityPerRoll: 0.05
     unique: 0
   forcedItems: []
-  maxRolls: 5
+  rollCount: 5

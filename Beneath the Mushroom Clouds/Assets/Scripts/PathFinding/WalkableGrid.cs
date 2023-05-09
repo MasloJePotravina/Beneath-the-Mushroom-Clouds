@@ -35,7 +35,9 @@ public class WalkableGrid : MonoBehaviour
         GameObject[] allGameObjects = FindObjectsOfType<GameObject>();
         foreach(GameObject go in allGameObjects){
             if(go.activeInHierarchy == false) continue;
-            if(go.layer == LayerMask.NameToLayer("FullObstacle") || go.layer == LayerMask.NameToLayer("HalfObstacle")){
+            LayerMask objectLayer = go.layer;
+            LayerMask obstacleLayer = LayerMask.GetMask("FullObstacle", "HalfObstacle", "LowObstacle");
+            if(obstacleLayer == (obstacleLayer | (1 << objectLayer))){
                 if(go.name != "Door")
                     obstacles.Add(go);
             }
@@ -53,19 +55,29 @@ public class WalkableGrid : MonoBehaviour
 
             Vector3[] localCorners = new Vector3[4];
 
-            //Local positions
-            Vector2 halfSize = obstacle.transform.localScale / 2f;
-            localCorners[0] = new Vector3(-halfSize.x, -halfSize.y, 0); // Bottom-left
-            localCorners[1] = new Vector3(halfSize.x, -halfSize.y, 0); // Bottom-right
-            localCorners[2] = new Vector3(halfSize.x, halfSize.y, 0); // Top-right
-            localCorners[3] = new Vector3(-halfSize.x, halfSize.y, 0); // Top-left
+            //Local positions as sprite renderer bounds
+            SpriteRenderer spriteRenderer = obstacle.GetComponent<SpriteRenderer>();
+            localCorners[0] = new Vector3(-spriteRenderer.bounds.extents.x, -spriteRenderer.bounds.extents.y, 0);
+            localCorners[1] = new Vector3(spriteRenderer.bounds.extents.x, -spriteRenderer.bounds.extents.y, 0);
+            localCorners[2] = new Vector3(spriteRenderer.bounds.extents.x, spriteRenderer.bounds.extents.y, 0);
+            localCorners[3] = new Vector3(-spriteRenderer.bounds.extents.x, spriteRenderer.bounds.extents.y, 0);
 
-            //Rake rotation into account
-            Quaternion rotation = obstacle.transform.rotation;
-            for (int i = 0; i < 4; i++) {
-                Vector3 worldPosition = obstacle.transform.position + rotation * localCorners[i];
-                obstacleCorners[i] = new Vector2(worldPosition.x, worldPosition.y);
+            // Check if the obstacle is rotated 90 degrees
+            Quaternion obstacleRotation = obstacle.transform.rotation;
+            float zRotation = obstacleRotation.eulerAngles.z;
+            if (zRotation == 90 || zRotation == 270) {
+                // Swap x and y coordinates of the local corners
+                for (int i = 0; i < 4; i++) {
+                    float tempX = localCorners[i].x;
+                    localCorners[i].x = localCorners[i].y;
+                    localCorners[i].y = -tempX;
+                }
             }
+
+            for (int i = 0; i < 4; i++) {
+                obstacleCorners[i] = obstacle.transform.position + obstacle.transform.rotation * localCorners[i];
+            }
+            
 
             System.Array.Sort(obstacleCorners, (a, b) => {
                 int compare = a.x.CompareTo(b.x);

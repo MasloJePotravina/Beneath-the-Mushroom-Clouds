@@ -158,7 +158,7 @@ public class WeaponHUD : MonoBehaviour
     /// <summary>
     /// Updates the ammunition status in the hud.
     /// </summary>
-    /// <param name="ammoCount">Current ammunition count of the weapon (chambered round excluded).
+    /// <param name="ammoCount">Current ammunition count of the weapon (chambered round excluded).</param>
     /// <param name="maxAmmo">Maximum capacity of the magazine in the weapon.</param>
     /// <param name="isChambered">Whether the weapon is chambered or not.</param>
     public void UpdateAmmoStatus(int ammoCount, int maxAmmo, bool isChambered){

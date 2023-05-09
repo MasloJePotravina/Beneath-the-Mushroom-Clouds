@@ -77,6 +77,17 @@ public class GameOptions : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(this);
 
+        //Set current resolution as the default one
+        Resolution currentResolution = Screen.currentResolution;
+        for(int i = 0; i < resolutions.Length; i++)
+        {
+            if(resolutions[i].width == currentResolution.width && resolutions[i].height == currentResolution.height)
+            {
+                resolutionIndex = i;
+                break;
+            }
+        }
+
 
     }
 

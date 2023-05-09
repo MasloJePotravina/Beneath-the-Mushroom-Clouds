@@ -199,7 +199,7 @@ public class WorldStatus : MonoBehaviour
     /// <summary>
     /// Respawn timer for enemies in game seconds.
     /// </summary>
-    private float enemyRespawnTimerInGameSeconds = 18000f;
+    private float enemyRespawnTimerInGameSeconds = 10800f;//3 hours
 
     
     /// <summary>

@@ -145,7 +145,7 @@ public class AudioManager : MonoBehaviour
         if(source == null){
             yield break;
         }
-        //Protection against accidentaly resetting the audio source of another sound
+        //Protection against accidentally resetting the audio source of another sound
         if(source.clip == clip)
         {
             source.clip = null;
